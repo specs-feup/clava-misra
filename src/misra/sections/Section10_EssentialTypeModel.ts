@@ -36,6 +36,9 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
             if (type.builtinKind === "Bool") {
                 return EssentialTypes.BOOL;
             }
+            else if (type.builtinKind === "Char_S") {
+                return EssentialTypes.CHAR;
+            }
             else if (type.isInteger && type.isSigned) {
                 return EssentialTypes.SIGNED;
             }
