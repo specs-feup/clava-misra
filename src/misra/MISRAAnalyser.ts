@@ -8,18 +8,20 @@ import Fix from "clava-js/api/clava/analysis/Fix.js";
 type T = Program | FileJp;
 
 export default abstract class MISRAAnalyser extends Analyser {
-    rules: number[];
-    resultFormatManager = new ResultFormatManager();
-    abstract ruleMapper: Map<number, (jp: T) => void>;
-    results: AnalyserResult[] = [];
+    #rules: number[];
+    #resultFormatManager = new ResultFormatManager();
+    protected abstract ruleMapper: Map<number, (jp: T) => void>;
+    #results: AnalyserResult[] = [];
 
     constructor(rules: number[]) {
         super();
-        this.rules = rules;
+        this.#rules = rules;
     }
 
-    logMISRAError(jp: Joinpoint, message: string, fix?: Fix) {
-        this.results.push(new AnalyserResult(`Non-compliant code at ${jp?.filename}@${jp?.line}:${jp?.column}.`, jp, message, fix))
+    get rules(): number[] {return this.#rules.map(num => num)};
+
+    protected logMISRAError(jp: Joinpoint, message: string, fix?: Fix) {
+        this.#results.push(new AnalyserResult(`Non-compliant code at ${jp?.filename}@${jp?.line}:${jp?.column}.`, jp, message, fix))
     }
 
     analyse($startNode: T = Query.root() as Program) {
@@ -33,8 +35,8 @@ export default abstract class MISRAAnalyser extends Analyser {
             }
         }
 
-        this.resultFormatManager.setAnalyserResultList(this.results);
-        const fileResult = this.resultFormatManager.formatResultList($startNode);
+        this.#resultFormatManager.setAnalyserResultList(this.#results);
+        const fileResult = this.#resultFormatManager.formatResultList($startNode);
 
         return fileResult;
     }
