@@ -1,4 +1,4 @@
-import { Program, FileJp, Joinpoint, StorageClass, Vardecl, FunctionJp, TypedefDecl, NamedDecl, TypedefNameDecl, Class } from "clava-js/api/Joinpoints.js";
+import { Program, FileJp, Joinpoint, StorageClass, Vardecl, FunctionJp, TypedefDecl, NamedDecl, TypedefNameDecl, Class, TagType, EnumDecl } from "clava-js/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 import Query from "lara-js/api/weaver/Query.js";
 import Fix from "clava-js/api/clava/analysis/Fix.js";
@@ -11,6 +11,7 @@ export default class Section5_Identifiers extends MISRAAnalyser {
         this.ruleMapper = new Map([
             [1, this.r5_1_externalIdentifierLength.bind(this)],
             [6, this.r5_6_uniqueTypedefs.bind(this)],
+            [7, this.r5_7_uniqueTags.bind(this)],
             [8, this.r5_8_uniqueExternalIds.bind(this)]
         ]);
     }
@@ -69,6 +70,45 @@ export default class Section5_Identifiers extends MISRAAnalyser {
             }
             if (typedefs.has(decl.name)) {
                 this.logMISRAError(decl, `${decl.name} is also the name of a typedef. Typedef identifiers must not be reused.`);
+            }
+        }, this);
+    }
+
+    private r5_7_uniqueTags($startNode: Joinpoint) {
+        const tags: Set<string> = new Set();
+
+        for (const classJp of Query.searchFrom($startNode, Class)) {
+            if (classJp.type instanceof TagType) {
+                if (tags.has(classJp.type.name)) {
+                    this.logMISRAError(classJp, "Tag names must be unique across all translation units.");
+                }
+                else {
+                    tags.add(classJp.type.name);
+                }
+            }
+        }
+
+        for (const enumDecl of Query.searchFrom($startNode, EnumDecl)) {
+            if (enumDecl.type instanceof TagType) {
+                if (tags.has(enumDecl.type.name)) {
+                    this.logMISRAError(enumDecl, "Tag names must be unique across all translation units.");
+                }
+                else {
+                    tags.add(enumDecl.type.name);
+                }
+            }
+        }
+
+        Query.searchFrom($startNode, NamedDecl).get().filter(decl => !(decl instanceof TypedefNameDecl)).forEach(decl => {
+            if (decl instanceof Class) {
+                const typedefChildren = decl.getDescendants("typedefDecl") as TypedefDecl[];
+                for (const child of typedefChildren) {
+                    if (decl.name === child.name) return;
+                }
+            }
+            if (decl.type instanceof TagType) return;
+            if (tags.has(decl.name)) {
+                this.logMISRAError(decl, `${decl.name} is also the name of a tag. Tag identifiers must not be reused.`);
             }
         }, this);
     }

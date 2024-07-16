@@ -29,8 +29,7 @@ export default abstract class MISRAAnalyser extends Analyser {
                 rulePass($startNode);
             }
             else {
-                console.log("Analyser doesn't support rule number", rule);
-                return undefined;
+                throw new Error("Analyser doesn't support rule number " + rule)
             }
         }
 
