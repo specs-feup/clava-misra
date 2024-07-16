@@ -2,7 +2,7 @@ import Query from "lara-js/api/weaver/Query.js";
 import { Program, FileJp, TernaryOp, UnaryOp, BinaryOp, Joinpoint, Cast, BuiltinType, Type, Expression, IntLiteral, EnumType, QualType, ReturnStmt, FunctionJp, Call, Op, ParenExpr } from "clava-js/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 
-enum EssentialTypes {
+export enum EssentialTypes {
     UNSIGNED,
     CHAR,
     SIGNED,
@@ -26,7 +26,7 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
         ]);
     }
 
-    private static getEssentialType(bType: Type): EssentialTypes {
+    static getEssentialType(bType: Type): EssentialTypes {
         let type = bType.desugarAll;
         while (type instanceof QualType) {
             type = type.unqualifiedType.desugarAll;

@@ -1,13 +1,15 @@
 import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, Cast, FunctionType, PointerType, BuiltinType, IntLiteral, Joinpoint } from "clava-js/api/Joinpoints.js";
+import { Program, FileJp, Cast, FunctionType, PointerType, BuiltinType, IntLiteral, Joinpoint, QualType } from "clava-js/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
+import Section10_EssentialTypeModel, { EssentialTypes } from "./Section10_EssentialTypeModel.js";
 
-class Section11_PointerTypeConversions extends MISRAAnalyser {
+export default class Section11_PointerTypeConversions extends MISRAAnalyser {
     ruleMapper: Map<number, (jp: Program | FileJp) => void>;
     
     constructor(rules: number[]) {
         super(rules);
         this.ruleMapper = new Map([
+            [7, this.r11_7_noFloatConversions.bind(this)]
         ]);
     }
 
@@ -72,5 +74,30 @@ class Section11_PointerTypeConversions extends MISRAAnalyser {
                 this.logMISRAError(cast, "Pointer to void should not be converted to pointer to object");
             }
         });
+    }
+
+    private r11_7_noFloatConversions($startNode: Joinpoint) {
+        Query.searchFrom($startNode, Cast).get().forEach(cast => {
+            let fromType = cast.fromType.desugarAll;
+            let toType = cast.fromType.desugarAll;
+
+            if (fromType instanceof QualType) {
+                fromType = fromType.unqualifiedType.desugarAll;
+            }
+            if (toType instanceof QualType) {
+                toType = toType.unqualifiedType.desugarAll;
+            }
+
+            if (fromType instanceof PointerType && !(toType instanceof PointerType)
+                    && Section10_EssentialTypeModel.getEssentialType(toType) !== EssentialTypes.SIGNED
+                    && Section10_EssentialTypeModel.getEssentialType(toType) !== EssentialTypes.UNSIGNED) {
+                this.logMISRAError(cast, "A pointer to object cannot be cast to a non-integer arithmetic type.");
+            }
+            else if (toType instanceof PointerType && !(fromType instanceof PointerType)
+                    && Section10_EssentialTypeModel.getEssentialType(fromType) !== EssentialTypes.SIGNED
+                    && Section10_EssentialTypeModel.getEssentialType(fromType) !== EssentialTypes.UNSIGNED) {
+                this.logMISRAError(cast, "A non-arithmetic integer value cannot be cast to a pointer to object.");
+            }
+        }, this);
     }
 }

@@ -1,6 +1,7 @@
 import { Program, FileJp, Joinpoint, FunctionJp, Varref, Param } from "clava-js/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 import Query from "lara-js/api/weaver/Query.js";
+import Fix from "clava-js/api/clava/analysis/Fix.js";
 
 export default class Section2_UnusedCode extends MISRAAnalyser {
     ruleMapper: Map<number, (jp: Program | FileJp) => void>;
@@ -24,7 +25,11 @@ export default class Section2_UnusedCode extends MISRAAnalyser {
             }, this);
 
             params.forEach((v, k, m) => {
-                this.logMISRAError(v, `Parameter ${v.name} is unused.`);
+                this.logMISRAError(v, `Parameter ${v.name} is unused.`, new Fix(v, $jp => {
+                    const fun = $jp.getAncestor("function") as FunctionJp;
+                    const params = fun.params.filter(param => param.astId !== $jp.astId);
+                    fun.setParams(params);
+                }));
             }, this);
         }, this);
     }
