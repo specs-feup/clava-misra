@@ -1,15 +1,15 @@
 import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, TernaryOp, UnaryOp, BinaryOp, Joinpoint, Cast, BuiltinType, Type, Expression, IntLiteral, EnumType, QualType, ReturnStmt, FunctionJp, Call, Op, ParenExpr } from "clava-js/api/Joinpoints.js";
+import { Program, FileJp, TernaryOp, UnaryOp, BinaryOp, Joinpoint, Cast, BuiltinType, Type, Expression, IntLiteral, EnumType, QualType, ReturnStmt, FunctionJp, Call, Op, ParenExpr, Varref } from "clava-js/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 
 export enum EssentialTypes {
-    UNSIGNED,
-    CHAR,
-    SIGNED,
-    ENUM,
-    FLOAT,
-    BOOL,
-    UNKOWN
+    UNSIGNED = "unsigned",
+    CHAR = "char",
+    SIGNED = "signed",
+    ENUM = "enum",
+    FLOAT = "float",
+    BOOL = "bool",
+    UNKOWN = "unkown"
 };
 
 export default class Section10_EssentialTypeModel extends MISRAAnalyser {
@@ -55,55 +55,98 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
 
         return EssentialTypes.UNKOWN;
     }
-    
-    private r10_1_appropriateEssentialOperands($startNode: Joinpoint) { //incomplete
-        Query.searchFrom($startNode, TernaryOp).get().forEach(tOp => {
-            if (Section10_EssentialTypeModel.getEssentialType(tOp.cond.type) !== EssentialTypes.BOOL) {//best way?
-                this.logMISRAError(tOp, `First operand of ternay operation ${tOp.cond.code} must have essentially boolean type.`);
+
+    static isInteger($et: EssentialTypes): boolean {
+        return $et === EssentialTypes.SIGNED || $et === EssentialTypes.UNSIGNED;
+    }
+
+    static getExprEssentialType($expr: Expression): EssentialTypes {
+        if ($expr instanceof BinaryOp) {
+            if ($expr.kind === "add") {
+                if ((this.getExprEssentialType($expr.left) === EssentialTypes.CHAR && this.isInteger(this.getExprEssentialType($expr.right)))
+                        || (this.getExprEssentialType($expr.right) === EssentialTypes.CHAR && this.isInteger(this.getExprEssentialType($expr.left)))) {
+                    return EssentialTypes.CHAR;
+                }
             }
-        }, this);
-        Query.searchFrom($startNode, UnaryOp).get().forEach(uOp => {
-            switch (uOp.kind) {
-                case "not":
-                    if (Section10_EssentialTypeModel.getEssentialType(uOp.operand.type) !== EssentialTypes.BOOL) {
-                        this.logMISRAError(uOp, `Operand ${uOp.operand.code} of negation operator must have essentially boolean type.`);
+            else if ($expr.kind === "sub") {
+                if (this.getExprEssentialType($expr.left) === EssentialTypes.CHAR) {
+                    if (this.getExprEssentialType($expr.right) === EssentialTypes.CHAR) {
+                        return EssentialTypes.CHAR;
                     }
-                    break;
-                case "minus":
-                    if (Section10_EssentialTypeModel.getEssentialType(uOp.operand.type) === EssentialTypes.UNSIGNED) {
-                        this.logMISRAError(uOp, `Operand ${uOp.operand.code} of unary minus must not have essentially unsigned type.`);
-                    }
-                    break;
-                    
+                }
+            }
+        }
+        return this.getEssentialType($expr.type);
+    }
+
+    private restrictOperand($expr: Expression, $restrictedType: EssentialTypes, $baseExpr: Expression) {
+        const et = Section10_EssentialTypeModel.getExprEssentialType($expr);
+        if (et === $restrictedType) {
+            this.logMISRAError($baseExpr, `Operand ${$expr.code} of expression ${$baseExpr.code} must not have essentially ${et} type.`);
+        }
+    }
+
+    private restrictOperandList($expr: Expression, $restrictedTypes: EssentialTypes[], $baseExpr: Expression) {
+        for (const type of $restrictedTypes) {
+            this.restrictOperand($expr, type, $baseExpr);
+        }
+    }
+    
+    private r10_1_appropriateEssentialOperands($startNode: Joinpoint) { //missing exception and compound operators
+        Query.searchFrom($startNode, Op).get().forEach(op => {
+            if (op instanceof TernaryOp) {
+                this.restrictOperandList(op.cond, [EssentialTypes.CHAR, EssentialTypes.ENUM, EssentialTypes.FLOAT, EssentialTypes.SIGNED, EssentialTypes.UNSIGNED], op);
+            }
+            else if (op instanceof BinaryOp) {
+                switch (op.kind) {
+                    case "shl":
+                    case "shr":
+                    case "and":
+                    case "or":
+                    case "x_or":
+                        this.restrictOperand(op.left, EssentialTypes.SIGNED, op);
+                        this.restrictOperand(op.right, EssentialTypes.SIGNED, op);
+                    case "rem":
+                        this.restrictOperand(op.left, EssentialTypes.FLOAT, op);
+                        this.restrictOperand(op.right, EssentialTypes.FLOAT, op);
+                    case "mul":
+                    case "div":
+                        this.restrictOperand(op.left, EssentialTypes.CHAR, op);
+                        this.restrictOperand(op.right, EssentialTypes.CHAR, op);
+                    case "add":
+                    case "sub":
+                        this.restrictOperand(op.left, EssentialTypes.ENUM, op);
+                        this.restrictOperand(op.right, EssentialTypes.ENUM, op);
+                    case "le":
+                    case "ge":
+                    case "lt":
+                    case "gt":
+                        this.restrictOperand(op.left, EssentialTypes.BOOL, op);
+                        this.restrictOperand(op.right, EssentialTypes.BOOL, op);
+                        break;
+                    case "l_and":
+                    case "l_or":
+                        this.restrictOperandList(op.left, [EssentialTypes.ENUM, EssentialTypes.CHAR, EssentialTypes.SIGNED, EssentialTypes.UNSIGNED, EssentialTypes.FLOAT], op);
+                        this.restrictOperandList(op.right, [EssentialTypes.ENUM, EssentialTypes.CHAR, EssentialTypes.SIGNED, EssentialTypes.UNSIGNED, EssentialTypes.FLOAT], op);
+                        break;
+                }
+            }
+            else if (op instanceof UnaryOp) {
+                switch (op.kind) {
+                    case "minus":
+                        this.restrictOperand(op.operand, EssentialTypes.UNSIGNED, op);
+                    case "plus":
+                        this.restrictOperandList(op.operand, [EssentialTypes.BOOL, EssentialTypes.CHAR, EssentialTypes.ENUM], op);
+                        break;
+                    case "l_not":
+                        this.restrictOperandList(op.operand, [EssentialTypes.ENUM, EssentialTypes.CHAR, EssentialTypes.SIGNED, EssentialTypes.UNSIGNED, EssentialTypes.FLOAT], op);
+                        break;
+                    case "not":
+                        this.restrictOperandList(op.operand, [EssentialTypes.BOOL, EssentialTypes.CHAR, EssentialTypes.ENUM, EssentialTypes.FLOAT, EssentialTypes.SIGNED], op);
+                        break;
+                }
             }
         });
-        Query.searchFrom($startNode, BinaryOp).get().forEach(bOp => {
-            switch (bOp.kind) {
-                case "and":
-                case "or":
-                    if (Section10_EssentialTypeModel.getEssentialType(bOp.left.type) !== EssentialTypes.BOOL 
-                    || Section10_EssentialTypeModel.getEssentialType(bOp.right.type) !== EssentialTypes.BOOL) {
-                        this.logMISRAError(bOp, `Operands of boolean expression ${bOp.code} must have essentially boolean type.`);
-                    }
-                    break;
-                case "div":
-                case "mul":
-                case "rem":
-                case "shl":
-                case "shr":
-                    if (Section10_EssentialTypeModel.getEssentialType(bOp.right.type) !== EssentialTypes.UNSIGNED) {
-                        this.logMISRAError(bOp, `RHS of shift expression ${bOp.code} must have essentially unsigned type.`);
-                    }
-                    if (Section10_EssentialTypeModel.getEssentialType(bOp.left.type) !== EssentialTypes.UNSIGNED) {
-                        this.logMISRAError(bOp, `LHS of shift expression ${bOp.code} must have essentially unsigned type.`);
-                    }
-                    break;
-                case "l_and":
-                case "l_or":
-                case "xor":
-                    break;
-            }
-        }, this);
     }
 
     private r10_3_noInvalidAssignments($startNode: Joinpoint) { //not working for decls
