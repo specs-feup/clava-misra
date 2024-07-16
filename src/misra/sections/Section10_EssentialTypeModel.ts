@@ -102,11 +102,12 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
                 switch (op.kind) {
                     case "shl":
                     case "shr":
+                        if (!(op.right instanceof IntLiteral)) this.restrictOperand(op.right, EssentialTypes.SIGNED, op);
                     case "and":
                     case "or":
                     case "x_or":
                         this.restrictOperand(op.left, EssentialTypes.SIGNED, op);
-                        this.restrictOperand(op.right, EssentialTypes.SIGNED, op);
+                        if (op.kind !== "shl" && op.kind !== "shr") this.restrictOperand(op.right, EssentialTypes.SIGNED, op);
                     case "rem":
                         this.restrictOperand(op.left, EssentialTypes.FLOAT, op);
                         this.restrictOperand(op.right, EssentialTypes.FLOAT, op);
