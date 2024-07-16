@@ -19,6 +19,7 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
         super(rules);
         this.ruleMapper = new Map([
             [1, this.r10_1_appropriateEssentialOperands.bind(this)],
+            [2, this.r10_2_appropriateCharOperands.bind(this)],
             [3, this.r10_3_noInvalidAssignments.bind(this)],
             [5, this.r10_5_noInvalidCasts.bind(this)],
             [6, this.r10_6_noWiderCompositeExprAssignments.bind(this)],
@@ -146,7 +147,44 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
                         break;
                 }
             }
-        });
+        }, this);
+    }
+
+    private r10_2_appropriateCharOperands($startNode: Joinpoint) {
+        Query.searchFrom($startNode, BinaryOp, {kind: /(add|sub)/}).get().forEach(bOp => {
+            if (bOp.kind === "add") {
+                if (Section10_EssentialTypeModel.getExprEssentialType(bOp.left) === EssentialTypes.CHAR && Section10_EssentialTypeModel.getExprEssentialType(bOp.right) === EssentialTypes.CHAR) {
+                    this.logMISRAError(bOp, `Both operands of addition ${bOp.code} have essentially character type.`);
+                    return;
+                }
+            
+                let otherType;
+                if (Section10_EssentialTypeModel.getExprEssentialType(bOp.left) === EssentialTypes.CHAR) {
+                    otherType = Section10_EssentialTypeModel.getExprEssentialType(bOp.right);
+                }
+                else if (Section10_EssentialTypeModel.getExprEssentialType(bOp.right) === EssentialTypes.CHAR) {
+                    otherType = Section10_EssentialTypeModel.getExprEssentialType(bOp.left);
+                }
+
+                if (otherType && !Section10_EssentialTypeModel.isInteger(otherType)) {
+                    this.logMISRAError(bOp, `One operand of addition ${bOp.code} has essentially character type, so the other one must have either essentially signed or unsigned type.`);
+                    return;
+                }
+            }
+            else if (bOp.kind === "sub") {
+                if (Section10_EssentialTypeModel.getExprEssentialType(bOp.left) === EssentialTypes.CHAR) {
+                    const rightType = Section10_EssentialTypeModel.getExprEssentialType(bOp.right);
+                    if (!([EssentialTypes.CHAR, EssentialTypes.SIGNED, EssentialTypes.UNKOWN].some(et => et === rightType))) {
+                        this.logMISRAError(bOp, `Left operand of subtraction ${bOp.code} has essentially character type, so the RHS must be essentially signed, unsigned, or char.`);
+                        return;
+                    }
+                }
+                else if (Section10_EssentialTypeModel.getExprEssentialType(bOp.right) === EssentialTypes.CHAR) {
+                    this.logMISRAError(bOp, `Right operand of subtraction ${bOp.code} can only be of essentially character type if the LHS is too.`);
+                    return;
+                }
+            }
+        }, this);
     }
 
     private r10_3_noInvalidAssignments($startNode: Joinpoint) { //not working for decls
