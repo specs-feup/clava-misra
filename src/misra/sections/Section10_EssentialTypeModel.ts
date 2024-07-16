@@ -51,7 +51,7 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
             }
         }
         else if (type instanceof EnumType) {
-            return EssentialTypes.ENUM;
+            return type.name === undefined ? EssentialTypes.SIGNED : EssentialTypes.ENUM;
         }
 
         return EssentialTypes.UNKOWN;
