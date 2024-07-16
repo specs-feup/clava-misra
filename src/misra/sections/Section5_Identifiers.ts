@@ -1,4 +1,4 @@
-import { Program, FileJp, Joinpoint, StorageClass, Vardecl, FunctionJp, TypedefDecl, NamedDecl, TypedefNameDecl } from "clava-js/api/Joinpoints.js";
+import { Program, FileJp, Joinpoint, StorageClass, Vardecl, FunctionJp, TypedefDecl, NamedDecl, TypedefNameDecl, Class } from "clava-js/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 import Query from "lara-js/api/weaver/Query.js";
 import Fix from "clava-js/api/clava/analysis/Fix.js";
@@ -48,7 +48,7 @@ export default class Section5_Identifiers extends MISRAAnalyser {
         }
     }
 
-    private r5_6_uniqueTypedefs($startNode: Joinpoint) {
+    private r5_6_uniqueTypedefs($startNode: Joinpoint) { //exception is missing
         const typedefs: Set<string> = new Set();
 
         for (const typedef of Query.searchFrom($startNode, TypedefDecl)) {
@@ -61,6 +61,12 @@ export default class Section5_Identifiers extends MISRAAnalyser {
         }
 
         Query.searchFrom($startNode, NamedDecl).get().filter(decl => !(decl instanceof TypedefNameDecl)).forEach(decl => {
+            if (decl instanceof Class) {
+                const typedefChildren = decl.getDescendants("typedefDecl") as TypedefDecl[];
+                for (const child of typedefChildren) {
+                    if (decl.name === child.name) return;
+                }
+            }
             if (typedefs.has(decl.name)) {
                 this.logMISRAError(decl, `${decl.name} is also the name of a typedef. Typedef identifiers must not be reused.`);
             }
