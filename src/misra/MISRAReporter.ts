@@ -31,7 +31,7 @@ export default class MISRAReporter {
 
     generateReport() {
         for (const analyser of this.#analysers) {
-            const reqs = [MISRAPreprocessingReqs.EXTERNAL_OBJECTS];
+            const reqs = [MISRAPreprocessingReqs.EXTERNAL_OBJECTS]; //get reqs from analyser
             this.updateReqs(reqs);
             analyser.analyse(this.#preprocessing);
         }
