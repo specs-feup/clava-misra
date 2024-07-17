@@ -8,16 +8,25 @@ import Fix from "clava-js/api/clava/analysis/Fix.js";
 export type T = Program | FileJp;
 
 export default abstract class MISRAAnalyser extends Analyser {
-    #rules: number[];
+    #rules: Set<number>;
     #resultFormatManager = new ResultFormatManager();
     #results: AnalyserResult[] = [];
+    protected dependencies: Map<number, number[]> = new Map();
 
     constructor(rules: number[]) {
         super();
-        this.#rules = rules;
+        this.#rules = new Set();
+        for (const rule of rules) {
+            if (this.dependencies.has(rule)) {
+                for (const dependency of this.dependencies.get(rule) ?? []) {
+                    this.#rules.add(dependency);
+                }
+            }
+            this.#rules.add(rule);
+        }
     }
 
-    get rules(): number[] {return this.#rules.map(num => num)};
+    get rules(): Set<number> {return this.#rules};
 
     protected logMISRAError(jp: Joinpoint, message: string, fix?: Fix) {
         this.#results.push(new AnalyserResult(`Non-compliant code at ${jp?.filename}@${jp?.line}:${jp?.column}.`, jp, message, fix))

@@ -8,31 +8,31 @@ export default class Section15_ControlFlow extends MISRAAnalyser {
         const labelMap = new Map();
         const exits = new Map<string, number>();
         const nodes = new Map<string, Joinpoint>();
-        if (this.rules.includes(3) || this.rules.includes(4)) {
+        if (this.rules.has(3) || this.rules.has(4)) {
             Query.searchFrom($startNode, LabelStmt).get().forEach(stmt => labelMap.set(stmt.decl.astId, stmt.astId));
         }
-        if (this.rules.includes(4)) {    
+        if (this.rules.has(4)) {    
             Section15_ControlFlow.addBreaksToExits($startNode, exits, nodes);
         }
 
         Query.searchFrom($startNode, GotoStmt).get().forEach(goto => {
-            if (this.rules.includes(1)) {
+            if (this.rules.has(1)) {
                 this.r15_1_noGoto(goto);
             }
 
-            if (this.rules.includes(2)) {
+            if (this.rules.has(2)) {
                 this.r15_2_noBackJumps(goto);
             }
 
-            if (this.rules.includes(3)) {
+            if (this.rules.has(3)) {
                 this.r15_3_gotoBlockEnclosed(goto, labelMap);
             }
-            if (this.rules.includes(4)) {
+            if (this.rules.has(4)) {
                 Section15_ControlFlow.addGotoToExits(goto, exits, nodes, labelMap);
             }
         }, this);
 
-        if (this.rules.includes(4)) {
+        if (this.rules.has(4)) {
             this.r15_4_loopSingleBreak(exits, nodes);
         }
     }
