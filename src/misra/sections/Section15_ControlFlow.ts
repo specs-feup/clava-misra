@@ -1,24 +1,48 @@
 import Query from "lara-js/api/weaver/Query.js";
 import { Program, FileJp, GotoStmt, Joinpoint, LabelStmt, Break } from "clava-js/api/Joinpoints.js";
-import MISRAAnalyser from "../MISRAAnalyser.js";
+import MISRAAnalyser, { T } from "../MISRAAnalyser.js";
+import ResultList from "clava-js/api/clava/analysis/ResultList.js";
 
 export default class Section15_ControlFlow extends MISRAAnalyser {
-    ruleMapper: Map<number, (jp: Program | FileJp) => void>;
+    protected processRules($startNode: T): void {
+        const labelMap = new Map();
+        const exits = new Map<string, number>();
+        const nodes = new Map<string, Joinpoint>();
+        if (this.rules.includes(3) || this.rules.includes(4)) {
+            Query.searchFrom($startNode, LabelStmt).get().forEach(stmt => labelMap.set(stmt.decl.astId, stmt.astId));
+        }
+        if (this.rules.includes(4)) {    
+            Section15_ControlFlow.addBreaksToExits($startNode, exits, nodes);
+        }
+
+        Query.searchFrom($startNode, GotoStmt).get().forEach(goto => {
+            if (this.rules.includes(1)) {
+                this.r15_1_noGoto(goto);
+            }
+
+            if (this.rules.includes(2)) {
+                this.r15_2_noBackJumps(goto);
+            }
+
+            if (this.rules.includes(3)) {
+                this.r15_3_gotoBlockEnclosed(goto, labelMap);
+            }
+            if (this.rules.includes(4)) {
+                Section15_ControlFlow.addGotoToExits(goto, exits, nodes, labelMap);
+            }
+        }, this);
+
+        if (this.rules.includes(4)) {
+            this.r15_4_loopSingleBreak(exits, nodes);
+        }
+    }
     
     constructor(rules: number[]) {
         super(rules);
-        this.ruleMapper = new Map([
-            [1, this.r15_1_noGoto.bind(this)],
-            [2, this.r15_2_noBackJumps.bind(this)],
-            [3, this.r15_3_gotoBlockEnclosed.bind(this)],
-            [4, this.r15_4_loopSingleBreak.bind(this)]
-        ]);
     }
 
-    private r15_1_noGoto($startNode: Joinpoint) {
-        Query.searchFrom($startNode, GotoStmt).get().forEach(goto => this.logMISRAError(goto, "goto statements should not be used."), this);
-
-        return [];
+    private r15_1_noGoto($goto: GotoStmt) {
+        this.logMISRAError($goto, "goto statements should not be used.")
     }
 
     private static isBeforeInCode(line1: number, col1: number, line2: number, col2: number): boolean {
@@ -26,37 +50,29 @@ export default class Section15_ControlFlow extends MISRAAnalyser {
         else return col1 < col2;
     }
 
-    private r15_2_noBackJumps($startNode: Joinpoint) {
-        for (const gotoStmt of Query.searchFrom($startNode, GotoStmt)) {
-            if (!Section15_ControlFlow.isBeforeInCode(gotoStmt.line, gotoStmt.column, gotoStmt.label.line, gotoStmt.label.column)) {
-                this.logMISRAError(gotoStmt, "Back jumps using goto statements are not allowed.");
-            } //maybe there is a better way?
+    private r15_2_noBackJumps($goto: GotoStmt) {
+        if (!Section15_ControlFlow.isBeforeInCode($goto.line, $goto.column, $goto.label.line, $goto.label.column)) {
+            this.logMISRAError($goto, "Back jumps using goto statements are not allowed.");
         }
     }
 
-    private r15_3_gotoBlockEnclosed($startNode: Joinpoint) { 
-        const labelMap = new Map();
-    
-        Query.searchFrom($startNode, LabelStmt).get().forEach(stmt => labelMap.set(stmt.decl.astId, stmt.astId));
-    
-        for (const gotoStmt of Query.searchFrom($startNode, GotoStmt)) {
-            let curr = gotoStmt.getAncestor("scope");
-            const ancestor = gotoStmt.getAncestor("function");
-            let error = true;
-            let temp;
-    
-            do {
-                temp = curr;
-                if (curr.children.map(n => n.astId).includes(labelMap.get(gotoStmt.label.astId))) {
-                    error = false;
-                    break;
-                }
-                curr = curr.getAncestor("scope");
-            } while (temp.parent.astId !== ancestor.astId);
-    
-            if (error) {
-                this.logMISRAError(gotoStmt, `Label ${gotoStmt.label.name} is not declared in a block enclosing the goto statement.`);
+    private r15_3_gotoBlockEnclosed($gotoStmt: GotoStmt, $labelMap: Map<string, string>) { 
+        let curr = $gotoStmt.getAncestor("scope");
+        const ancestor = $gotoStmt.getAncestor("function");
+        let error = true;
+        let temp;
+
+        do {
+            temp = curr;
+            if (curr.children.map(n => n.astId).includes($labelMap.get($gotoStmt.label.astId) ?? "")) {
+                error = false;
+                break;
             }
+            curr = curr.getAncestor("scope");
+        } while (temp.parent.astId !== ancestor.astId);
+
+        if (error) {
+            this.logMISRAError($gotoStmt, `Label ${$gotoStmt.label.name} is not declared in a block enclosing the goto statement.`);
         }
     }
 
@@ -73,41 +89,30 @@ export default class Section15_ControlFlow extends MISRAAnalyser {
         }
     }
     
-    private static addGotosToExits($startNode: Joinpoint, exits: Map<string, number>, nodes: Map<string, Joinpoint>, labels: Map<string, Joinpoint>) {
-        for (const goto of Query.searchFrom($startNode, GotoStmt)) {
-            let ancestor = goto.getAncestor("loop");
-            const labelAncestor = labels.get(goto.label.astId)?.getAncestor("loop");
-    
-            while (ancestor) {
-                if (labelAncestor?.astId === ancestor.astId) break;
-    
-    
-                if (ancestor && exits.has(ancestor.astId)) {
-                    exits.set(ancestor.astId, (exits.get(ancestor.astId) ?? 0) + 1);
-                }
-                else if (ancestor) {
-                    exits.set(ancestor.astId, 1);
-                    nodes.set(ancestor.astId, ancestor);
-                }
-    
-                ancestor = ancestor.getAncestor("loop");
+    private static addGotoToExits($gotoStmt: GotoStmt, exits: Map<string, number>, nodes: Map<string, Joinpoint>, labels: Map<string, Joinpoint>) {
+        let ancestor = $gotoStmt.getAncestor("loop");
+        const labelAncestor = labels.get($gotoStmt.label.astId)?.getAncestor("loop");
+
+        while (ancestor) {
+            if (labelAncestor?.astId === ancestor.astId) break;
+
+
+            if (ancestor && exits.has(ancestor.astId)) {
+                exits.set(ancestor.astId, (exits.get(ancestor.astId) ?? 0) + 1);
             }
+            else if (ancestor) {
+                exits.set(ancestor.astId, 1);
+                nodes.set(ancestor.astId, ancestor);
+            }
+
+            ancestor = ancestor.getAncestor("loop");
         }
     }
 
-    private r15_4_loopSingleBreak($startNode: Joinpoint) {
-        const labelMap = new Map();
-    
-        Query.searchFrom($startNode, LabelStmt).get().forEach(stmt => labelMap.set(stmt.decl.astId, stmt));
-    
-        const exits = new Map<string, number>();
-        const nodes = new Map<string, Joinpoint>();
-        Section15_ControlFlow.addBreaksToExits($startNode, exits, nodes);
-        Section15_ControlFlow.addGotosToExits($startNode, exits, nodes, labelMap);
-    
-        exits.forEach((v, k, m) => {
+    private r15_4_loopSingleBreak($exits: Map<string, number>, $nodes: Map<string, Joinpoint>) {
+        $exits.forEach((v, k) => {
             if (v > 1) {
-                this.logMISRAError(nodes.get(k) as Joinpoint, "Loops should have at most one break/goto statement.")
+                this.logMISRAError($nodes.get(k) as Joinpoint, "Loops should have at most one break/goto statement.")
             }
         }, this);
     }

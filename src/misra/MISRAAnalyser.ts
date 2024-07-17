@@ -5,12 +5,11 @@ import { FileJp, Joinpoint, Program } from "clava-js/api/Joinpoints.js";
 import ResultFormatManager from "clava-js/api/clava/analysis/ResultFormatManager.js"
 import Fix from "clava-js/api/clava/analysis/Fix.js";
 
-type T = Program | FileJp;
+export type T = Program | FileJp;
 
 export default abstract class MISRAAnalyser extends Analyser {
     #rules: number[];
     #resultFormatManager = new ResultFormatManager();
-    protected abstract ruleMapper: Map<number, (jp: T) => void>;
     #results: AnalyserResult[] = [];
 
     constructor(rules: number[]) {
@@ -24,16 +23,10 @@ export default abstract class MISRAAnalyser extends Analyser {
         this.#results.push(new AnalyserResult(`Non-compliant code at ${jp?.filename}@${jp?.line}:${jp?.column}.`, jp, message, fix))
     }
 
+    protected abstract processRules($startNode: T): void;
+
     analyse($startNode: T = Query.root() as Program) {
-        for (const rule of this.rules) {
-            const rulePass = this.ruleMapper.get(rule);
-            if (rulePass) {
-                rulePass($startNode);
-            }
-            else {
-                throw new Error("Analyser doesn't support rule number " + rule)
-            }
-        }
+        this.processRules($startNode);
 
         this.#resultFormatManager.setAnalyserResultList(this.#results);
         const fileResult = this.#resultFormatManager.formatResultList($startNode);
