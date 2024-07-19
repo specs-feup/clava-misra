@@ -19,6 +19,9 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
             if (this.rules.has(5)) {
                 this.r16_5_defaultFirstOrLast(switchStmt);
             }
+            if (this.rules.has(6)) {
+                this.r16_6_noTwoClauses(switchStmt);
+            }
             if (this.rules.has(7)) {
                 this.r16_7_noEssentialBooleanInSwitch(switchStmt);
             }
@@ -83,41 +86,31 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
         }
     }
 
-    private r16_6_noTwoClauses($startNode: Joinpoint) { //UNFINISHED
-        Query.searchFrom($startNode, Switch).get().forEach(switchStmt => {
-            let clauses = 0;
-            let foundStmt = false;
-            for (const child of switchStmt.children[1].children) {
-                if (child instanceof Case && foundStmt) {
-                    clauses++;
-                    foundStmt = false;
-                }
-                else if (child instanceof Break) {
-                    clauses++;
-                    foundStmt = false;
-                }
-                else {
-                    foundStmt = true;
-                }
+    private r16_6_noTwoClauses($switchStmt: Switch) { //UNFINISHED
+        let clauses = 0;
+        for (const child of $switchStmt.children[1].children) {
+            if (child instanceof Break) {
+                clauses++;
             }
+        }
 
-            if (clauses == 2) {
-                this.logMISRAError(switchStmt, "Switch statements should have more than two clauses.", new Fix(
-                    switchStmt,
-                    (switchStmt: Joinpoint) => {
-                        const switchJp = switchStmt as Switch;
-                        let firstClauseExpr: Expression | undefined = undefined;
-                        let secondClauseExpr: Expression | undefined = undefined;
-                        let firstClause: Joinpoint[] = [];
-                        let secondClause: Joinpoint[] = [];
-                        let currClauseExpr: Expression | undefined = undefined;
-                        let currClause: Joinpoint[] = [];
-                        let clauseHasDefault: boolean = false;
-                        let filledFirstClause: boolean = false;
-                        const newVar = ClavaJoinPoints.varDecl(switchJp.astId, switchJp.condition);
-                        switchJp.insertBefore(newVar.stmt);
-                        for (const child of switchStmt.children[1].children) {
-                             if (child instanceof Case) {
+        if (clauses == 2) {
+            this.logMISRAError($switchStmt, "Switch statements should have more than two clauses.", new Fix(
+                $switchStmt,
+                (switchStmt: Joinpoint) => {
+                    const switchJp = switchStmt as Switch;
+                    let firstClauseExpr: Expression | undefined = undefined;
+                    let secondClauseExpr: Expression | undefined = undefined;
+                    let firstClause: Joinpoint[] = [];
+                    let secondClause: Joinpoint[] = [];
+                    let currClauseExpr: Expression | undefined = undefined;
+                    let currClause: Joinpoint[] = [];
+                    let clauseHasDefault: boolean = false;
+                    let filledFirstClause: boolean = false;
+                    const newVar = ClavaJoinPoints.varDecl("switchToIf_" + switchJp.astId, switchJp.condition);
+                    switchJp.insertBefore(newVar.stmt);
+                    for (const child of switchStmt.children[1].children) {
+                            if (child instanceof Case) {
                                 let tempOp;
                                 if (child.isDefault) {
                                     clauseHasDefault = true;
@@ -130,8 +123,8 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
                                     tempOp = ClavaJoinPoints.binaryOp("l_or", ClavaJoinPoints.binaryOp("ge", newVar.varref(), child.values[0]), ClavaJoinPoints.binaryOp("le", newVar.varref(), child.values[1]));
                                 }
                                 currClauseExpr = currClauseExpr ? ClavaJoinPoints.binaryOp("l_or", currClauseExpr, tempOp) : tempOp;
-                             }
-                             else if (child instanceof Break) {
+                            }
+                            else if (child instanceof Break) {
                                 if (clauseHasDefault || filledFirstClause) {
                                     secondClause = currClause;
                                     secondClauseExpr = currClauseExpr;
@@ -139,22 +132,22 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
                                 else {
                                     firstClause = currClause;
                                     firstClauseExpr = currClauseExpr;
+                                    filledFirstClause = true;
                                 }
                                 clauseHasDefault = false;
                                 currClause = [];
                                 currClauseExpr = undefined;
-                             }
-                             else {
+                            }
+                            else {
                                 currClause.push(child);
-                             }
-                        }
-
-                        const elseStmt = secondClauseExpr ? ClavaJoinPoints.ifStmt(secondClauseExpr, ClavaJoinPoints.scope(...secondClause)) : ClavaJoinPoints.scope(...secondClause);
-                        switchJp.replaceWith(ClavaJoinPoints.ifStmt(firstClauseExpr ?? "", ClavaJoinPoints.scope(...firstClause), elseStmt));
+                            }
                     }
-                ));
-            }
-        }, this);
+
+                    const elseStmt = secondClauseExpr ? ClavaJoinPoints.ifStmt(secondClauseExpr, ClavaJoinPoints.scope(...secondClause)) : ClavaJoinPoints.scope(...secondClause);
+                    switchJp.replaceWith(ClavaJoinPoints.ifStmt(firstClauseExpr ?? "", ClavaJoinPoints.scope(...firstClause), elseStmt));
+                }
+            ));
+        }
     }
 
     private r16_7_noEssentialBooleanInSwitch($switchStmt: Switch) {
