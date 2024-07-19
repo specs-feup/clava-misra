@@ -1,6 +1,8 @@
 import Query from "lara-js/api/weaver/Query.js";
 import { Program, FileJp, TernaryOp, UnaryOp, BinaryOp, Joinpoint, Cast, BuiltinType, Type, Expression, IntLiteral, EnumType, QualType, ReturnStmt, FunctionJp, Call, Op, ParenExpr, Varref } from "clava-js/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
+import Fix from "clava-js/api/clava/analysis/Fix.js";
+import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
 
 export enum EssentialTypes {
     UNSIGNED = "unsigned",
@@ -80,16 +82,19 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
         return this.getEssentialType($expr.type);
     }
 
-    private restrictOperand($expr: Expression, $restrictedType: EssentialTypes, $baseExpr: Expression) {
+    private restrictOperand($expr: Expression, $restrictedType: EssentialTypes, $baseExpr: Expression, $castTo?: BuiltinType) {
         const et = Section10_EssentialTypeModel.getExprEssentialType($expr);
         if (et === $restrictedType) {
-            this.logMISRAError($baseExpr, `Operand ${$expr.code} of expression ${$baseExpr.code} must not have essentially ${et} type.`);
+            const fix = $castTo ? new Fix($expr, ($jp) => {
+                $jp.replaceWith(ClavaJoinPoints.cStyleCast($castTo, $jp as Expression));
+            }) : undefined;
+            this.logMISRAError($baseExpr, `Operand ${$expr.code} of expression ${$baseExpr.code} must not have essentially ${et} type.`, fix);
         }
     }
 
-    private restrictOperandList($expr: Expression, $restrictedTypes: EssentialTypes[], $baseExpr: Expression) {
+    private restrictOperandList($expr: Expression, $restrictedTypes: EssentialTypes[], $baseExpr: Expression, $castTo?: BuiltinType) {
         for (const type of $restrictedTypes) {
-            this.restrictOperand($expr, type, $baseExpr);
+            this.restrictOperand($expr, type, $baseExpr, $castTo);
         }
     }
     
