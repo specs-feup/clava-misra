@@ -7,6 +7,7 @@ import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
 export default class Section16_SwitchStatements extends MISRAAnalyser {
     protected processRules($startNode: T): void {
         Query.searchFrom($startNode, Switch).get().forEach(switchStmt => {
+            let valid = false;
             if (this.rules.has(1)) {
                 this.r16_1_16_3_wellFormedSwitch(switchStmt);
             }
@@ -19,10 +20,10 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
             if (this.rules.has(5)) {
                 this.r16_5_defaultFirstOrLast(switchStmt);
             }
-            if (this.rules.has(6)) {
+            if (valid && this.rules.has(6)) {
                 this.r16_6_noTwoClauses(switchStmt);
             }
-            if (this.rules.has(7)) {
+            if (valid && this.rules.has(7)) {
                 this.r16_7_noEssentialBooleanInSwitch(switchStmt);
             }
         }, this);
@@ -36,8 +37,9 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
         super(rules);
     }
 
-    private r16_1_16_3_wellFormedSwitch($switchStmt: Switch) {
+    private r16_1_16_3_wellFormedSwitch($switchStmt: Switch): boolean {
         let foundStmt = false;
+        let valid = true;
         let first = true;
         for (const child of $switchStmt.children[1].children) {
             if (child instanceof Break) {;
@@ -52,11 +54,15 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
 
             if (foundStmt && child.instanceOf("case")) {
                 this.logMISRAError(child, `A break is missing before ${child.code}`);
+                valid = false;
             }
         }
         if (!$switchStmt.children[1].lastChild.instanceOf("break")) {
             this.logMISRAError($switchStmt.children[1].lastChild, "A break is missing at the end of the switch statement.");
+            valid = false;
         } 
+
+        return valid;
     }
 
     private r16_2_topLevelSwitchLabels($switchStmt: Switch) {
