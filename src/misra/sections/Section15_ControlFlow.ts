@@ -1,5 +1,5 @@
 import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, GotoStmt, Joinpoint, LabelStmt, Break } from "clava-js/api/Joinpoints.js";
+import { Program, FileJp, GotoStmt, Joinpoint, LabelStmt, Break, Scope, Switch, Case } from "clava-js/api/Joinpoints.js";
 import MISRAAnalyser, { T } from "../MISRAAnalyser.js";
 import ResultList from "clava-js/api/clava/analysis/ResultList.js";
 
@@ -64,10 +64,32 @@ export default class Section15_ControlFlow extends MISRAAnalyser {
 
         do {
             temp = curr;
-            if (curr.children.map(n => n.astId).includes($labelMap.get($gotoStmt.label.astId) ?? "")) {
+
+            if (curr.parent instanceof Switch) {
+                let foundPart = false;
+                for (const child of curr.children[1].children) {
+                    if (child instanceof Case) {
+                        foundPart = false;
+                    }
+                    else if (child.contains($gotoStmt) || child.astId === ($labelMap.get($gotoStmt.label.astId) ?? "")) {
+                        if (foundPart) {
+                            error = false;
+                            break;
+                        }
+                        else {
+                            foundPart = true;
+                        }
+                    }
+                }
+            }
+            else if (curr instanceof Scope && curr.children.map(n => n.astId).includes($labelMap.get($gotoStmt.label.astId) ?? "")) {
                 error = false;
+            }
+
+            if (!error) {
                 break;
             }
+
             curr = curr.getAncestor("scope");
         } while (temp.parent.astId !== ancestor.astId);
 
