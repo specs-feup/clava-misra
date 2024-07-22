@@ -1,6 +1,8 @@
 #include "lib.h"
 
 int main(int argc, char *argv[]) {
-    foo();
+    long a;
+    short b,c;
+    a = b + c;
     return 0;
 }
