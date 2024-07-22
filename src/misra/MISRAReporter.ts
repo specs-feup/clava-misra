@@ -27,8 +27,6 @@ export default class MISRAReporter {
         });
 
         $pass.setPreprocessing(this._preprocessing);
-        if ($pass.matchJoinpoint($jp)) {
-            $pass.transformJoinpoint($jp);
-        }
+        $pass.apply($jp);
     }
 }

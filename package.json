@@ -15,7 +15,8 @@
     "test:watch": "npm run test -- --watch"
   },
   "dependencies": {
-    "clava-js": "^0.0.1"
+    "clava-js": "^0.0.1",
+    "lara-js": "^0.0.1"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
