@@ -1,5 +1,6 @@
 import { Joinpoint, TypedefNameDecl } from "clava-js/api/Joinpoints.js";
 import MISRAPass from "./MISRAPass.js";
+import Query from "lara-js/api/weaver/Query.js";
 
 export enum PreprocessingReqs {
     TYPEDEF_DECLS = "typedefDecls"
@@ -16,7 +17,7 @@ export default class MISRAReporter {
     ]);
 
     private initTypedefs(): void {
-        this._preprocessing.typedefDecls = [];
+        this._preprocessing.typedefDecls = Query.search(TypedefNameDecl).get();
     }
 
     applyPass($pass: MISRAPass, $jp: Joinpoint) {
