@@ -2,13 +2,24 @@ import { Joinpoint } from "clava-js/api/Joinpoints.js";
 import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
 import SimplePass from "lara-js/api/lara/pass/SimplePass.js";
 import PassResult from "lara-js/api/lara/pass/results/PassResult.js";
+import { Preprocessing, PreprocessingReqs } from "./MISRAReporter.js";
 
 export default abstract class MISRAPass extends SimplePass {
     protected _ruleMapper: Map<number, ($jp: Joinpoint) => void> = new Map();
     private _executedRules: Map<number, boolean> = new Map();
     private _rules: number[];
+    private _preprocessing: Preprocessing | undefined;
+    protected abstract _preprocessingReqs: PreprocessingReqs[];
+
+    get preprocessingReqs() {
+        return this._preprocessingReqs;
+    }
 
     abstract initRuleMapper(): void;
+
+    setPreprocessing($preprocessing: Preprocessing): void {
+        this._preprocessing = $preprocessing;
+    }
 
     private resetRules(): void {
         this._executedRules.forEach(($value: boolean, $key: number) => {
@@ -35,7 +46,7 @@ export default abstract class MISRAPass extends SimplePass {
         this._executedRules.set($id, true);
     }
 
-    private dependsOn($id: number, $jp: Joinpoint) {
+    protected dependsOn($id: number, $jp: Joinpoint) {
         if (this._executedRules.get($id) === false) {
             this.executeRule($id, $jp);
         }
@@ -44,6 +55,10 @@ export default abstract class MISRAPass extends SimplePass {
     abstract matchJoinpoint($jp: LaraJoinPoint): boolean;
 
     transformJoinpoint($jp: LaraJoinPoint): PassResult {
+        if (!this._preprocessing) {
+            throw new Error("Preprocessing object has not been set.");
+        }
+
         this.resetRules();
         this._rules.forEach($id => this.executeRule($id, $jp as Joinpoint), this);
 
