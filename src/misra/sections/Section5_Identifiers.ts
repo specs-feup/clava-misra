@@ -54,7 +54,10 @@ export default class Section5_Identifiers extends MISRAAnalyser {
 
         for (const typedef of Query.searchFrom($startNode, TypedefDecl)) {
             if (typedefs.has(typedef.name)) {
-                this.logMISRAError(typedef, "Typedef names must be unique across all translation units.");
+                this.logMISRAError(typedef, "Typedef names must be unique across all translation units.", new Fix(typedef, jp => {
+                    const typedefJp = jp as TypedefDecl;
+                    typedefJp.name = typedef.name + "_" + typedefJp.astId;
+                }));
             }
             else {
                 typedefs.add(typedef.name);
@@ -69,7 +72,10 @@ export default class Section5_Identifiers extends MISRAAnalyser {
                 }
             }
             if (typedefs.has(decl.name)) {
-                this.logMISRAError(decl, `${decl.name} is also the name of a typedef. Typedef identifiers must not be reused.`);
+                this.logMISRAError(decl, `${decl.name} is also the name of a typedef. Typedef identifiers must not be reused.`, new Fix(decl, jp => {
+                    const declJp = jp as NamedDecl;
+                    declJp.name = declJp.name + "_" + declJp.astId;
+                }));
             }
         }, this);
     }
@@ -108,7 +114,10 @@ export default class Section5_Identifiers extends MISRAAnalyser {
             }
             if (decl.type instanceof TagType) return;
             if (tags.has(decl.name)) {
-                this.logMISRAError(decl, `${decl.name} is also the name of a tag. Tag identifiers must not be reused.`);
+                this.logMISRAError(decl, `${decl.name} is also the name of a tag. Tag identifiers must not be reused.`, new Fix(decl, jp => {
+                    const declJp = jp as NamedDecl;
+                    declJp.name = declJp.name + "_" + declJp.astId;
+                }));
             }
         }, this);
     }

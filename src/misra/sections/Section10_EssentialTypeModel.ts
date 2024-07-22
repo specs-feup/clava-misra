@@ -267,17 +267,21 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
         return /(add)|(sub)|(mul)|(div)|(rem)|(shl)|(shr)|(l_and)|(l_or)|(xor)/.test($op.kind);
     }
 
-    private static isCompositeExpr($expr: Expression): boolean {
+    private static isCompositeExpr($expr: Expression): Expression | undefined {
         if ($expr instanceof ParenExpr) {
             return this.isCompositeExpr($expr.subExpr);
         }
         else if ($expr instanceof BinaryOp) {
-            return this.isCompositeBinaryExpr($expr);
+            if (this.isCompositeBinaryExpr($expr)) {
+                return $expr;
+            }
         }
         else if ($expr instanceof TernaryOp) {
-            return true;
+            if (this.isCompositeExpr($expr.trueExpr) || this.isCompositeExpr($expr.falseExpr)) {
+                return $expr;
+            }
         }
-        else return false;
+        else return undefined;
     }
 
     private static compositeExprWidth($op: Expression): number {
@@ -297,25 +301,75 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
         else return $op.bitWidth;
     }
 
+    private static transformBinaryOp($expr: BinaryOp, $type: Type) {
+        $expr.left.replaceWith(ClavaJoinPoints.cStyleCast($type, $expr.left));
+    }
+
+    private static transformTernaryOp($expr: TernaryOp, $type: Type, $bitWidth: number) {
+        const trueExpr = this.isCompositeExpr($expr.trueExpr);
+        const falseExpr = this.isCompositeExpr($expr.falseExpr);
+        if (trueExpr && this.compositeExprWidth(trueExpr) < $bitWidth) {
+            if (trueExpr instanceof TernaryOp) this.transformTernaryOp(trueExpr, $type, $bitWidth);
+            else if (trueExpr instanceof BinaryOp) this.transformBinaryOp(trueExpr, $type);
+        }
+
+        if (falseExpr && this.compositeExprWidth(falseExpr) < $type.bitWidth) {
+            if (falseExpr instanceof TernaryOp) this.transformTernaryOp(falseExpr, $type, $bitWidth);
+            else if (falseExpr instanceof BinaryOp) this.transformBinaryOp(falseExpr, $type);
+        }
+    }
+
     private r10_6_noWiderCompositeExprAssignments($startNode: Joinpoint) { //unfinished for rets and params
-        Query.searchFrom($startNode, Op, {kind: /(add)|(sub)|(mul)|(div)|(rem)|(shl)|(shr)|(l_and)|(l_or)|(xor)/}).get().forEach(op => {
-            const parent = op.parent;
-            if (parent instanceof BinaryOp && parent.kind === "assign") {
-                if (Section10_EssentialTypeModel.compositeExprWidth(op) < parent.left.bitWidth) {
-                    this.logMISRAError(op, "A composite expression must not be assigned to a value with wider type.");
+        Query.searchFrom($startNode, Expression).get().forEach(expr => {
+            const compositeExpr = Section10_EssentialTypeModel.isCompositeExpr(expr);
+            if (compositeExpr) {
+                const parent = expr.parent;
+                if (parent instanceof BinaryOp && parent.kind === "assign") {
+                    if (Section10_EssentialTypeModel.compositeExprWidth(compositeExpr) < parent.left.bitWidth) {
+                        this.logMISRAError(compositeExpr, "A composite expression must not be assigned to a value with wider type.", new Fix(compositeExpr, op => {
+                            if (op instanceof BinaryOp) {
+                                Section10_EssentialTypeModel.transformBinaryOp(op, op.parent.type);
+                            }
+                            else if (op instanceof TernaryOp) {
+                                op.replaceWith(ClavaJoinPoints.cStyleCast(op.parent.type, op));
+                            }
+                        }));
+                    }
                 }
             }
         }, this);
+        /*Query.searchFrom($startNode, Op, {kind: /(add)|(sub)|(mul)|(div)|(rem)|(shl)|(shr)|(l_and)|(l_or)|(xor)/}).get().forEach(op => {
+            const parent = op.parent;
+            if (parent instanceof BinaryOp && parent.kind === "assign") {
+                if (Section10_EssentialTypeModel.compositeExprWidth(op) < parent.left.bitWidth) {
+                    this.logMISRAError(op, "A composite expression must not be assigned to a value with wider type.", new Fix(op, op => {
+                        const opJp = op as BinaryOp;
+                        opJp.left.replaceWith(ClavaJoinPoints.cStyleCast(opJp.parent.type, opJp.left));
+                    }));
+                }
+            }
+        }, this);*/
     }
 
     private r10_8_noWiderCompositeCasts($startNode: Joinpoint) {
         Query.searchFrom($startNode, Cast).get().forEach(cast => {
-            if (Section10_EssentialTypeModel.isCompositeExpr(cast.subExpr)) {
+            const compositeExpr = Section10_EssentialTypeModel.isCompositeExpr(cast.subExpr);
+            if (compositeExpr) {
                 if (Section10_EssentialTypeModel.getEssentialType(cast.fromType) !== Section10_EssentialTypeModel.getEssentialType(cast.toType)) {
                     this.logMISRAError(cast, `Composite expression ${cast.subExpr.code} cannot be cast to ${cast.toType.code}, since it has a different essential type category.`);
                 }
-                else if (cast.bitWidth > Section10_EssentialTypeModel.compositeExprWidth(cast.subExpr)) {
-                    this.logMISRAError(cast, `Composite expression ${cast.subExpr.code} cannot be cast to ${cast.toType.code} since it is a wider type.`)
+                else if (cast.bitWidth > Section10_EssentialTypeModel.compositeExprWidth(compositeExpr)) {
+                    this.logMISRAError(compositeExpr, `Composite expression ${cast.subExpr.code} cannot be cast to ${cast.toType.code} since it is a wider type.`, new Fix(cast, cast => {
+                        const castJp = cast as Cast;
+                        const compositeExpr = Section10_EssentialTypeModel.isCompositeExpr(castJp.subExpr);
+                        if (compositeExpr instanceof BinaryOp) {
+                            compositeExpr.left.replaceWith(ClavaJoinPoints.cStyleCast(cast.type, compositeExpr.left));
+                            cast.replaceWith(compositeExpr);
+                        }
+                        else if (compositeExpr instanceof TernaryOp) {
+                            Section10_EssentialTypeModel.transformTernaryOp(compositeExpr, cast.type, cast.bitWidth);
+                        }
+                    }));
                 }
             }
         });
