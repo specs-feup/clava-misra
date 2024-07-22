@@ -3,12 +3,16 @@ import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
 import SimplePass from "lara-js/api/lara/pass/SimplePass.js";
 import PassResult from "lara-js/api/lara/pass/results/PassResult.js";
 import { Preprocessing, PreprocessingReqs } from "./MISRAReporter.js";
+import MISRAPassResult from "./MISRAPassResult.js";
+import Fix from "clava-js/api/clava/analysis/Fix.js";
 
 export default abstract class MISRAPass extends SimplePass {
     protected _ruleMapper: Map<number, ($jp: Joinpoint) => void> = new Map();
     private _executedRules: Map<number, boolean> = new Map();
     private _rules: number[];
+    private _currentRule: number = -1;
     private _preprocessing: Preprocessing | undefined;
+    private _result: MISRAPassResult | undefined;
     protected abstract _preprocessingReqs: PreprocessingReqs[];
 
     get preprocessingReqs() {
@@ -19,6 +23,10 @@ export default abstract class MISRAPass extends SimplePass {
 
     setPreprocessing($preprocessing: Preprocessing): void {
         this._preprocessing = $preprocessing;
+    }
+
+    protected logMISRAError(message: string, fix?: Fix) {
+        this._result?.addReport({rule: this._currentRule, message, fix});
     }
 
     private resetRules(): void {
@@ -54,15 +62,19 @@ export default abstract class MISRAPass extends SimplePass {
 
     abstract matchJoinpoint($jp: LaraJoinPoint): boolean;
 
-    transformJoinpoint($jp: LaraJoinPoint): PassResult {
+    transformJoinpoint($jp: LaraJoinPoint): MISRAPassResult {
         if (!this._preprocessing) {
             throw new Error("Preprocessing object has not been set.");
         }
 
+        this._result = new MISRAPassResult(this, $jp);
         this.resetRules();
-        this._rules.forEach($id => this.executeRule($id, $jp as Joinpoint), this);
+        this._rules.forEach($id => {
+            this._currentRule = $id;
+            this.executeRule($id, $jp as Joinpoint);
+        }, this);
 
-        return new PassResult(this, $jp);
+        return this._result;
     }
 
     protected abstract _name: string;

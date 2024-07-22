@@ -97,7 +97,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
             const fix = $castTo ? new Fix($expr, ($jp) => {
                 $jp.replaceWith(ClavaJoinPoints.cStyleCast($castTo, $jp as Expression));
             }) : undefined;
-            //this.logMISRAError($baseExpr, `Operand ${$expr.code} of expression ${$baseExpr.code} must not have essentially ${et} type.`, fix);
+            this.logMISRAError(`Operand ${$expr.code} of expression ${$baseExpr.code} must not have essentially ${et} type.`, fix);
         }
     }
 
@@ -168,7 +168,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
 
         if ($startNode.kind === "add") {
             if (S10_EssentialTypePass.getExprEssentialType($startNode.left).category === EssentialTypes.CHAR && S10_EssentialTypePass.getExprEssentialType($startNode.right).category === EssentialTypes.CHAR) {
-                //this.logMISRAError(bOp, `Both operands of addition ${bOp.code} have essentially character type.`);
+                this.logMISRAError(`Both operands of addition ${$startNode.code} have essentially character type.`);
                 return;
             }
         
@@ -181,7 +181,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
             }
 
             if (otherType && !S10_EssentialTypePass.isInteger(otherType.category)) {
-                //this.logMISRAError(bOp, `One operand of addition ${bOp.code} has essentially character type, so the other one must have either essentially signed or unsigned type.`);
+                this.logMISRAError(`One operand of addition ${$startNode.code} has essentially character type, so the other one must have either essentially signed or unsigned type.`);
                 return;
             }
         }
@@ -189,12 +189,12 @@ export default class S10_EssentialTypePass extends MISRAPass {
             if (S10_EssentialTypePass.getExprEssentialType($startNode.left).category === EssentialTypes.CHAR) {
                 const rightType = S10_EssentialTypePass.getExprEssentialType($startNode.right);
                 if (!([EssentialTypes.CHAR, EssentialTypes.SIGNED, EssentialTypes.UNKOWN].some(et => et === rightType.category))) {
-                    //this.logMISRAError(bOp, `Left operand of subtraction ${bOp.code} has essentially character type, so the RHS must be essentially signed, unsigned, or char.`);
+                    this.logMISRAError(`Left operand of subtraction ${$startNode.code} has essentially character type, so the RHS must be essentially signed, unsigned, or char.`);
                     return;
                 }
             }
             else if (S10_EssentialTypePass.getExprEssentialType($startNode.right).category === EssentialTypes.CHAR) {
-                //this.logMISRAError(bOp, `Right operand of subtraction ${$startNode.code} can only be of essentially character type if the LHS is too.`);
+                this.logMISRAError(`Right operand of subtraction ${$startNode.code} can only be of essentially character type if the LHS is too.`);
                 return;
             }
         }
@@ -213,10 +213,10 @@ export default class S10_EssentialTypePass extends MISRAPass {
     private r10_3_noInvalidAssignments($startNode: Joinpoint) { //not working for decls
         if ($startNode instanceof BinaryOp && $startNode.kind === "assign") {
             if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getExprEssentialType($startNode.left), S10_EssentialTypePass.getExprEssentialType($startNode.right))) {
-                //this.logMISRAError(bOp, `Value ${bOp.right.code} cannot be assigned to ${bOp.left.code}, since it has a different essential type category.`);
+                this.logMISRAError(`Value ${$startNode.right.code} cannot be assigned to ${$startNode.left.code}, since it has a different essential type category.`);
             }
             else if ($startNode.left.bitWidth < $startNode.right.bitWidth) {
-                //this.logMISRAError(bOp, `Value ${bOp.right.code} cannot be assigned to ${bOp.left.code} since it has a narrower type.`);
+                this.logMISRAError(`Value ${$startNode.right.code} cannot be assigned to ${$startNode.left.code} since it has a narrower type.`);
             }
         }
         else if ($startNode instanceof ReturnStmt) {
@@ -224,20 +224,20 @@ export default class S10_EssentialTypePass extends MISRAPass {
             console.log($startNode.returnExpr.code, $startNode.returnExpr.bitWidth);
             console.log(fun.bitWidth);
             if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getExprEssentialType($startNode.returnExpr), S10_EssentialTypePass.getEssentialType(fun.returnType))) {
-                //this.logMISRAError(ret, `Value ${ret.returnExpr.code} cannot be returned by ${fun.signature}, since it has a different essential type category.`);
+                this.logMISRAError(`Value ${$startNode.returnExpr.code} cannot be returned by ${fun.signature}, since it has a different essential type category.`);
             }
             else if (fun.bitWidth < $startNode.returnExpr.bitWidth) {
-                //this.logMISRAError(ret, `Value ${ret.returnExpr.code} cannot be returned by ${fun.signature} since it has a narrower type.`);
+                this.logMISRAError(`Value ${$startNode.returnExpr.code} cannot be returned by ${fun.signature} since it has a narrower type.`);
             }
         }
         else if ($startNode instanceof Call) {
             const funParams = $startNode.directCallee.params;
             for (let i = 0; i < funParams.length; i++) {
                 if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getEssentialType(funParams[i].type), S10_EssentialTypePass.getEssentialType($startNode.argList[i].type))) {
-                    //this.logMISRAError(call, `Value ${call.argList[i].code} cannot be assigned to parameter ${funParams[i].code}, since it has a different essential type category.`);
+                    this.logMISRAError(`Value ${$startNode.argList[i].code} cannot be assigned to parameter ${funParams[i].code}, since it has a different essential type category.`);
                 }
                 else if (funParams[i].bitWidth < $startNode.argList[i].bitWidth) {
-                    //this.logMISRAError(call, `Value ${call.argList[i].code} cannot be assigned to parameter ${funParams[i].code}, since it has a narrower type.`);
+                    this.logMISRAError(`Value ${$startNode.argList[i].code} cannot be assigned to parameter ${funParams[i].code}, since it has a narrower type.`);
                 }
             }
         }
@@ -267,19 +267,19 @@ export default class S10_EssentialTypePass extends MISRAPass {
         }
 
         if (toEssentialType.category === EssentialTypes.BOOL && !S10_EssentialTypePass.checkBoolSource($startNode.subExpr)) {
-            //this.logMISRAError(cast, "Only essentially boolean values, or the integer constants 0 or 1, may be cast to an essentially boolean type.");
+            this.logMISRAError("Only essentially boolean values, or the integer constants 0 or 1, may be cast to an essentially boolean type.");
         }
         else if (toEssentialType.category === EssentialTypes.ENUM && fromEssentialType.category === EssentialTypes.ENUM && toEssentialType.enumName !== fromEssentialType.enumName) {
-            //this.logMISRAError(cast, "Only essentially enum values of the same enum may be cast to an essentially enum type.");
+            this.logMISRAError("Only essentially enum values of the same enum may be cast to an essentially enum type.");
         }
         else if (toEssentialType.category === EssentialTypes.SIGNED && fromEssentialType.category === EssentialTypes.BOOL) {
-            //this.logMISRAError(cast, "Essentially boolean values should not be cast to an essentially signed type.");
+            this.logMISRAError("Essentially boolean values should not be cast to an essentially signed type.");
         }
         else if (toEssentialType.category === EssentialTypes.UNSIGNED && fromEssentialType.category === EssentialTypes.BOOL) {
-            //this.logMISRAError(cast, "Essentially boolean values should not be cast to an essentially unsigned type.");
+            this.logMISRAError("Essentially boolean values should not be cast to an essentially unsigned type.");
         }
         else if (toEssentialType.category === EssentialTypes.FLOAT && fromEssentialType.category === EssentialTypes.BOOL) {
-            //this.logMISRAError(cast, "Essentially boolean values should not be cast to an essentially floating type.");
+            this.logMISRAError("Essentially boolean values should not be cast to an essentially floating type.");
         }
     }
 
@@ -347,14 +347,14 @@ export default class S10_EssentialTypePass extends MISRAPass {
             const parent = $startNode.parent;
             if (parent instanceof BinaryOp && parent.kind === "assign") {
                 if (S10_EssentialTypePass.compositeExprWidth(compositeExpr) < parent.left.bitWidth) {
-                    /*this.logMISRAError(compositeExpr, "A composite expression must not be assigned to a value with wider type.", new Fix(compositeExpr, op => {
+                    this.logMISRAError("A composite expression must not be assigned to a value with wider type.", new Fix(compositeExpr, op => {
                         if (op instanceof BinaryOp) {
-                            Section10_EssentialTypeModel.transformBinaryOp(op, op.parent.type);
+                            S10_EssentialTypePass.transformBinaryOp(op, op.parent.type);
                         }
                         else if (op instanceof TernaryOp) {
                             op.replaceWith(ClavaJoinPoints.cStyleCast(op.parent.type, op));
                         }
-                    }));*/
+                    }));
                 }
             }
         }
@@ -366,20 +366,20 @@ export default class S10_EssentialTypePass extends MISRAPass {
         const compositeExpr = S10_EssentialTypePass.isCompositeExpr($startNode.subExpr);
         if (compositeExpr) {
             if (S10_EssentialTypePass.getEssentialType($startNode.fromType) !== S10_EssentialTypePass.getEssentialType($startNode.toType)) {
-                //this.logMISRAError(cast, `Composite expression ${cast.subExpr.code} cannot be cast to ${cast.toType.code}, since it has a different essential type category.`);
+                this.logMISRAError(`Composite expression ${$startNode.subExpr.code} cannot be cast to ${$startNode.toType.code}, since it has a different essential type category.`);
             }
             else if ($startNode.bitWidth > S10_EssentialTypePass.compositeExprWidth(compositeExpr)) {
-                /*this.logMISRAError(compositeExpr, `Composite expression ${cast.subExpr.code} cannot be cast to ${cast.toType.code} since it is a wider type.`, new Fix(cast, cast => {
+                this.logMISRAError(`Composite expression ${$startNode.subExpr.code} cannot be cast to ${$startNode.toType.code} since it is a wider type.`, new Fix($startNode, cast => {
                     const castJp = cast as Cast;
-                    const compositeExpr = Section10_EssentialTypeModel.isCompositeExpr(castJp.subExpr);
+                    const compositeExpr = S10_EssentialTypePass.isCompositeExpr(castJp.subExpr);
                     if (compositeExpr instanceof BinaryOp) {
                         compositeExpr.left.replaceWith(ClavaJoinPoints.cStyleCast(cast.type, compositeExpr.left));
                         cast.replaceWith(compositeExpr);
                     }
                     else if (compositeExpr instanceof TernaryOp) {
-                        Section10_EssentialTypeModel.transformTernaryOp(compositeExpr, cast.type, cast.bitWidth);
+                        S10_EssentialTypePass.transformTernaryOp(compositeExpr, cast.type, cast.bitWidth);
                     }
-                }));*/
+                }));
             }
         }
     }
