@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "run": "clava-js dist/main.js -- clang CxxSources/",
+    "run2": "clava-js classic dist/main.js -p  CxxSources/ -pi ",    
     "build": "tsc",
     "build:watch": "tsc --watch",
     "lint": "eslint .",
