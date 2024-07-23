@@ -1,7 +1,7 @@
 import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint";
 import MISRAPass from "../MISRAPass";
 import { PreprocessingReqs } from "../MISRAReporter";
-import { FileJp, FunctionJp, Joinpoint, StorageClass, Vardecl } from "clava-js/api/Joinpoints";
+import { Class, FileJp, FunctionJp, Joinpoint, NamedDecl, StorageClass, TypedefDecl, TypedefNameDecl, Vardecl } from "clava-js/api/Joinpoints";
 import Fix from "clava-js/api/clava/analysis/Fix";
 
 export default class S5_IdentifierPass extends MISRAPass {
@@ -31,6 +31,34 @@ export default class S5_IdentifierPass extends MISRAPass {
             this.logMISRAError(`Identifier ${$startNode.name} is not distinct from other external identifiers.`, new Fix($startNode, $jp => {
                 ($jp as FunctionJp || Vardecl).name = "a_" + ($jp as FunctionJp || Vardecl).name;
             }));
+        }
+    }
+
+    private r5_6_uniqueTypedefs($startNode: Joinpoint) {
+        if (!this._preprocessing?.typedefDecls) {
+            throw new Error("Preprocessing has not been initialized properly.");
+        }
+        if ($startNode instanceof NamedDecl && !($startNode instanceof TypedefNameDecl)) {
+            if ($startNode instanceof Class) {
+                const typedefChildren = $startNode.getDescendants("typedefDecl") as TypedefDecl[];
+                for (const child of typedefChildren) {
+                    if ($startNode.name === child.name) return;
+                }
+            }
+            if (this._preprocessing.typedefDecls.some(jp => jp.name === $startNode.name)) {
+                this.logMISRAError(`${$startNode.name} is also the name of a typedef. Typedef identifiers must not be reused.`, new Fix($startNode, jp => {
+                    const declJp = jp as NamedDecl;
+                    declJp.name = declJp.name + "_" + declJp.astId;
+                }));
+            }
+        }
+        else if ($startNode instanceof TypedefNameDecl) {
+            if (this._preprocessing.typedefDecls.filter(jp => jp.astId !== $startNode.astId).some(jp => jp.name === $startNode.name)) {
+                this.logMISRAError("Typedef names must be unique across all translation units.", new Fix($startNode, jp => {
+                    const typedefJp = jp as TypedefDecl;
+                    typedefJp.name = typedefJp.name + "_" + typedefJp.astId;
+                }));
+            }
         }
     }
 
