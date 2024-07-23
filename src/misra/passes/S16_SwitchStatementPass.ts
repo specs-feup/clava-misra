@@ -1,8 +1,9 @@
 import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint";
 import MISRAPass from "../MISRAPass";
 import { PreprocessingReqs } from "../MISRAReporter";
-import { Break, Case, Expression, Joinpoint, Switch } from "clava-js/api/Joinpoints";
+import { BinaryOp, Break, BuiltinType, Case, Expression, Joinpoint, Switch } from "clava-js/api/Joinpoints";
 import Fix from "clava-js/api/clava/analysis/Fix";
+import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints";
 
 export default class S16_SwitchStatementPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];
@@ -14,6 +15,7 @@ export default class S16_SwitchStatementPass extends MISRAPass {
             [2, this.r16_2_topLevelSwitchLabels.bind(this)],
             [4, this.r16_4_switchHasDefault.bind(this)],
             [5, this.r16_5_defaultFirstOrLast.bind(this)],
+            [6, this.r16_6_noTwoClauses.bind(this)],
             [7, this.r16_7_noEssentialBooleanInSwitch.bind(this)]
         ]);
     }
@@ -85,41 +87,76 @@ export default class S16_SwitchStatementPass extends MISRAPass {
         if (this._wellFormedSwitch === false) return; 
 
         let clauses = 0;
-        let foundStmt = false;
         for (const child of $startNode.children[1].children) {
-            if (child instanceof Case && foundStmt) {
+            if (child instanceof Break) {
                 clauses++;
-                foundStmt = false;
-            }
-            else if (child instanceof Break) {
-                clauses++;
-                foundStmt = false;
-            }
-            else {
-                foundStmt = true;
             }
         }
 
-        if (clauses == 2) {
+        if (clauses <= 2) {
             this.logMISRAError("Switch statements should have more than two clauses.", new Fix(
                 $startNode,
                 (switchStmt: Joinpoint) => {
-                    let firstClauseExpr: Expression;
-                    let secondClauseExpr: Expression;
+                    const switchJp = switchStmt as Switch;
+                    let firstClauseExpr: Expression | undefined = undefined;
+                    let secondClauseExpr: Expression | undefined = undefined;
                     let firstClause: Joinpoint[] = [];
-                    let secondClause: Joinpoint[] = []
+                    let secondClause: Joinpoint[] = [];
+                    let currClauseExpr: Expression | undefined = undefined;
+                    let currClause: Joinpoint[] = [];
+                    let clauseHasDefault: boolean = false;
+                    let filledFirstClause: boolean = false;
+                    const newVar = ClavaJoinPoints.varDecl("switchToIf_" + switchJp.astId, switchJp.condition);
+                    switchJp.insertBefore(newVar.stmt);
                     for (const child of switchStmt.children[1].children) {
-                            
+                            if (child instanceof Case) {
+                                let tempOp: BinaryOp;
+                                if (child.isDefault) {
+                                    clauseHasDefault = true;
+                                    continue;
+                                }
+                                else if (child.values.length === 1) {
+                                    tempOp = ClavaJoinPoints.binaryOp("eq", newVar.varref(), child.values[0]);
+                                }
+                                else {
+                                    tempOp = ClavaJoinPoints.binaryOp("l_or", ClavaJoinPoints.binaryOp("ge", newVar.varref(), child.values[0]), ClavaJoinPoints.binaryOp("le", newVar.varref(), child.values[1]));
+                                }
+                                currClauseExpr = currClauseExpr ? ClavaJoinPoints.binaryOp("l_or", currClauseExpr, tempOp) : tempOp;
+                            }
+                            else if (child instanceof Break) {
+                                if (clauseHasDefault || filledFirstClause) {
+                                    secondClause = currClause;
+                                    secondClauseExpr = currClauseExpr;
+                                }
+                                else {
+                                    firstClause = currClause;
+                                    firstClauseExpr = currClauseExpr;
+                                    filledFirstClause = true;
+                                }
+                                clauseHasDefault = false;
+                                currClause = [];
+                                currClauseExpr = undefined;
+                            }
+                            else {
+                                currClause.push(child);
+                            }
                     }
+
+                    const elseStmt = secondClauseExpr ? ClavaJoinPoints.ifStmt(secondClauseExpr, ClavaJoinPoints.scope(...secondClause)) : ClavaJoinPoints.scope(...secondClause);
+                    switchJp.replaceWith(ClavaJoinPoints.ifStmt(firstClauseExpr ?? "", ClavaJoinPoints.scope(...firstClause), elseStmt));
                 }
             ));
         }
     }
 
-    private r16_7_noEssentialBooleanInSwitch($startNode: Joinpoint) { //is this the best way?
+    private r16_7_noEssentialBooleanInSwitch($startNode: Joinpoint) { //UNFINISHED
         if (!($startNode instanceof Switch)) return;
         this.dependsOn(1, $startNode);
         if (this._wellFormedSwitch === false) return;
+
+        if ($startNode.condition.type.desugarAll instanceof BuiltinType && $startNode.condition.type.desugarAll.builtinKind === "Bool") {
+            this.logMISRAError("The controlling expression of a switch statement must not have essentially boolean type.");
+        }
     }
 
     protected _name: string = "Switch statements";
