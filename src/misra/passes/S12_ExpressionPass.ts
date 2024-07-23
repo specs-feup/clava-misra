@@ -9,7 +9,10 @@ export default class S12_ExpressionPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];
 
     initRuleMapper(): void {
-        throw new Error("Method not implemented.");
+        this._ruleMapper = new Map([
+            [1, this.r12_1_explicitPrecedence.bind(this)],
+            [3, this.r12_3_noCommaOperator.bind(this)]
+        ]);
     }
     matchJoinpoint($jp: LaraJoinPoint): boolean {
         return $jp instanceof BinaryOp && !$jp.isAssignment;
