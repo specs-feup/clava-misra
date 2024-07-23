@@ -10,11 +10,16 @@ export default class S13_SideEffectPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];
 
     initRuleMapper(): void {
-        throw new Error("Method not implemented.");
+        this._ruleMapper = new Map([
+            [1, this.r13_1_initListSideEffects.bind(this)],
+            [3, this.r13_3_noIncrementSideEffects.bind(this)],
+            [4, this.r13_4_noUseOfAssignmentValue.bind(this)],
+            [5, this.r13_5_shortCircuitSideEffects.bind(this)]
+        ]);
     }
 
     matchJoinpoint($jp: LaraJoinPoint): boolean {
-        throw new Error("Method not implemented.");
+        return $jp instanceof InitList || $jp instanceof ExprStmt || $jp instanceof BinaryOp;
     }
 
     private checkPotentialPersistentSideEffects<T extends Joinpoint>($startNode: T, filters: any, name: string, childFun: ($jp: T) => Joinpoint) {
