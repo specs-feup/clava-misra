@@ -7,7 +7,18 @@ export default class S21_StandardLibPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];
 
     initRuleMapper(): void {
-        throw new Error("Method not implemented.");
+        this._ruleMapper = new Map([
+            [3, this.r21_3_noDynamicAllocation.bind(this)],
+            [4, this.r21_4_noSetjmpUsage.bind(this)],
+            [5, this.r21_5_noSignalUsage.bind(this)],
+            [6, this.r21_6_noStandardIO.bind(this)],
+            [7, this.r21_7_noStringFunctions.bind(this)],
+            [8, this.r21_8_noSysFunctions.bind(this)],
+            [9, this.r21_9_noStdAlgos.bind(this)],
+            [10, this.r21_10_noDateUsage.bind(this)],
+            [11, this.r21_11_noTgmathUsage.bind(this)],
+            [12, this.r21_12_noFenvExceptions.bind(this)]
+        ]);
     }
 
     matchJoinpoint($jp: LaraJoinPoint): boolean {
