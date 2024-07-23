@@ -55,9 +55,12 @@ export default abstract class MISRAPass extends SimplePass {
     }
 
     protected dependsOn($id: number, $jp: Joinpoint) {
+        const tempId = this._currentRule;
         if (this._executedRules.get($id) === false) {
+            this._currentRule = $id;
             this.executeRule($id, $jp);
         }
+        this._currentRule = tempId;
     }
 
     abstract matchJoinpoint($jp: LaraJoinPoint): boolean;

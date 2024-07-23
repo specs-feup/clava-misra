@@ -1,9 +1,9 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint";
-import MISRAPass from "../MISRAPass";
-import { PreprocessingReqs } from "../MISRAReporter";
-import { BinaryOp, Break, BuiltinType, Case, Expression, Joinpoint, Switch } from "clava-js/api/Joinpoints";
-import Fix from "clava-js/api/clava/analysis/Fix";
-import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints";
+import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import MISRAPass from "../MISRAPass.js";
+import { PreprocessingReqs } from "../MISRAReporter.js";
+import { BinaryOp, Break, BuiltinType, Case, Expression, Joinpoint, Switch } from "clava-js/api/Joinpoints.js";
+import Fix from "clava-js/api/clava/analysis/Fix.js";
+import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
 
 export default class S16_SwitchStatementPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];
@@ -124,7 +124,11 @@ export default class S16_SwitchStatementPass extends MISRAPass {
                                 currClauseExpr = currClauseExpr ? ClavaJoinPoints.binaryOp("l_or", currClauseExpr, tempOp) : tempOp;
                             }
                             else if (child instanceof Break) {
-                                if (clauseHasDefault || filledFirstClause) {
+                                if (clauseHasDefault) {
+                                    secondClause = currClause;
+                                    secondClauseExpr = undefined;
+                                }
+                                else if (filledFirstClause) {
                                     secondClause = currClause;
                                     secondClauseExpr = currClauseExpr;
                                 }
