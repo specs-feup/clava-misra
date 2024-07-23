@@ -2,7 +2,7 @@ import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
 import MISRAPass from "../MISRAPass.js";
 import { PreprocessingReqs } from "../MISRAReporter.js";
 import Query from "lara-js/api/weaver/Query.js";
-import { BinaryOp, Call, ExprStmt, InitList, Joinpoint, QualType, UnaryOp, Vardecl, Varref } from "clava-js/api/Joinpoints.js";
+import { BinaryOp, Call, ExprStmt, InitList, Joinpoint, QualType, UnaryExprOrType, UnaryOp, Vardecl, Varref } from "clava-js/api/Joinpoints.js";
 import TraversalType from "lara-js/api/weaver/TraversalType.js";
 import Fix from "clava-js/api/clava/analysis/Fix.js";
 
@@ -14,15 +14,15 @@ export default class S13_SideEffectPass extends MISRAPass {
             [1, this.r13_1_initListSideEffects.bind(this)],
             [3, this.r13_3_noIncrementSideEffects.bind(this)],
             [4, this.r13_4_noUseOfAssignmentValue.bind(this)],
-            [5, this.r13_5_shortCircuitSideEffects.bind(this)]
+            [5, this.r13_5_shortCircuitSideEffects.bind(this)],
         ]);
     }
 
     matchJoinpoint($jp: LaraJoinPoint): boolean {
-        return $jp instanceof InitList || $jp instanceof ExprStmt || $jp instanceof BinaryOp;
+        return $jp instanceof InitList || $jp instanceof ExprStmt || $jp instanceof BinaryOp || $jp instanceof UnaryExprOrType;
     }
 
-    private checkPotentialPersistentSideEffects<T extends Joinpoint>($startNode: T, filters: any, name: string, childFun: ($jp: T) => Joinpoint) {
+    private checkPotentialPersistentSideEffects<T extends Joinpoint>($startNode: T, name: string, childFun: ($jp: T) => Joinpoint) {
         Query.searchFromInclusive(childFun($startNode), Varref).get().forEach(ref => {
             if (ref.type instanceof QualType && ref.type.qualifiers?.includes("volatile")) {
                 this.logMISRAError(`${name} ${$startNode.code} contains persistent side effects: an access to volatile object ${ref.name}.`)
@@ -43,7 +43,7 @@ export default class S13_SideEffectPass extends MISRAPass {
     private r13_1_initListSideEffects($startNode: Joinpoint) {
         if (!($startNode instanceof InitList)) return;
 
-        this.checkPotentialPersistentSideEffects<Joinpoint>($startNode, undefined, "Initializer list", jp => jp);
+        this.checkPotentialPersistentSideEffects<Joinpoint>($startNode, "Initializer list", jp => jp);
     }
 
     private static visitAllExprs(fun: ($jp: Joinpoint) => void, root: Joinpoint) {
@@ -101,9 +101,16 @@ export default class S13_SideEffectPass extends MISRAPass {
     }
 
     private r13_5_shortCircuitSideEffects($startNode: Joinpoint) {
-        if (!($startNode instanceof BinaryOp)) return;
+        if (!($startNode instanceof BinaryOp && /(\&\&|\|\|)/.test($startNode.operator))) return;
 
-        this.checkPotentialPersistentSideEffects<BinaryOp>($startNode, {operator: /(\&\&|\|\|)/}, "RHS of && or || expression", jp => jp.right);
+        this.checkPotentialPersistentSideEffects<BinaryOp>($startNode, "RHS of && or || expression", jp => jp.right);
+    }
+
+    private r13_6_sizeofSideEffects($startNode: Joinpoint) {
+        if (!($startNode instanceof UnaryExprOrType && $startNode.hasArgExpr)) return;
+
+        //TODO: exception for volatile qualified lvalue that is not a variable length array
+        this.checkPotentialPersistentSideEffects<Joinpoint>($startNode.argExpr, "Sizeof operand", jp => jp);
     }
 
     protected _name: string = "Side effects";
