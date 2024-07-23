@@ -11,7 +11,7 @@ export default abstract class MISRAPass extends SimplePass {
     private _executedRules: Map<number, boolean> = new Map();
     private _rules: number[];
     private _currentRule: number = -1;
-    private _preprocessing: Preprocessing | undefined;
+    protected _preprocessing: Preprocessing | undefined;
     private _result: MISRAPassResult | undefined;
     protected abstract _preprocessingReqs: PreprocessingReqs[];
 
