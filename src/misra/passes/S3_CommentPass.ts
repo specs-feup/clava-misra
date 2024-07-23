@@ -17,7 +17,7 @@ export default class S3_CommentPass extends MISRAPass {
     }
 
     private static removeCommentSequences(str: string) {
-        return str.replace(/(\/\/||\/\*)/g, '');
+        return str.replace(/(\/\/|\/\*)/g, '');
     }
     
     private r3_1_fixComments($startNode: Joinpoint) { //inlines
