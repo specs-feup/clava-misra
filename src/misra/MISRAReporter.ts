@@ -2,6 +2,8 @@ import { Joinpoint, TypedefNameDecl } from "clava-js/api/Joinpoints.js";
 import MISRAPass from "./MISRAPass.js";
 import Query from "lara-js/api/weaver/Query.js";
 import PassResult from "lara-js/api/lara/pass/results/PassResult.js";
+import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResult.js";
+import MISRAPassResult from "./MISRAPassResult.js";
 
 export enum PreprocessingReqs {
     TYPEDEF_DECLS = "typedefDecls"
@@ -21,7 +23,7 @@ export default class MISRAReporter {
         this._preprocessing.typedefDecls = Query.search(TypedefNameDecl).get();
     }
 
-    applyPass($pass: MISRAPass, $jp: Joinpoint): PassResult {
+    applyPass($pass: MISRAPass, $jp: Joinpoint): PassResult | undefined {
         $pass.preprocessingReqs.forEach($req => {
             if (!this._preprocessing[$req]) {
                 (this._preprocessingMapper.get($req) as () => void)();
@@ -29,6 +31,9 @@ export default class MISRAReporter {
         });
 
         $pass.setPreprocessing(this._preprocessing);
-        return $pass.apply($jp);
+        const result = $pass.apply($jp) as AggregatePassResult;
+        if ((result.results as MISRAPassResult[]).some(res => res.reports.length > 0)) {
+            return result;
+        }
     }
 }

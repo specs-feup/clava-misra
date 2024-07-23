@@ -12,9 +12,5 @@ const reporter = new MISRAReporter();
 
 Query.root().descendants.forEach($jp => {
     const result = reporter.applyPass(pass, $jp as Joinpoint) as AggregatePassResult;
-    for (const report of result.results) {
-        if ((report as MISRAPassResult).reports.length > 0) {
-            console.log((report as MISRAPassResult).reports);
-        }
-    }
+    console.log(result);
 });
