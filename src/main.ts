@@ -8,8 +8,9 @@ import S10_EssentialTypePass from "./misra/passes/S10_EssentialTypePass.js";
 import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResult.js";
 import MISRAPassResult from "./misra/MISRAPassResult.js";
 import S12_ExpressionPass from "./misra/passes/S12_ExpressionPass.js";
+import S17_FunctionPass from "./misra/passes/S17_FunctionPass.js";
 
-const pass = new S15_ControlFlowPass(true, [1,2,3,4]);
+const pass = new S17_FunctionPass(true, [1,7]);
 const reporter = new MISRAReporter();
 
 console.log(Query.root().dump);

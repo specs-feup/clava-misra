@@ -20,6 +20,7 @@ export default class S17_FunctionPass extends MISRAPass {
 
     private r17_1_noStdargUsage($startNode: Joinpoint) {
         if (!($startNode instanceof Include)) return;
+        console.log("hello");
 
         if ($startNode.name === "stdarg.h" && $startNode.isAngled) {
             this.logMISRAError("Use of <stdarg.h> is not allowed.");
@@ -32,7 +33,7 @@ export default class S17_FunctionPass extends MISRAPass {
 
         if ($startNode.parent instanceof ExprStmt) {
             this.logMISRAError(`Return value of ${$startNode.signature} must be used. It can be discarded with an explicit cast to void.`, new Fix($startNode, ($jp) => {
-                const newJp = ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), $jp.deepCopy() as Call);
+                const newJp = ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), $jp as Call);
                 $jp.replaceWith(newJp);
             }));
         }
