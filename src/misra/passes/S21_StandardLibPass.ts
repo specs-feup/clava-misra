@@ -88,5 +88,5 @@ export default class S21_StandardLibPass extends MISRAPass {
         this.logMISRAError(`Use of function ${$startNode.signature} is not allowed.`);
     }
 
-    protected _name: string;
+    protected _name: string = "Standard libraries";
 }

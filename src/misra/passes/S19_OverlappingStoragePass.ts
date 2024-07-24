@@ -1,7 +1,7 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint";
-import MISRAPass from "../MISRAPass";
-import { PreprocessingReqs } from "../MISRAReporter";
-import { Class, Joinpoint } from "clava-js/api/Joinpoints";
+import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import MISRAPass from "../MISRAPass.js";
+import { PreprocessingReqs } from "../MISRAReporter.js";
+import { Class, Joinpoint } from "clava-js/api/Joinpoints.js";
 
 export default class S19_OverlappingStoragePass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];
@@ -22,6 +22,6 @@ export default class S19_OverlappingStoragePass extends MISRAPass {
         this.logMISRAError("The union keyword should not be used.");
     }
 
-    protected _name: string;
+    protected _name: string = "Overlapping storage";
     
 }
