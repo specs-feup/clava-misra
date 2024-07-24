@@ -5,7 +5,7 @@ import { EnumDecl, FunctionJp, IntLiteral, Joinpoint, Param, StorageClass, Varde
 import Fix from "clava-js/api/clava/analysis/Fix.js";
 
 export default class S8_DeclDefPass extends MISRAPass {
-    protected _preprocessingReqs: PreprocessingReqs[];
+    protected _preprocessingReqs: PreprocessingReqs[] = [];
     initRuleMapper(): void {
         this._ruleMapper = new Map([
             [2, this.r8_2_functionPrototype.bind(this)],

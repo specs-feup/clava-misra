@@ -1,7 +1,7 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint";
-import MISRAPass from "../MISRAPass";
-import { PreprocessingReqs } from "../MISRAReporter";
-import { Comment, Joinpoint } from "clava-js/api/Joinpoints";
+import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import MISRAPass from "../MISRAPass.js";
+import { PreprocessingReqs } from "../MISRAReporter.js";
+import { Comment, Joinpoint } from "clava-js/api/Joinpoints.js";
 
 export default class S3_CommentPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];

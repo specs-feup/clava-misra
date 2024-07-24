@@ -1,8 +1,8 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint";
-import MISRAPass from "../MISRAPass";
-import { PreprocessingReqs } from "../MISRAReporter";
-import { Class, FileJp, FunctionJp, Joinpoint, NamedDecl, StorageClass, TypedefDecl, TypedefNameDecl, Vardecl } from "clava-js/api/Joinpoints";
-import Fix from "clava-js/api/clava/analysis/Fix";
+import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import MISRAPass from "../MISRAPass.js";
+import { PreprocessingReqs } from "../MISRAReporter.js";
+import { Class, FileJp, FunctionJp, Joinpoint, NamedDecl, StorageClass, TypedefDecl, TypedefNameDecl, Vardecl } from "clava-js/api/Joinpoints.js";
+import Fix from "clava-js/api/clava/analysis/Fix.js";
 
 export default class S5_IdentifierPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [PreprocessingReqs.EXTERNAL_LINKAGE_DECLS];
