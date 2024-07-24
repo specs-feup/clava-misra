@@ -41,7 +41,7 @@ export default class MISRAReporter {
         }, this);
     }
 
-    applyPass($pass: MISRAPass, $jp: Joinpoint): PassResult | undefined {
+    applyPass($pass: MISRAPass, $jp: Joinpoint): AggregatePassResult | undefined {
         $pass.preprocessingReqs.forEach($req => {
             if (!this._preprocessing[$req]) {
                 (this._preprocessingMapper.get($req) as () => void)();

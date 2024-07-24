@@ -7,19 +7,18 @@ import MISRAReporter from "./misra/MISRAReporter.js";
 import S10_EssentialTypePass from "./misra/passes/S10_EssentialTypePass.js";
 import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResult.js";
 import MISRAPassResult from "./misra/MISRAPassResult.js";
+import S12_ExpressionPass from "./misra/passes/S12_ExpressionPass.js";
 
-const pass = new S16_SwitchStatementPass(false, [6]);
+const pass = new S12_ExpressionPass(true, [1,3]);
 const reporter = new MISRAReporter();
 
 console.log(Query.root().dump);
 
-Query.root().descendants.forEach($jp => {
-    const result = reporter.applyPass(pass, $jp as Joinpoint) as AggregatePassResult;
-    if (result) console.log(result.results.map(res => (res as MISRAPassResult).reports));
-    if (result) {
-        result.results.forEach(res => {
-            const reports = (res as MISRAPassResult).reports;
-            reports.forEach(rep => rep.fix?.execute());
-        });
-    }
-});
+const result = reporter.applyPass(pass, Query.root() as Joinpoint) as AggregatePassResult;
+if (result) {
+    result.results.forEach(res => {
+        const reports = (res as MISRAPassResult).reports;
+        console.log(reports);
+        reports.forEach(rep => rep.fix?.execute());
+    });
+}

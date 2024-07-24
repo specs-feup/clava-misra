@@ -1,26 +1,9 @@
-#include "lib.h"
-
 int main(int argc, char *argv[]) {
-    int x, y;
+    int x, y, z;
+   x = 2;
+   y = 3;
 
-   switch (x) {
-      case 1:
-      case 2:
-      //default:
-         y = 2;
-         break;
-      case 4:
-         y = 3;
-         break;
-   }
-   switch (x) {
-      case 1:
-      case 2:
-      default:
-         y = 2;
-      case 4:
-         y = 3;
-         break;
-   }
+   x = x + (y * z);
+
     return 0;
 }
