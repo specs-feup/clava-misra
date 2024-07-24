@@ -9,7 +9,7 @@ import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResu
 import MISRAPassResult from "./misra/MISRAPassResult.js";
 import S12_ExpressionPass from "./misra/passes/S12_ExpressionPass.js";
 
-const pass = new S12_ExpressionPass(true, [1,3]);
+const pass = new S15_ControlFlowPass(true, [1,2,3,4]);
 const reporter = new MISRAReporter();
 
 console.log(Query.root().dump);

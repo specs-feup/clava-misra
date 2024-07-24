@@ -23,7 +23,7 @@ export default class S15_ControlFlowPass extends MISRAPass {
 
     private r15_1_noGoto($startNode: Joinpoint) {
         if (!($startNode instanceof GotoStmt)) return;
-        //log error
+        this.logMISRAError("Goto statements should not be used");
     }
 
     private static isBeforeInCode(line1: number, col1: number, line2: number, col2: number): boolean {
@@ -34,7 +34,7 @@ export default class S15_ControlFlowPass extends MISRAPass {
     private r15_2_noBackJumps($startNode: Joinpoint) {
         if (!($startNode instanceof GotoStmt)) return;
         if (!S15_ControlFlowPass.isBeforeInCode($startNode.line, $startNode.column, $startNode.label.line, $startNode.label.column)) {
-            //log error
+            this.logMISRAError("Goto statements must not jump backwards in the code.");
         } 
     }
 
@@ -63,7 +63,7 @@ export default class S15_ControlFlowPass extends MISRAPass {
         } while (temp.parent.astId !== ancestor.astId);
 
         if (error) {
-            //log error
+            this.logMISRAError("The label of a goto statement must be declared in a block or switch clause enclosing the goto.");
         }
     }
 
@@ -72,7 +72,7 @@ export default class S15_ControlFlowPass extends MISRAPass {
         for (const goto of Query.searchFrom($startNode, Break)) {
             const ancestor = goto.getAncestor("loop");
             const switchAncestor = goto.getAncestor("switch");
-            if (ancestor.astId === $startNode.astId && !$startNode.contains(switchAncestor)) {
+            if (ancestor.astId === $startNode.astId && !(switchAncestor && $startNode.contains(switchAncestor))) {
                 count++;
             }
         }
@@ -99,7 +99,7 @@ export default class S15_ControlFlowPass extends MISRAPass {
         const gotoExits = S15_ControlFlowPass.countGotoExits($startNode, this._labelMap as Map<string, Joinpoint>);
 
         if (breakExits + gotoExits > 1) {
-            //log error
+            this.logMISRAError("Loops must only have one exit");
         }
     }
 

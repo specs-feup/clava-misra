@@ -1,17 +1,15 @@
-import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResult";
-import MISRAPassResult from "../MISRAPassResult";
-import MISRAReporter from "../MISRAReporter";
-import MISRAPass from "../MISRAPass";
-import Query from "lara-js/api/weaver/Query";
-import { Joinpoint } from "clava-js/api/Joinpoints";
-import Clava from "clava-js/api/clava/Clava";
-import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints";
+import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResult.js";
+import MISRAPassResult from "../MISRAPassResult.js";
+import MISRAReporter from "../MISRAReporter.js";
+import MISRAPass from "../MISRAPass.js";
+import { Joinpoint } from "clava-js/api/Joinpoints.js";
+import Clava from "clava-js/api/clava/Clava.js";
+import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
 
 function countErrors($passResult: AggregatePassResult): number {
     let count = 0;
     $passResult.results.forEach(res => {
         const misraRes = res as MISRAPassResult;
-        console.log(misraRes.reports);
         count += misraRes.reports.length;
     });
 
