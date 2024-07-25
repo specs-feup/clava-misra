@@ -1,0 +1,36 @@
+import MISRAReporter from "../MISRAReporter.js";
+import S6_TypePass from "../passes/S6_TypePass.js";
+import Query from "lara-js/api/weaver/Query.js";
+import { FileJp, Joinpoint } from "clava-js/api/Joinpoints.js";
+import { expectNumberOfErrors, registerSourceCode, TestFile } from "./utils.js";
+
+const passingCode = `struct good {
+    int a:4;
+    int:1;
+    unsigned int b:8;
+};`;
+
+const failingCode = `struct good {
+    int a:4;
+    int c:1;
+    unsigned int b:8;
+};`;
+
+const files: TestFile[] = [
+    {name: "bad.cpp", code: failingCode},
+    {name: "good.cpp", code: passingCode}
+]
+
+describe("Expressions", () => {
+    const reporter = new MISRAReporter();
+    const pass = new S6_TypePass(true, [2]);
+    registerSourceCode(files);
+
+    it("should pass", () => {
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "good.cpp"}).first() as Joinpoint);
+    });
+    
+    it("should fail", () => {
+        expectNumberOfErrors(reporter, pass, 1, Query.search(FileJp, {name: "bad.cpp"}).first() as Joinpoint);
+    });
+});
