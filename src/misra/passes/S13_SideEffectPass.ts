@@ -15,6 +15,7 @@ export default class S13_SideEffectPass extends MISRAPass {
             [3, this.r13_3_noIncrementSideEffects.bind(this)],
             [4, this.r13_4_noUseOfAssignmentValue.bind(this)],
             [5, this.r13_5_shortCircuitSideEffects.bind(this)],
+            [6, this.r13_6_sizeofSideEffects.bind(this)]
         ]);
     }
 
@@ -59,11 +60,12 @@ export default class S13_SideEffectPass extends MISRAPass {
         }
     }
     
-    private checkIncrementSideEffects(exprRoot: Joinpoint) { //something wierd but mostly working if not for duplicates
-        const jps = Query.searchFromInclusive(exprRoot, UnaryOp, {kind: /(post_inc)|(post_dec)|(pre_inc)|(pre_dec)/}, TraversalType.POSTORDER).get();
+    private checkIncrementSideEffects(exprRoot: Joinpoint) {
+        const jps = Query.searchFrom(exprRoot, UnaryOp, {kind: /(post_inc)|(post_dec)|(pre_inc)|(pre_dec)/}, TraversalType.POSTORDER).get();
+        //THE ABOVE LINE ONLY WORKS BECAUSE SEARCH FROM IS RETURNING THE ROOT, SEARCH FROM INCLUSIVE RETURNS IT TWICE
         const calls = Query.searchFromInclusive(exprRoot, Call).get();
         const assignments = Query.searchFromInclusive(exprRoot, BinaryOp, {isAssignment: true}).get();
-        if (jps.length + calls.length + assignments.length < 2) return;
+        if (jps.length == 0 || jps.length + calls.length + assignments.length < 2) return;
 
         this.logMISRAError(`Expression ${exprRoot.code} contains a pre/post inc/decrement operator and other side effects.`, new Fix(exprRoot, ($jp: Joinpoint) => {
             const jps = Query.searchFrom($jp, UnaryOp, {kind: /(post_inc)|(post_dec)|(pre_inc)|(pre_dec)/}, TraversalType.POSTORDER).get();
@@ -80,7 +82,6 @@ export default class S13_SideEffectPass extends MISRAPass {
                 else {
                     $jp.insertBefore(jp.deepCopy());
                 }
-                console.log(jp);
                 jp.replaceWith(jp.operand);
             }
         }));
@@ -88,8 +89,10 @@ export default class S13_SideEffectPass extends MISRAPass {
 
     private r13_3_noIncrementSideEffects($startNode: Joinpoint) { //not working for decls
         if (!($startNode instanceof ExprStmt)) return;
+        
+        this.checkIncrementSideEffects($startNode.expr);
 
-        S13_SideEffectPass.visitAllExprs(this.checkIncrementSideEffects, $startNode.expr);
+        //S13_SideEffectPass.visitAllExprs(this.checkIncrementSideEffects.bind(this), $startNode.expr);
     }
 
     private r13_4_noUseOfAssignmentValue($startNode: Joinpoint) {

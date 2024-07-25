@@ -9,8 +9,9 @@ import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResu
 import MISRAPassResult from "./misra/MISRAPassResult.js";
 import S12_ExpressionPass from "./misra/passes/S12_ExpressionPass.js";
 import S17_FunctionPass from "./misra/passes/S17_FunctionPass.js";
+import S13_SideEffectPass from "./misra/passes/S13_SideEffectPass.js";
 
-const pass = new S17_FunctionPass(true, [1,7]);
+const pass = new S13_SideEffectPass(true, [1,3,4,5]);
 const reporter = new MISRAReporter();
 
 console.log(Query.root().dump);
@@ -20,6 +21,6 @@ if (result) {
     result.results.forEach(res => {
         const reports = (res as MISRAPassResult).reports;
         console.log(reports);
-        reports.forEach(rep => rep.fix?.execute());
+        //reports.forEach(rep => rep.fix?.execute());
     });
 }

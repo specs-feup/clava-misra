@@ -10,7 +10,7 @@ const passingCode = `int main(int argc, char *argv[]) {
     return 0;
 }`;
 
-const failingCode = `int main(int argc, char *argv[]) {
+const failingCode = `int test(int argc, char *argv[]) {
     int x, y, z; //bad inl//ine comment
     //bad /*comment
     return 0;
