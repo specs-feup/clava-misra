@@ -4,12 +4,12 @@ import Query from "lara-js/api/weaver/Query.js";
 import { FileJp, Joinpoint } from "clava-js/api/Joinpoints.js";
 import { expectNumberOfErrors, registerSourceCode, TestFile } from "./utils.js";
 
-const passingCode = `int f() {
+const passingCode = `int g() {
     return 5;
 }
 
 int main(int argc, char *argv[]) {
-    (void)f();
+    (void)g();
 
     return 0;
 }`;
@@ -20,7 +20,7 @@ int f() {
     return 5;
 }
 
-int main(int argc, char *argv[]) {
+int test(int argc, char *argv[]) {
     f();
 
     return 0;

@@ -1,27 +1,22 @@
 import MISRAReporter from "../MISRAReporter.js";
-import S12_ExpressionPass from "../passes/S12_ExpressionPass.js";
+import S19_OverlappingStoragePass from "../passes/S19_OverlappingStoragePass.js";
 import Query from "lara-js/api/weaver/Query.js";
 import { FileJp, Joinpoint } from "clava-js/api/Joinpoints.js";
 import { expectNumberOfErrors, registerSourceCode, TestFile } from "./utils.js";
 
-const passingCode = `int main(int argc, char *argv[]) {
-    int x, y, z;
-   x = 2;
-   y = 3;
+const passingCode = `struct a {
+    int a;
+    int b;
+};
 
-   x = x + (y * z);
-
+int main(int argc, char *argv[]) {
     return 0;
 }`;
 
-const failingCode = `int test(int argc, char *argv[]) {
-    int x, y, z;
-   x = 2, y = 3;
-
-   x = x + y * z;
-
-    return 0;
-}`;
+const failingCode = `union a {
+    int a;
+    int b;
+};`;
 
 const files: TestFile[] = [
     {name: "bad.cpp", code: failingCode},
@@ -30,7 +25,7 @@ const files: TestFile[] = [
 
 describe("Expressions", () => {
     const reporter = new MISRAReporter();
-    const pass = new S12_ExpressionPass(true, [1, 3]);
+    const pass = new S19_OverlappingStoragePass(true, [2]);
     registerSourceCode(files);
 
     it("should pass", () => {
@@ -38,6 +33,6 @@ describe("Expressions", () => {
     });
     
     it("should fail", () => {
-        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "bad.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 1, Query.search(FileJp, {name: "bad.cpp"}).first() as Joinpoint);
     });
 });

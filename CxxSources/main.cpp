@@ -1,9 +1,8 @@
-int f() {
-    return 5;
-}
+struct a {
+    int a;
+    int b;
+};
 
 int main(int argc, char *argv[]) {
-    (void)f();
-
     return 0;
 }

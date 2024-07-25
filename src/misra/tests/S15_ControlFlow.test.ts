@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }`;
 
-const failingCode = `void f ( void )
+const failingCode = `void g ( void )
 {
 int j = 0;
 L1:
@@ -76,7 +76,7 @@ L2 :
 ++j;
 }
 
-void f1 ( int a )
+void g1 ( int a )
 {
 if ( a <= 0 )
 {
@@ -96,7 +96,7 @@ L2:
 }
 }
 
-void f2() {
+void g2() {
    int x,y,z;
    while ( x != 0u )
 {
@@ -118,7 +118,7 @@ L1:
 z = x + y;
 }
 
-int main(int argc, char *argv[]) {
+int test(int argc, char *argv[]) {
 
 
     return 0;
