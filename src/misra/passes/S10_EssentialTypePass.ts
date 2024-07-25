@@ -62,7 +62,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
             }
         }
         else if (type instanceof EnumType) {
-            return type.name === undefined ? {category: EssentialTypes.SIGNED} : {category: EssentialTypes.ENUM, enumName: type.name};
+            return type.name === "" ? {category: EssentialTypes.SIGNED} : {category: EssentialTypes.ENUM, enumName: type.name};
         }
 
         return {category: EssentialTypes.UNKOWN};
@@ -97,7 +97,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
             const fix = $castTo ? new Fix($expr, ($jp) => {
                 $jp.replaceWith(ClavaJoinPoints.cStyleCast($castTo, $jp as Expression));
             }) : undefined;
-            this.logMISRAError(`Operand ${$expr.code} of expression ${$baseExpr.code} must not have essentially ${et} type.`, fix);
+            this.logMISRAError(`Operand ${$expr.code} of expression ${$baseExpr.code} must not have essentially ${et.category} type.`, fix);
         }
     }
 
@@ -210,7 +210,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
         else return true;
     }
 
-    private r10_3_noInvalidAssignments($startNode: Joinpoint) { //not working for decls
+    private r10_3_noInvalidAssignments($startNode: Joinpoint) { //not working for decls, enum value not calculated, compound assignments
         if ($startNode instanceof BinaryOp && $startNode.kind === "assign") {
             if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getExprEssentialType($startNode.left), S10_EssentialTypePass.getExprEssentialType($startNode.right))) {
                 this.logMISRAError(`Value ${$startNode.right.code} cannot be assigned to ${$startNode.left.code}, since it has a different essential type category.`);
