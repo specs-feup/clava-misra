@@ -169,6 +169,33 @@ const castFiles: TestFile[] = [
     {name: "badcasts.cpp", code: failingCasts}
 ];
 
+const passingComposites = `void goodComposites() {
+    unsigned short u16a,u16b,u16c;
+    unsigned long u32a,u32b;
+    signed long s32a;
+
+    u16c = u16a + u16b; /* Same essential type */
+    u32a = ( unsigned long ) u16a + u16b; /* Cast causes addition in uint32_t */
+
+    ( unsigned short ) ( u32a + u32b ); /* Compliant */
+    ( unsigned long ) s32a; /* Compliant - s32a is not composite */
+}`;
+
+const failingComposites = `void badComposites() {
+    unsigned short u16a,u16b,u16c;
+    unsigned long u32a,u32b;
+    signed long s32a,s32b;
+
+    u32a = u16a + u16b; /* Implicit conversion on assignment */
+    ( unsigned short ) ( s32a + s32b );
+    //( unsigned long ) ( u16a + u16b ); WIDTH PROBLEMS
+}`;
+
+const compositeFiles: TestFile[] = [
+    {name: "goodcomposites.cpp", code: passingComposites},
+    {name: "badcomposites.cpp", code: failingComposites}
+]
+
 describe("Essential type model: operands", () => {
     const reporter = new MISRAReporter();
     const pass = new S10_EssentialTypePass(true, [1, 2]);
@@ -208,5 +235,19 @@ describe("Essential type model: casts", () => {
     
     it("should fail", () => { //SHOULD BE 9 BUT DOESNT WORK FOR RETURN STMTS
         expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "badcasts.cpp"}).first() as Joinpoint);
+    });
+});
+
+describe("Essential type model: composite expressions", () => {
+    const reporter = new MISRAReporter();
+    const pass = new S10_EssentialTypePass(true, [6,8]);
+    registerSourceCode(compositeFiles);
+
+    it("should pass", () => {
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodcomposites.cpp"}).first() as Joinpoint);
+    });
+    
+    it("should fail", () => { //SHOULD BE 9 BUT DOESNT WORK FOR RETURN STMTS
+        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "badcomposites.cpp"}).first() as Joinpoint);
     });
 });

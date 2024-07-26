@@ -371,7 +371,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
 
         const compositeExpr = S10_EssentialTypePass.isCompositeExpr($startNode.subExpr);
         if (compositeExpr) {
-            if (S10_EssentialTypePass.getEssentialType($startNode.fromType) !== S10_EssentialTypePass.getEssentialType($startNode.toType)) {
+            if (S10_EssentialTypePass.getEssentialType($startNode.fromType).category !== S10_EssentialTypePass.getEssentialType($startNode.toType).category) {
                 this.logMISRAError(`Composite expression ${$startNode.subExpr.code} cannot be cast to ${$startNode.toType.code}, since it has a different essential type category.`);
             }
             else if ($startNode.bitWidth > S10_EssentialTypePass.compositeExprWidth(compositeExpr)) {

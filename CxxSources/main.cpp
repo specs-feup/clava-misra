@@ -1,12 +1,9 @@
-void goodCasts() {
-    enum enuma {R,G,B} ena;
-    enum enumc {C,M,Y} enc;
+void badComposites() {
+    unsigned short u16a,u16b,u16c;
+    unsigned long u32a,u32b;
+    signed long s32a,s32b;
 
-    ( bool ) false; /* Compliant - 'false' is essentially Boolean */
-    ( int ) 3U; /* Compliant */
-    ( bool ) 0; /* Compliant - by exception */
-    //( bool ) 3U; /* Non-compliant */
-    ( int ) ena; /* Compliant */
-    //( enum enuma ) 3; /* Non-compliant */
-    ( char ) enc; /* Compliant */
+    u32a = u16a + u16b; /* Implicit conversion on assignment */
+    ( unsigned short ) ( s32a + s32b );
+    //( unsigned long ) ( u16a + u16b ); WIDTH PROBLEMS
 }

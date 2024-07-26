@@ -11,7 +11,7 @@ import S12_ExpressionPass from "./misra/passes/S12_ExpressionPass.js";
 import S17_FunctionPass from "./misra/passes/S17_FunctionPass.js";
 import S13_SideEffectPass from "./misra/passes/S13_SideEffectPass.js";
 
-const pass = new S10_EssentialTypePass(true, [5]);
+const pass = new S10_EssentialTypePass(true, [6,8]);
 const reporter = new MISRAReporter();
 
 console.log(Query.root().dump);
