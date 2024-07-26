@@ -18,11 +18,24 @@ export default class S18_PointersArraysPass extends MISRAPass {
         return $jp instanceof BinaryOp || $jp instanceof Vardecl || $jp instanceof FunctionJp || $jp instanceof Field;
     }
 
+    private static isPointerType($type: Type): boolean {
+        const newT = $type.desugarAll
+        if (newT instanceof QualType) {
+            return this.isPointerType(newT.unqualifiedType);
+        }
+        else return newT.isPointer;
+    }
+
     private r18_4_noPointerArithmetic($startNode: Joinpoint) {
         if (!($startNode instanceof BinaryOp && /(\+=)|(-=)|(\+)|(-)/.test($startNode.operator))) return;
 
-        if (!$startNode.type.isPointer) return;
-        //this.logMISRAError(bOp, "Pointer arithmetic is not allowed. The only exception is if two pointers to elements of the same array are subtracted.")
+        const leftT = $startNode.left.type;
+        const rightT = $startNode.right.type;
+
+        if ((S18_PointersArraysPass.isPointerType(leftT) && !S18_PointersArraysPass.isPointerType(rightT))
+            || (S18_PointersArraysPass.isPointerType(rightT) && !S18_PointersArraysPass.isPointerType(leftT))) {
+            this.logMISRAError("Pointer arithmetic is not allowed. The only exception is if two pointers to elements of the same array are subtracted.")
+        }
     }
 
     private static getDepth(type: Type) {
@@ -60,50 +73,50 @@ export default class S18_PointersArraysPass extends MISRAPass {
     }
 
     private r18_5_noExcessivePointerNesting($startNode: Joinpoint) { //must apply to fields as well
-        if ($startNode instanceof Vardecl && !($startNode instanceof Param)) {
+        if (($startNode instanceof Vardecl && !($startNode instanceof Param)) || $startNode instanceof Field) {
             const depth = S18_PointersArraysPass.getDepth($startNode.type);
             const underlyingType = S18_PointersArraysPass.getUnderlyingType($startNode.type);
             if (underlyingType instanceof FunctionType) {
                 const retDepth = S18_PointersArraysPass.getDepth(underlyingType.returnType);
                 const paramDepths = underlyingType.paramTypes.map(type => S18_PointersArraysPass.getDepth(type)).filter(d => d > 2);
                 if (retDepth > 2) {
-                    //this.logMISRAError(decl, `Return type of function pointer ${decl.code} has more than two levels of indirection.`);
+                    this.logMISRAError(`Return type of function pointer ${$startNode.code} has more than two levels of indirection.`);
                 }
                 if (paramDepths.length > 0) {
-                    //this.logMISRAError(decl, `One or more parameters of function pointer ${decl.code} have more than two levels of indirection.`);
+                    this.logMISRAError(`One or more parameters of function pointer ${$startNode.code} have more than two levels of indirection.`);
                 }
             }
             if (depth > 2) {
-                //this.logMISRAError(decl, `Type ${decl.type.code} has more than two levels of indirection.`)
+                this.logMISRAError(`Type ${$startNode.type.code} has more than two levels of indirection.`)
             }
         }
         else if ($startNode instanceof FunctionJp) {
             const retDepth = S18_PointersArraysPass.getDepth($startNode.functionType.returnType);
             const paramDepths = $startNode.functionType.paramTypes.map(type => S18_PointersArraysPass.getDepth(type)).filter(d => d > 2);
             if (retDepth > 2) {
-                //this.logMISRAError(fun, `Return type of function ${fun.signature} has more than two levels of indirection.`);
+                this.logMISRAError(`Return type of function ${$startNode.signature} has more than two levels of indirection.`);
             }
             if (paramDepths.length > 0) {
-                //this.logMISRAError(fun, `One or more parameters of function ${fun.signature} have more than two levels of indirection.`);
+                this.logMISRAError(`One or more parameters of function ${$startNode.signature} have more than two levels of indirection.`);
             }
         }
     }
 
     private r18_7_noFlexibleArrayMembers($startNode: Joinpoint) {
         if (!($startNode instanceof Field)) return;
-        if (!$startNode.type.isArray || $startNode instanceof Param) return;
+        if (!$startNode.type.desugarAll.isArray || $startNode instanceof Param) return;
 
-        if ($startNode.type.arraySize === -1) {
-            //this.logMISRAError(varDecl, `Array ${varDecl.name} has variable or undefined size.`);
+        if ($startNode.type.desugarAll.arraySize === -1) {
+            this.logMISRAError(`Array ${$startNode.name} has variable or undefined size.`);
         }
     }
 
     private r18_8_noVariableLengthArrays($startNode: Joinpoint) {
         if (!($startNode instanceof Vardecl)) return;
-        if (!$startNode.type.isArray || $startNode.instanceOf("param")) return;
+        if (!$startNode.type.desugarAll.isArray || $startNode.instanceOf("param")) return;
 
-        if ($startNode.type.arraySize === -1) {
-            //this.logMISRAError(varDecl, `Array ${varDecl.name} has variable or undefined size.`);
+        if ($startNode.type.desugarAll.arraySize === -1) {
+            this.logMISRAError(`Array ${$startNode.name} has variable or undefined size.`);
         }
     }
 
