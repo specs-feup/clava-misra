@@ -19,8 +19,7 @@ export default class S17_FunctionPass extends MISRAPass {
     }
 
     private r17_1_noStdargUsage($startNode: Joinpoint) {
-        if (!($startNode instanceof Include)) return;
-        console.log("hello");
+        if (!($startNode instanceof Include)) return;;
 
         if ($startNode.name === "stdarg.h" && $startNode.isAngled) {
             this.logMISRAError("Use of <stdarg.h> is not allowed.");
