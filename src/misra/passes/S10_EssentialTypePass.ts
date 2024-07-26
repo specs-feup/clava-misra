@@ -274,7 +274,8 @@ export default class S10_EssentialTypePass extends MISRAPass {
         if (toEssentialType.category === EssentialTypes.BOOL && !S10_EssentialTypePass.checkBoolSource($startNode.subExpr)) {
             this.logMISRAError("Only essentially boolean values, or the integer constants 0 or 1, may be cast to an essentially boolean type.");
         }
-        else if (toEssentialType.category === EssentialTypes.ENUM && fromEssentialType.category === EssentialTypes.ENUM && toEssentialType.enumName !== fromEssentialType.enumName) {
+        else if ((toEssentialType.category === EssentialTypes.ENUM && fromEssentialType.category === EssentialTypes.ENUM && toEssentialType.enumName !== fromEssentialType.enumName)
+            || (toEssentialType.category === EssentialTypes.ENUM && fromEssentialType.category !== EssentialTypes.ENUM)) {
             this.logMISRAError("Only essentially enum values of the same enum may be cast to an essentially enum type.");
         }
         else if (toEssentialType.category === EssentialTypes.SIGNED && fromEssentialType.category === EssentialTypes.BOOL) {
