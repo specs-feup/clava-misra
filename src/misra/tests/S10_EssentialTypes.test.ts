@@ -138,6 +138,37 @@ const assignmentFiles: TestFile[] = [
     {name: "goodassignments.cpp", code: passingAssignments}
 ];
 
+const failingCasts = `void badCasts() {
+    enum enuma {R,G,B} ena;
+    enum enumc {C,M,Y} enc;
+
+    //( bool ) false; /* Compliant - 'false' is essentially Boolean */
+    //( int ) 3U; /* Compliant */
+    //( bool ) 0; /* Compliant - by exception */
+    ( bool ) 3U; /* Non-compliant */
+    //( int ) ena; /* Compliant */
+    ( enum enuma ) 3; /* Non-compliant */
+    //( char ) enc; /* Compliant */
+}`;
+
+const passingCasts = `void goodCasts() {
+    enum enuma {R,G,B} ena;
+    enum enumc {C,M,Y} enc;
+
+    ( bool ) false; /* Compliant - 'false' is essentially Boolean */
+    ( int ) 3U; /* Compliant */
+    ( bool ) 0; /* Compliant - by exception */
+    //( bool ) 3U; /* Non-compliant */
+    ( int ) ena; /* Compliant */
+    //( enum enuma ) 3; /* Non-compliant */
+    ( char ) enc; /* Compliant */
+}`;
+
+const castFiles: TestFile[] = [
+    {name: "goodcasts.cpp", code: passingCasts},
+    {name: "badcasts.cpp", code: failingCasts}
+];
+
 describe("Essential type model: operands", () => {
     const reporter = new MISRAReporter();
     const pass = new S10_EssentialTypePass(true, [1, 2]);
@@ -163,5 +194,19 @@ describe("Essential type model: assignments", () => {
     
     it("should fail", () => { //SHOULD BE 9 BUT DOESNT WORK FOR RETURN STMTS
         expectNumberOfErrors(reporter, pass, 8, Query.search(FileJp, {name: "badassignments.cpp"}).first() as Joinpoint);
+    });
+});
+
+describe("Essential type model: casts", () => {
+    const reporter = new MISRAReporter();
+    const pass = new S10_EssentialTypePass(true, [5]);
+    registerSourceCode(castFiles);
+
+    it("should pass", () => {
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodcasts.cpp"}).first() as Joinpoint);
+    });
+    
+    it("should fail", () => { //SHOULD BE 9 BUT DOESNT WORK FOR RETURN STMTS
+        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "badcasts.cpp"}).first() as Joinpoint);
     });
 });
