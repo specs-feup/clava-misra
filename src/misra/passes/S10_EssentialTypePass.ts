@@ -1,7 +1,7 @@
 import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
 import MISRAPass from "../MISRAPass.js";
 import { PreprocessingReqs } from "../MISRAReporter.js";
-import { BinaryOp, BuiltinType, Call, Cast, EnumType, Expression, FunctionJp, IntLiteral, Joinpoint, ParenExpr, QualType, ReturnStmt, TernaryOp, Type, UnaryOp } from "clava-js/api/Joinpoints.js";
+import { BinaryOp, BuiltinType, Call, Cast, EnumType, Expression, FunctionJp, IntLiteral, Joinpoint, ParenExpr, QualType, ReturnStmt, TernaryOp, Type, UnaryOp, Vardecl } from "clava-js/api/Joinpoints.js";
 import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
 import Fix from "clava-js/api/clava/analysis/Fix.js";
 
@@ -35,7 +35,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
     }
 
     matchJoinpoint($jp: LaraJoinPoint): boolean {
-        return $jp instanceof Expression;
+        return $jp instanceof Expression || $jp instanceof Vardecl || $jp instanceof ReturnStmt;
     }
 
     static getEssentialType(bType: Type): EssentialType {
@@ -51,10 +51,10 @@ export default class S10_EssentialTypePass extends MISRAPass {
             else if (type.builtinKind === "Char_S") {
                 return {category: EssentialTypes.CHAR};
             }
-            else if (type.isInteger && type.isSigned) {
+            else if (type.isInteger && type.isSigned === true) {
                 return {category: EssentialTypes.SIGNED};
             }
-            else if (type.isInteger && !type.isSigned) {
+            else if (type.isInteger && type.isSigned === false) {
                 return {category: EssentialTypes.UNSIGNED};
             }
             else if (type.isFloat) {
@@ -200,8 +200,11 @@ export default class S10_EssentialTypePass extends MISRAPass {
         }
     }
 
-    private static isAssignable($t1: EssentialType, $t2: EssentialType) {
-        if ($t1.category !== $t2.category) {
+    private static isAssignable($t1: EssentialType, $t2: EssentialType, $rhs: Expression) {
+        if ($t1.category === EssentialTypes.UNSIGNED && $rhs instanceof IntLiteral) {
+            return true;
+        }
+        else if ($t1.category !== $t2.category) {
             return false;
         }
         else if ($t1.category === EssentialTypes.ENUM && $t1.enumName === $t2.enumName) {
@@ -210,20 +213,26 @@ export default class S10_EssentialTypePass extends MISRAPass {
         else return true;
     }
 
-    private r10_3_noInvalidAssignments($startNode: Joinpoint) { //not working for decls, enum value not calculated, compound assignments
+    private r10_3_noInvalidAssignments($startNode: Joinpoint) { //enum value not calculated, compound assignments, return stmt
         if ($startNode instanceof BinaryOp && $startNode.kind === "assign") {
-            if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getExprEssentialType($startNode.left), S10_EssentialTypePass.getExprEssentialType($startNode.right))) {
+            if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getExprEssentialType($startNode.left), S10_EssentialTypePass.getExprEssentialType($startNode.right), $startNode.right)) {
                 this.logMISRAError(`Value ${$startNode.right.code} cannot be assigned to ${$startNode.left.code}, since it has a different essential type category.`);
             }
             else if ($startNode.left.bitWidth < $startNode.right.bitWidth) {
                 this.logMISRAError(`Value ${$startNode.right.code} cannot be assigned to ${$startNode.left.code} since it has a narrower type.`);
             }
         }
-        else if ($startNode instanceof ReturnStmt) {
+        else if ($startNode instanceof Vardecl && $startNode.hasInit) {
+            if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getEssentialType($startNode.type), S10_EssentialTypePass.getExprEssentialType($startNode.init), $startNode.init)) {
+                this.logMISRAError(`Value ${$startNode.init.code} cannot be initialized in ${$startNode.code}, since it has a different essential type category.`);
+            }
+            else if ($startNode.bitWidth < $startNode.init.bitWidth) {
+                this.logMISRAError(`Value ${$startNode.init.code} cannot be initialized im ${$startNode.code} since it has a narrower type.`);
+            }
+        }
+        else if ($startNode instanceof ReturnStmt && $startNode.returnExpr) {
             const fun = $startNode.getAncestor("function") as FunctionJp;
-            console.log($startNode.returnExpr.code, $startNode.returnExpr.bitWidth);
-            console.log(fun.bitWidth);
-            if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getExprEssentialType($startNode.returnExpr), S10_EssentialTypePass.getEssentialType(fun.returnType))) {
+            if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getExprEssentialType($startNode.returnExpr), S10_EssentialTypePass.getEssentialType(fun.returnType), $startNode.returnExpr)) {
                 this.logMISRAError(`Value ${$startNode.returnExpr.code} cannot be returned by ${fun.signature}, since it has a different essential type category.`);
             }
             else if (fun.bitWidth < $startNode.returnExpr.bitWidth) {
@@ -233,7 +242,7 @@ export default class S10_EssentialTypePass extends MISRAPass {
         else if ($startNode instanceof Call) {
             const funParams = $startNode.directCallee.params;
             for (let i = 0; i < funParams.length; i++) {
-                if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getEssentialType(funParams[i].type), S10_EssentialTypePass.getEssentialType($startNode.argList[i].type))) {
+                if (!S10_EssentialTypePass.isAssignable(S10_EssentialTypePass.getEssentialType(funParams[i].type), S10_EssentialTypePass.getEssentialType($startNode.argList[i].type), $startNode.argList[i])) {
                     this.logMISRAError(`Value ${$startNode.argList[i].code} cannot be assigned to parameter ${funParams[i].code}, since it has a different essential type category.`);
                 }
                 else if (funParams[i].bitWidth < $startNode.argList[i].bitWidth) {
@@ -261,10 +270,6 @@ export default class S10_EssentialTypePass extends MISRAPass {
 
         const toEssentialType = S10_EssentialTypePass.getEssentialType(toType);
         const fromEssentialType = S10_EssentialTypePass.getExprEssentialType(subExpr);
-
-        if (toType instanceof BuiltinType) {
-            console.log(toType.builtinKind)
-        }
 
         if (toEssentialType.category === EssentialTypes.BOOL && !S10_EssentialTypePass.checkBoolSource($startNode.subExpr)) {
             this.logMISRAError("Only essentially boolean values, or the integer constants 0 or 1, may be cast to an essentially boolean type.");
