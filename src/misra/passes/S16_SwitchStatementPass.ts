@@ -71,7 +71,7 @@ export default class S16_SwitchStatementPass extends MISRAPass {
         if (!($startNode instanceof Switch)) return;
 
         for (let i = 0; i < $startNode.cases.length; i++) {
-            if ($startNode.cases[i].isDefault && (i == 0 || i == $startNode.cases.length)) {
+            if ($startNode.cases[i].isDefault && (i == 0 || i == $startNode.cases.length-1)) {
                 return;
             }
             else if ($startNode.cases[i].isDefault) {
@@ -153,7 +153,7 @@ export default class S16_SwitchStatementPass extends MISRAPass {
         }
     }
 
-    private r16_7_noEssentialBooleanInSwitch($startNode: Joinpoint) { //UNFINISHED
+    private r16_7_noEssentialBooleanInSwitch($startNode: Joinpoint) { //UNFINISHED, can have transformation
         if (!($startNode instanceof Switch)) return;
         this.dependsOn(1, $startNode);
         if (this._wellFormedSwitch === false) return;

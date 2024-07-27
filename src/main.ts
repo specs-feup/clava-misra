@@ -12,7 +12,7 @@ import S17_FunctionPass from "./misra/passes/S17_FunctionPass.js";
 import S13_SideEffectPass from "./misra/passes/S13_SideEffectPass.js";
 import S18_PointersArraysPass from "./misra/passes/S18_PointersArraysPass.js";
 
-const pass = new S18_PointersArraysPass(true, [7,8]);
+const pass = new S16_SwitchStatementPass(true, [1, 6, 7]);
 const reporter = new MISRAReporter();
 
 console.log(Query.root().dump);
