@@ -1,5 +1,5 @@
-import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, Joinpoint, BinaryOp, Field, Param, Vardecl, FunctionJp, Type, PointerType, QualType, FunctionType } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { Program, FileJp, Joinpoint, BinaryOp, Field, Param, Vardecl, FunctionJp, Type, PointerType, QualType, FunctionType } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 
 export default class Section18_PointersAndArrays extends MISRAAnalyser {

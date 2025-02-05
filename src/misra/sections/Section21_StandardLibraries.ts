@@ -1,5 +1,5 @@
-import Query from "lara-js/api/weaver/Query.js";
-import { Call, FileJp, Include, Joinpoint, Program } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { Call, FileJp, Include, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 
 export default class Section21_StandardLibraries extends MISRAAnalyser {

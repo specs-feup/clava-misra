@@ -1,5 +1,5 @@
-import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, Joinpoint, Class } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { Program, FileJp, Joinpoint, Class } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 
 export default class Section19_OverlappingStorage extends MISRAAnalyser {

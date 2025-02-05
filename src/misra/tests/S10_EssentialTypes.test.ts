@@ -1,7 +1,7 @@
 import MISRAReporter from "../MISRAReporter.js";
 import S10_EssentialTypePass from "../passes/S10_EssentialTypePass.js";
-import Query from "lara-js/api/weaver/Query.js";
-import { FileJp, Joinpoint } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { FileJp, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import { expectNumberOfErrors, registerSourceCode, TestFile } from "./utils.js";
 
 const passingOperands = `void goodOperands() {

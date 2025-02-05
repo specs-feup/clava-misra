@@ -1,7 +1,7 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 import MISRAPass from "../MISRAPass.js";
 import { PreprocessingReqs } from "../MISRAReporter.js";
-import { BinaryOp, Field, FunctionJp, FunctionType, Joinpoint, Param, PointerType, QualType, Type, Vardecl } from "clava-js/api/Joinpoints.js";
+import { BinaryOp, Field, FunctionJp, FunctionType, Joinpoint, Param, PointerType, QualType, Type, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 
 export default class S18_PointersArraysPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];

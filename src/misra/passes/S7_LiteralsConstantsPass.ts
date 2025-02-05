@@ -1,7 +1,7 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 import MISRAPass from "../MISRAPass.js";
 import { PreprocessingReqs } from "../MISRAReporter.js";
-import { ArrayAccess, BinaryOp, Call, FunctionJp, IntLiteral, Joinpoint, PointerType, QualType, ReturnStmt, Type, Vardecl, Varref } from "clava-js/api/Joinpoints.js";
+import { ArrayAccess, BinaryOp, Call, FunctionJp, IntLiteral, Joinpoint, PointerType, QualType, ReturnStmt, Type, Vardecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 
 export default class S7_LiteralsConstantsPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];

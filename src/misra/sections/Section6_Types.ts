@@ -1,5 +1,5 @@
-import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, Joinpoint, Field, IntLiteral, BuiltinType } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { Program, FileJp, Joinpoint, Field, IntLiteral, BuiltinType } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 
 export default class Section6_Types extends MISRAAnalyser {

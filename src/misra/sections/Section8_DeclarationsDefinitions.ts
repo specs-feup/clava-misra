@@ -1,7 +1,7 @@
-import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, Param, FunctionJp, StorageClass, Vardecl, EnumDecl, IntLiteral, Joinpoint, DeclStmt, Varref } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { Program, FileJp, Param, FunctionJp, StorageClass, Vardecl, EnumDecl, IntLiteral, Joinpoint, DeclStmt, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
-import Fix from "clava-js/api/clava/analysis/Fix.js";
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
 
 export default class Section8_DeclarationsDefinitions extends MISRAAnalyser {
     ruleMapper: Map<number, (jp: Program | FileJp) => void>;

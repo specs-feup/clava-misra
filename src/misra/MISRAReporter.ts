@@ -1,8 +1,8 @@
-import { FileJp, FunctionJp, Joinpoint, StorageClass, TypedefNameDecl, Vardecl } from "clava-js/api/Joinpoints.js";
+import { FileJp, FunctionJp, Joinpoint, StorageClass, TypedefNameDecl, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAPass from "./MISRAPass.js";
-import Query from "lara-js/api/weaver/Query.js";
-import PassResult from "lara-js/api/lara/pass/results/PassResult.js";
-import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResult.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import PassResult from "@specs-feup/lara/api/lara/pass/results/PassResult.js";
+import AggregatePassResult from "@specs-feup/lara/api/lara/pass/results/AggregatePassResult.js";
 import MISRAPassResult from "./MISRAPassResult.js";
 
 export enum PreprocessingReqs {

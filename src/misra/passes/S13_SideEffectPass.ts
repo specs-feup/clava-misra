@@ -1,10 +1,10 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 import MISRAPass from "../MISRAPass.js";
 import { PreprocessingReqs } from "../MISRAReporter.js";
-import Query from "lara-js/api/weaver/Query.js";
-import { BinaryOp, Call, ExprStmt, InitList, Joinpoint, QualType, UnaryExprOrType, UnaryOp, Vardecl, Varref } from "clava-js/api/Joinpoints.js";
-import TraversalType from "lara-js/api/weaver/TraversalType.js";
-import Fix from "clava-js/api/clava/analysis/Fix.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { BinaryOp, Call, ExprStmt, InitList, Joinpoint, QualType, UnaryExprOrType, UnaryOp, Vardecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
+import TraversalType from "@specs-feup/lara/api/weaver/TraversalType.js";
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
 
 export default class S13_SideEffectPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];

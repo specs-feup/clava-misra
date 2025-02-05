@@ -1,7 +1,7 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 import MISRAPass from "../MISRAPass.js"
 import { PreprocessingReqs } from "../MISRAReporter.js";
-import { BuiltinType, Field, IntLiteral, Joinpoint } from "clava-js/api/Joinpoints.js";
+import { BuiltinType, Field, IntLiteral, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 
 export default class S6_TypePass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];

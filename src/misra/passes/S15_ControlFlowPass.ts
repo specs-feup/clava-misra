@@ -1,8 +1,8 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 import MISRAPass from "../MISRAPass.js";
 import { PreprocessingReqs } from "../MISRAReporter.js";
-import { Break, GotoStmt, Joinpoint, LabelStmt, Loop } from "clava-js/api/Joinpoints.js";
-import Query from "lara-js/api/weaver/Query.js";
+import { Break, GotoStmt, Joinpoint, LabelStmt, Loop } from "@specs-feup/clava/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 export default class S15_ControlFlowPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];

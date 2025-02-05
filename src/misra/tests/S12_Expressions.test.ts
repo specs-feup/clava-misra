@@ -1,7 +1,7 @@
 import MISRAReporter from "../MISRAReporter.js";
 import S12_ExpressionPass from "../passes/S12_ExpressionPass.js";
-import Query from "lara-js/api/weaver/Query.js";
-import { FileJp, Joinpoint } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { FileJp, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import { expectNumberOfErrors, registerSourceCode, TestFile } from "./utils.js";
 
 const passingCode = `int main(int argc, char *argv[]) {

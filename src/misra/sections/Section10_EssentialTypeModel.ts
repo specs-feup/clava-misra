@@ -1,8 +1,8 @@
-import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, TernaryOp, UnaryOp, BinaryOp, Joinpoint, Cast, BuiltinType, Type, Expression, IntLiteral, EnumType, QualType, ReturnStmt, FunctionJp, Call, Op, ParenExpr, Varref } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { Program, FileJp, TernaryOp, UnaryOp, BinaryOp, Joinpoint, Cast, BuiltinType, Type, Expression, IntLiteral, EnumType, QualType, ReturnStmt, FunctionJp, Call, Op, ParenExpr, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
-import Fix from "clava-js/api/clava/analysis/Fix.js";
-import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
+import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 export enum EssentialTypes {
     UNSIGNED = "unsigned",

@@ -1,10 +1,10 @@
-import AggregatePassResult from "lara-js/api/lara/pass/results/AggregatePassResult.js";
+import AggregatePassResult from "@specs-feup/lara/api/lara/pass/results/AggregatePassResult.js";
 import MISRAPassResult from "../MISRAPassResult.js";
 import MISRAReporter from "../MISRAReporter.js";
 import MISRAPass from "../MISRAPass.js";
-import { Joinpoint } from "clava-js/api/Joinpoints.js";
-import Clava from "clava-js/api/clava/Clava.js";
-import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
+import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import Clava from "@specs-feup/clava/api/clava/Clava.js";
+import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 function countErrors($passResult: AggregatePassResult): number {
     let count = 0;

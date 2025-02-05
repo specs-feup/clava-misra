@@ -1,8 +1,8 @@
-import { Program, FileJp, Joinpoint, Include, Call, BuiltinType, ExprStmt } from "clava-js/api/Joinpoints.js";
+import { Program, FileJp, Joinpoint, Include, Call, BuiltinType, ExprStmt } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
-import Query from "lara-js/api/weaver/Query.js";
-import Fix from "clava-js/api/clava/analysis/Fix.js";
-import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
+import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 export default class Section17_Functions extends MISRAAnalyser {
     protected ruleMapper: Map<number, (jp: Program | FileJp) => void>;

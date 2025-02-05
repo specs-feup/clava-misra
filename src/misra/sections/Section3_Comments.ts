@@ -1,6 +1,6 @@
-import { Program, FileJp, Joinpoint, Comment } from "clava-js/api/Joinpoints.js";
+import { Program, FileJp, Joinpoint, Comment } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
-import Query from "lara-js/api/weaver/Query.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 export default class Section3_Comments extends MISRAAnalyser {
     protected ruleMapper: Map<number, (jp: Program | FileJp) => void>;

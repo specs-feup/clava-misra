@@ -1,9 +1,9 @@
-import Query from "lara-js/api/weaver/Query.js";
-import AnalyserResult from "clava-js/api/clava/analysis/AnalyserResult.js";
-import { Program, FileJp, Joinpoint, Varref, Call, QualType, Vardecl, UnaryOp, InitList, BinaryOp } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import AnalyserResult from "@specs-feup/clava/api/clava/analysis/AnalyserResult.js";
+import { Program, FileJp, Joinpoint, Varref, Call, QualType, Vardecl, UnaryOp, InitList, BinaryOp } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
-import TraversalType from "lara-js/api/weaver/TraversalType.js";
-import Fix from "clava-js/api/clava/analysis/Fix.js";
+import TraversalType from "@specs-feup/lara/api/weaver/TraversalType.js";
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
 
 export default class Section13_SideEffects extends MISRAAnalyser {
     ruleMapper: Map<number, (jp: Program | FileJp) => void>;

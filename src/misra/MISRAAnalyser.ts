@@ -1,9 +1,9 @@
-import Query from "lara-js/api/weaver/Query.js";
-import Analyser from "clava-js/api/clava/analysis/Analyser.js";
-import AnalyserResult from "clava-js/api/clava/analysis/AnalyserResult.js";
-import { FileJp, Joinpoint, Program } from "clava-js/api/Joinpoints.js";
-import ResultFormatManager from "clava-js/api/clava/analysis/ResultFormatManager.js"
-import Fix from "clava-js/api/clava/analysis/Fix.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import Analyser from "@specs-feup/clava/api/clava/analysis/Analyser.js";
+import AnalyserResult from "@specs-feup/clava/api/clava/analysis/AnalyserResult.js";
+import { FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import ResultFormatManager from "@specs-feup/clava/api/clava/analysis/ResultFormatManager.js"
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
 
 type T = Program | FileJp;
 

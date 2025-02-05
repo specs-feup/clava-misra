@@ -1,5 +1,5 @@
-import Fix from "clava-js/api/clava/analysis/Fix.js";
-import PassResult from "lara-js/api/lara/pass/results/PassResult.js";
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
+import PassResult from "@specs-feup/lara/api/lara/pass/results/PassResult.js";
 
 export interface MISRAReport {
     rule: number,

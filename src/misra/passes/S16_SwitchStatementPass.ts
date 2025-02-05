@@ -1,9 +1,9 @@
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 import MISRAPass from "../MISRAPass.js";
 import { PreprocessingReqs } from "../MISRAReporter.js";
-import { BinaryOp, Break, BuiltinType, Case, Expression, Joinpoint, Switch } from "clava-js/api/Joinpoints.js";
-import Fix from "clava-js/api/clava/analysis/Fix.js";
-import ClavaJoinPoints from "clava-js/api/clava/ClavaJoinPoints.js";
+import { BinaryOp, Break, BuiltinType, Case, Expression, Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
+import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 export default class S16_SwitchStatementPass extends MISRAPass {
     protected _preprocessingReqs: PreprocessingReqs[] = [];

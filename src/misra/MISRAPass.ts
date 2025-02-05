@@ -1,10 +1,10 @@
-import { Joinpoint } from "clava-js/api/Joinpoints.js";
-import { LaraJoinPoint } from "lara-js/api/LaraJoinPoint.js";
-import SimplePass from "lara-js/api/lara/pass/SimplePass.js";
-import PassResult from "lara-js/api/lara/pass/results/PassResult.js";
+import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
+import SimplePass from "@specs-feup/lara/api/lara/pass/SimplePass.js";
+import PassResult from "@specs-feup/lara/api/lara/pass/results/PassResult.js";
 import { Preprocessing, PreprocessingReqs } from "./MISRAReporter.js";
 import MISRAPassResult from "./MISRAPassResult.js";
-import Fix from "clava-js/api/clava/analysis/Fix.js";
+import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
 
 export default abstract class MISRAPass extends SimplePass {
     protected _ruleMapper: Map<number, ($jp: Joinpoint) => void> = new Map();

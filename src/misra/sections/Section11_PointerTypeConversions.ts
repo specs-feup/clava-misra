@@ -1,5 +1,5 @@
-import Query from "lara-js/api/weaver/Query.js";
-import { Program, FileJp, Cast, FunctionType, PointerType, BuiltinType, IntLiteral, Joinpoint, QualType } from "clava-js/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { Program, FileJp, Cast, FunctionType, PointerType, BuiltinType, IntLiteral, Joinpoint, QualType } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAAnalyser from "../MISRAAnalyser.js";
 import Section10_EssentialTypeModel, { EssentialTypes } from "./Section10_EssentialTypeModel.js";
 
