@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@specs-feup/clava": "^3.0.5",
+    "@specs-feup/clava-visualization": "^1.0.5",
     "@specs-feup/lara": "^3.0.4"
   }
 }
