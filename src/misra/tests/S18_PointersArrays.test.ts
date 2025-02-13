@@ -110,18 +110,18 @@ void f ( void )
 }`;
 
 const arithmeticFiles: TestFile[] = [
-    {name: "badarithmetic.cpp", code: failingArithmetic},
-    {name: "goodarithmetic.cpp", code: passingArithmetic}
+    {name: "badarithmetic.c", code: failingArithmetic},
+    {name: "goodarithmetic.c", code: passingArithmetic}
 ];
 
 const depthFiles: TestFile[] = [
-    {name: "baddepth.cpp", code: failingDepth},
-    {name: "gooddepth.cpp", code: passingDepth}
+    {name: "baddepth.c", code: failingDepth},
+    {name: "gooddepth.c", code: passingDepth}
 ];
 
 const sizeFiles: TestFile[] = [
-    {name: "goodsizes.cpp", code: passingSizes},
-    {name: "badsizes.cpp", code: failingSizes}
+    {name: "goodsizes.c", code: passingSizes},
+    {name: "badsizes.c", code: failingSizes}
 ];
 
 describe("Pointers and arrays: arithmetic", () => {
@@ -130,11 +130,11 @@ describe("Pointers and arrays: arithmetic", () => {
     registerSourceCode(arithmeticFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodarithmetic.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodarithmetic.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => {
-        expectNumberOfErrors(reporter, pass, 3, Query.search(FileJp, {name: "badarithmetic.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 3, Query.search(FileJp, {name: "badarithmetic.c"}).first() as Joinpoint);
     });
 });
 
@@ -144,11 +144,11 @@ describe("Pointers and arrays: declaration depth", () => {
     registerSourceCode(depthFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "gooddepth.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "gooddepth.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => {
-        expectNumberOfErrors(reporter, pass, 7, Query.search(FileJp, {name: "baddepth.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 7, Query.search(FileJp, {name: "baddepth.c"}).first() as Joinpoint);
     });
 });
 
@@ -158,10 +158,10 @@ describe("Pointers and arrays: variable size", () => {
     registerSourceCode(sizeFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodsizes.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodsizes.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => {
-        expectNumberOfErrors(reporter, pass, 3, Query.search(FileJp, {name: "badsizes.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 3, Query.search(FileJp, {name: "badsizes.c"}).first() as Joinpoint);
     });
 });

@@ -126,13 +126,13 @@ const failingFormat = `void f ( void )
 }`;
 
 const miscFiles: TestFile[] = [
-    {name: "badmmisc.cpp", code: failingMisc},
-    {name: "goodmisc.cpp", code: passingMisc}
+    {name: "badmmisc.c", code: failingMisc},
+    {name: "goodmisc.c", code: passingMisc}
 ];
 
 const formatFiles: TestFile[] = [
-    {name: "badformat.cpp", code: failingFormat},
-    {name: "goodformat.cpp", code: passingFormat}
+    {name: "badformat.c", code: failingFormat},
+    {name: "goodformat.c", code: passingFormat}
 ];
 
 describe("Switch statements: misc", () => {
@@ -141,11 +141,11 @@ describe("Switch statements: misc", () => {
     registerSourceCode(miscFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodmisc.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodmisc.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => {
-        expectNumberOfErrors(reporter, pass, 3, Query.search(FileJp, {name: "badmisc.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 3, Query.search(FileJp, {name: "badmisc.c"}).first() as Joinpoint);
     });
 });
 
@@ -155,10 +155,10 @@ describe("Switch statements: format", () => {
     registerSourceCode(formatFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodformat.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodformat.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => {
-        expectNumberOfErrors(reporter, pass, 5, Query.search(FileJp, {name: "badformat.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 5, Query.search(FileJp, {name: "badformat.c"}).first() as Joinpoint);
     });
 });

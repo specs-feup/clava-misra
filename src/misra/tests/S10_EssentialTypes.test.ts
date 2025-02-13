@@ -69,8 +69,8 @@ const failingOperands = `void badOperands() {
 }`;
 
 const operandFiles: TestFile[] = [
-    {name: "badoperands.cpp", code: failingOperands},
-    {name: "goodoperands.cpp", code: passingOperands},
+    {name: "badoperands.c", code: failingOperands},
+    {name: "goodoperands.c", code: passingOperands},
 ];
 
 const passingAssignments = `void use_uint16(unsigned int a) {
@@ -134,8 +134,8 @@ void badAssignments() {
 }`;
 
 const assignmentFiles: TestFile[] = [
-    {name: "badassignments.cpp", code: failingAssignments},
-    {name: "goodassignments.cpp", code: passingAssignments}
+    {name: "badassignments.c", code: failingAssignments},
+    {name: "goodassignments.c", code: passingAssignments}
 ];
 
 const failingCasts = `void badCasts() {
@@ -165,8 +165,8 @@ const passingCasts = `void goodCasts() {
 }`;
 
 const castFiles: TestFile[] = [
-    {name: "goodcasts.cpp", code: passingCasts},
-    {name: "badcasts.cpp", code: failingCasts}
+    {name: "goodcasts.c", code: passingCasts},
+    {name: "badcasts.c", code: failingCasts}
 ];
 
 const passingComposites = `void goodComposites() {
@@ -192,8 +192,8 @@ const failingComposites = `void badComposites() {
 }`;
 
 const compositeFiles: TestFile[] = [
-    {name: "goodcomposites.cpp", code: passingComposites},
-    {name: "badcomposites.cpp", code: failingComposites}
+    {name: "goodcomposites.c", code: passingComposites},
+    {name: "badcomposites.c", code: failingComposites}
 ]
 
 describe("Essential type model: operands", () => {
@@ -202,11 +202,11 @@ describe("Essential type model: operands", () => {
     registerSourceCode(operandFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodoperands.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodoperands.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => {
-        expectNumberOfErrors(reporter, pass, 24, Query.search(FileJp, {name: "badoperands.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 24, Query.search(FileJp, {name: "badoperands.c"}).first() as Joinpoint);
     });
 });
 
@@ -216,11 +216,11 @@ describe("Essential type model: assignments", () => {
     registerSourceCode(assignmentFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodassignments.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodassignments.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => { //SHOULD BE 9 BUT DOESNT WORK FOR RETURN STMTS
-        expectNumberOfErrors(reporter, pass, 8, Query.search(FileJp, {name: "badassignments.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 8, Query.search(FileJp, {name: "badassignments.c"}).first() as Joinpoint);
     });
 });
 
@@ -230,11 +230,11 @@ describe("Essential type model: casts", () => {
     registerSourceCode(castFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodcasts.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodcasts.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => { //SHOULD BE 9 BUT DOESNT WORK FOR RETURN STMTS
-        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "badcasts.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "badcasts.c"}).first() as Joinpoint);
     });
 });
 
@@ -244,10 +244,10 @@ describe("Essential type model: composite expressions", () => {
     registerSourceCode(compositeFiles);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodcomposites.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "goodcomposites.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => { //SHOULD BE 9 BUT DOESNT WORK FOR RETURN STMTS
-        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "badcomposites.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "badcomposites.c"}).first() as Joinpoint);
     });
 });

@@ -24,8 +24,8 @@ const failingCode = `int test(int argc, char *argv[]) {
 }`;
 
 const files: TestFile[] = [
-    {name: "bad.cpp", code: failingCode},
-    {name: "good.cpp", code: passingCode}
+    {name: "bad.c", code: failingCode},
+    {name: "good.c", code: passingCode}
 ]
 
 describe("Expressions", () => {
@@ -34,10 +34,10 @@ describe("Expressions", () => {
     registerSourceCode(files);
 
     it("should pass", () => {
-        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "good.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 0, Query.search(FileJp, {name: "good.c"}).first() as Joinpoint);
     });
     
     it("should fail", () => {
-        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "bad.cpp"}).first() as Joinpoint);
+        expectNumberOfErrors(reporter, pass, 2, Query.search(FileJp, {name: "bad.c"}).first() as Joinpoint);
     });
 });
