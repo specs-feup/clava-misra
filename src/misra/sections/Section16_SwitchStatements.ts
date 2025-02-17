@@ -5,16 +5,18 @@ import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 export default class Section16_SwitchStatements extends MISRAAnalyser {
-    ruleMapper: Map<number, (jp: Program | FileJp) => void>;
+    ruleMapper: Map<string, (jp: Program | FileJp) => void>;
 
-    constructor(rules: number[]) {
+    constructor(rules?: string[]) {
         super(rules);
         this.ruleMapper = new Map([
-            [1, this.r16_1_16_3_wellFormedSwitch.bind(this)],
-            [2, this.r16_2_topLevelSwitchLabels.bind(this)],
-            [4, this.r16_4_switchHasDefault.bind(this)],
-            [5, this.r16_5_defaultFirstOrLast.bind(this)],
-            [7, this.r16_7_noEssentialBooleanInSwitch.bind(this)]
+            ["16.1", this.r16_1_16_3_wellFormedSwitch.bind(this)],
+            ["16.2", this.r16_2_topLevelSwitchLabels.bind(this)],
+            ["16.3", this.r16_1_16_3_wellFormedSwitch.bind(this)],
+            ["16.4", this.r16_4_switchHasDefault.bind(this)],
+            ["16.5", this.r16_5_defaultFirstOrLast.bind(this)],
+            ["16.6", this.r16_6_noTwoClauses.bind(this)],
+            ["16.7", this.r16_7_noEssentialBooleanInSwitch.bind(this)]
         ]);
     }
 
@@ -35,11 +37,11 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
                 }
     
                 if (foundStmt && child.instanceOf("case")) {
-                    this.logMISRAError(child, `A break is missing before ${child.code}`);
+                    this.logMISRAError(this.currentRule, child, `A break is missing before ${child.code}`);
                 }
             }
             if (!switchStmt.children[1].lastChild.instanceOf("break")) {
-                this.logMISRAError(switchStmt.children[1].lastChild, "A break is missing at the end of the switch statement.");
+                this.logMISRAError(this.currentRule, switchStmt.children[1].lastChild, "A break is missing at the end of the switch statement.");
             }
         }   
     }
@@ -47,15 +49,14 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
     private r16_2_topLevelSwitchLabels($startNode: Joinpoint) {
         Query.searchFrom($startNode, Case).get().forEach(caseLabel => {
             if (!caseLabel.currentRegion.instanceOf("switch")) {
-                this.logMISRAError(caseLabel, "A switch label can only be used if its enclosing compound statement is the switch statement itself.")
+                this.logMISRAError(this.currentRule, caseLabel, "A switch label can only be used if its enclosing compound statement is the switch statement itself.")
             }
         }, this);
     }
 
     private r16_4_switchHasDefault($startNode: Joinpoint) {
-        Query.searchFrom($startNode, Switch, {hasDefaultCase: false}).get().forEach(sw => this.logMISRAError(sw, "Switch statement is missing a default case."), this);
+        Query.searchFrom($startNode, Switch, {hasDefaultCase: false}).get().forEach(sw => this.logMISRAError(this.currentRule, sw, "Switch statement is missing a default case."), this);
     }
-    
 
     private r16_5_defaultFirstOrLast($startNode: Joinpoint) {
         Query.searchFrom($startNode, Switch).get().forEach(switchStmt => {
@@ -64,7 +65,7 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
                     return;
                 }
                 else if (switchStmt.cases[i].isDefault) {
-                    this.logMISRAError(switchStmt, "The default case of a switch statement must be the first or last label.");
+                    this.logMISRAError(this.currentRule, switchStmt, "The default case of a switch statement must be the first or last label.");
                     return;
                 }
             }
@@ -90,7 +91,7 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
             }
 
             if (clauses == 2) {
-                this.logMISRAError(switchStmt, "Switch statements should have more than two clauses.", new Fix(
+                this.logMISRAError(this.currentRule, switchStmt, "Switch statements should have more than two clauses.", new Fix(
                     switchStmt,
                     (switchStmt: Joinpoint) => {
                         let firstClauseExpr: Expression;
@@ -109,7 +110,7 @@ export default class Section16_SwitchStatements extends MISRAAnalyser {
     private r16_7_noEssentialBooleanInSwitch($startNode: Joinpoint) { //is this the best way?
         Query.searchFrom($startNode, Switch).get().forEach(switchStmt => {
             if (switchStmt.condition.type instanceof BuiltinType && switchStmt.condition.type.builtinKind === "Bool") {
-                this.logMISRAError(switchStmt, `Switch statement controlling expression ${switchStmt.condition.code} must not have essentially boolean type.`, new Fix(
+                this.logMISRAError(this.currentRule, switchStmt, `Switch statement controlling expression ${switchStmt.condition.code} must not have essentially boolean type.`, new Fix(
                     switchStmt,
                     (switchStmt) => {
                         const trueClause: Joinpoint[] = [];

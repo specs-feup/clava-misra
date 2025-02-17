@@ -4,12 +4,15 @@ import MISRAAnalyser from "../MISRAAnalyser.js";
 import Section10_EssentialTypeModel, { EssentialTypes } from "./Section10_EssentialTypeModel.js";
 
 export default class Section11_PointerTypeConversions extends MISRAAnalyser {
-    ruleMapper: Map<number, (jp: Program | FileJp) => void>;
+    ruleMapper: Map<string, (jp: Program | FileJp) => void>;
     
-    constructor(rules: number[]) {
+    constructor(rules?: string[]) {
         super(rules);
         this.ruleMapper = new Map([
-            [7, this.r11_7_noFloatConversions.bind(this)]
+            ["11.1", this.r11_1_noFunctionPointerConversions.bind(this)],
+            ["11.4", this.r11_4_noIntToPointer.bind(this)],
+            ["11.7", this.r11_7_noFloatConversions.bind(this)],
+            ["11.5", this.r11_5_noConversionFromVoid.bind(this)]
         ]);
     }
 
@@ -26,7 +29,6 @@ export default class Section11_PointerTypeConversions extends MISRAAnalyser {
                 return false;
             }
         }
-    
         return true;
     }
 
@@ -36,20 +38,19 @@ export default class Section11_PointerTypeConversions extends MISRAAnalyser {
             const toType = cast.toType.desugarAll;
 
             if (fromType instanceof PointerType && toType instanceof PointerType && fromType.pointee.desugarAll instanceof FunctionType && toType.pointee.desugarAll instanceof FunctionType) {
-                console.log("hello");
                 if (!Section11_PointerTypeConversions.functionTypesMatch(fromType.pointee.desugarAll, toType.pointee.desugarAll)) {
-                    this.logMISRAError(cast, "A function pointer can only be converted into another function pointer if the types match.");
+                    this.logMISRAError(this.currentRule, cast, "A function pointer can only be converted into another function pointer if the types match.");
 
                 }
             }
             else if (fromType instanceof PointerType && fromType.pointee.desugarAll instanceof FunctionType) {
                 if (!(toType instanceof BuiltinType && toType.isVoid)) {
-                    this.logMISRAError(cast, "A function pointer can only be converted into another function pointer if the types match.");
+                    this.logMISRAError(this.currentRule, cast, "A function pointer can only be converted into another function pointer if the types match.");
                 }
             }
             else if (toType instanceof PointerType && toType.pointee.desugarAll instanceof FunctionType) {
                 if (!(cast.subExpr instanceof IntLiteral && Number(cast.subExpr.value) === 0)) {
-                    this.logMISRAError(cast, "Only null pointer constants can be converted into function pointers.");
+                    this.logMISRAError(this.currentRule, cast, "Only null pointer constants can be converted into function pointers.");
                 }
             }
         });
@@ -60,7 +61,7 @@ export default class Section11_PointerTypeConversions extends MISRAAnalyser {
             const fromType = cast.fromType.desugarAll;
             const toType = cast.toType.desugarAll;
             if (fromType.isPointer !== toType.isPointer) {
-                this.logMISRAError(cast, "Integers should not be converted to pointers and vice-versa.");
+                this.logMISRAError(this.currentRule, cast, "Integers should not be converted to pointers and vice-versa.");
             }
         })
     }
@@ -71,7 +72,7 @@ export default class Section11_PointerTypeConversions extends MISRAAnalyser {
             const toType =cast.toType.desugarAll;
             if (fromType instanceof PointerType && fromType.pointee instanceof BuiltinType && fromType.pointee.isVoid
                 && toType instanceof PointerType && !(toType.pointee instanceof BuiltinType && toType.pointee.isVoid)) {
-                this.logMISRAError(cast, "Pointer to void should not be converted to pointer to object");
+                this.logMISRAError(this.currentRule, cast, "Pointer to void should not be converted to pointer to object");
             }
         });
     }
@@ -91,12 +92,12 @@ export default class Section11_PointerTypeConversions extends MISRAAnalyser {
             if (fromType instanceof PointerType && !(toType instanceof PointerType)
                     && Section10_EssentialTypeModel.getEssentialType(toType) !== EssentialTypes.SIGNED
                     && Section10_EssentialTypeModel.getEssentialType(toType) !== EssentialTypes.UNSIGNED) {
-                this.logMISRAError(cast, "A pointer to object cannot be cast to a non-integer arithmetic type.");
+                this.logMISRAError(this.currentRule, cast, "A pointer to object cannot be cast to a non-integer arithmetic type.");
             }
             else if (toType instanceof PointerType && !(fromType instanceof PointerType)
                     && Section10_EssentialTypeModel.getEssentialType(fromType) !== EssentialTypes.SIGNED
                     && Section10_EssentialTypeModel.getEssentialType(fromType) !== EssentialTypes.UNSIGNED) {
-                this.logMISRAError(cast, "A non-arithmetic integer value cannot be cast to a pointer to object.");
+                this.logMISRAError(this.currentRule, cast, "A non-arithmetic integer value cannot be cast to a pointer to object.");
             }
         }, this);
     }

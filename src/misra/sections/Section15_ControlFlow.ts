@@ -3,20 +3,20 @@ import { Program, FileJp, GotoStmt, Joinpoint, LabelStmt, Break } from "@specs-f
 import MISRAAnalyser from "../MISRAAnalyser.js";
 
 export default class Section15_ControlFlow extends MISRAAnalyser {
-    ruleMapper: Map<number, (jp: Program | FileJp) => void>;
+    ruleMapper: Map<string, (jp: Program | FileJp) => void>;
     
-    constructor(rules: number[]) {
+    constructor(rules?: string[]) {
         super(rules);
         this.ruleMapper = new Map([
-            [1, this.r15_1_noGoto.bind(this)],
-            [2, this.r15_2_noBackJumps.bind(this)],
-            [3, this.r15_3_gotoBlockEnclosed.bind(this)],
-            [4, this.r15_4_loopSingleBreak.bind(this)]
+            ["15.1", this.r15_1_noGoto.bind(this)],
+            ["15.2", this.r15_2_noBackJumps.bind(this)],
+            ["15.3", this.r15_3_gotoBlockEnclosed.bind(this)],
+            ["15.4", this.r15_4_loopSingleBreak.bind(this)]
         ]);
     }
 
     private r15_1_noGoto($startNode: Joinpoint) {
-        Query.searchFrom($startNode, GotoStmt).get().forEach(goto => this.logMISRAError(goto, "goto statements should not be used."), this);
+        Query.searchFrom($startNode, GotoStmt).get().forEach(goto => this.logMISRAError(this.currentRule, goto, "goto statements should not be used."), this);
 
         return [];
     }
@@ -29,7 +29,7 @@ export default class Section15_ControlFlow extends MISRAAnalyser {
     private r15_2_noBackJumps($startNode: Joinpoint) {
         for (const gotoStmt of Query.searchFrom($startNode, GotoStmt)) {
             if (!Section15_ControlFlow.isBeforeInCode(gotoStmt.line, gotoStmt.column, gotoStmt.label.line, gotoStmt.label.column)) {
-                this.logMISRAError(gotoStmt, "Back jumps using goto statements are not allowed.");
+                this.logMISRAError(this.currentRule, gotoStmt, "Back jumps using goto statements are not allowed.");
             } //maybe there is a better way?
         }
     }
@@ -55,7 +55,7 @@ export default class Section15_ControlFlow extends MISRAAnalyser {
             } while (temp.parent.astId !== ancestor.astId);
     
             if (error) {
-                this.logMISRAError(gotoStmt, `Label ${gotoStmt.label.name} is not declared in a block enclosing the goto statement.`);
+                this.logMISRAError(this.currentRule, gotoStmt, `Label ${gotoStmt.label.name} is not declared in a block enclosing the goto statement.`);
             }
         }
     }
@@ -107,7 +107,7 @@ export default class Section15_ControlFlow extends MISRAAnalyser {
     
         exits.forEach((v, k, m) => {
             if (v > 1) {
-                this.logMISRAError(nodes.get(k) as Joinpoint, "Loops should have at most one break/goto statement.")
+                this.logMISRAError(this.currentRule, nodes.get(k) as Joinpoint, "Loops should have at most one break/goto statement.")
             }
         }, this);
     }

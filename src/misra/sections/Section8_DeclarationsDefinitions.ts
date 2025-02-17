@@ -4,23 +4,23 @@ import MISRAAnalyser from "../MISRAAnalyser.js";
 import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
 
 export default class Section8_DeclarationsDefinitions extends MISRAAnalyser {
-    ruleMapper: Map<number, (jp: Program | FileJp) => void>;
+    ruleMapper: Map<string, (jp: Program | FileJp) => void>;
     
-    constructor(rules: number[]) {
+    constructor(rules?: string[]) {
         super(rules);
         this.ruleMapper = new Map([
-            [2, this.r8_2_functionPrototype.bind(this)],
-            [3, this.r8_3_compatibleDefinitions.bind(this)],
-            [7, this.r8_7_noUnnecessaryExternalLinkage.bind(this)],
-            [10, this.r8_10_onlyStaticInline.bind(this)],
-            [11, this.r8_11_externArrayExplicitSize.bind(this)],
-            [12, this.r8_12_implicitExplicitEnumMatching.bind(this)]
+            ["8.2", this.r8_2_functionPrototype.bind(this)],
+            ["8.3", this.r8_3_compatibleDefinitions.bind(this)],
+            ["8.7", this.r8_7_noUnnecessaryExternalLinkage.bind(this)],
+            ["8.10", this.r8_10_onlyStaticInline.bind(this)],
+            ["8.11", this.r8_11_externArrayExplicitSize.bind(this)],
+            ["8.12", this.r8_12_implicitExplicitEnumMatching.bind(this)]
         ]);
     }
 
     private r8_2_functionPrototype($startNode: Joinpoint) { //needs to apply to function pointers, void info lost
         Query.searchFrom($startNode, Param).get().filter(param => !param.name)
-            .forEach(param => this.logMISRAError(param, `Parameter of type ${param.type.code} lacks a name.`), this);
+            .forEach(param => this.logMISRAError(this.currentRule, param, `Parameter of type ${param.type.code} lacks a name.`), this);
     }
 
     private r8_3_compatibleDefinitions($startNode: Joinpoint) { //what if no impl?
@@ -28,10 +28,10 @@ export default class Section8_DeclarationsDefinitions extends MISRAAnalyser {
             fun.declarationJps.forEach(decl => {
                 for (let i = 0; i < fun.params.length; i++) {
                     if (fun.paramNames[i] !== decl.paramNames[i]) {
-                        this.logMISRAError(fun, `Mismatch in name of parameters with declaration on ${decl.filename}@${decl.line}:${decl.column}.`);
+                        this.logMISRAError(this.currentRule, fun, `Mismatch in name of parameters with declaration on ${decl.filename}@${decl.line}:${decl.column}.`);
                     }
                     if (fun.params[i].type.code !== decl.params[i].type.code) {
-                        this.logMISRAError(fun, `Mismatch in parameter types with declaration on ${decl.filename}@${decl.line}:${decl.column}`);
+                        this.logMISRAError(this.currentRule, fun, `Mismatch in parameter types with declaration on ${decl.filename}@${decl.line}:${decl.column}`);
                     }
                 }
             }, this);
@@ -55,7 +55,7 @@ export default class Section8_DeclarationsDefinitions extends MISRAAnalyser {
                         }
                     }, this);
                     if (!hasExternals) {
-                        this.logMISRAError(jp, `Function ${jp.name} has external linkage but it is only referenced in its file.`);
+                        this.logMISRAError(this.currentRule, jp, `Function ${jp.name} has external linkage but it is only referenced in its file.`);
                     }
                 }
     
@@ -78,14 +78,14 @@ export default class Section8_DeclarationsDefinitions extends MISRAAnalyser {
         }, this);
 
         globals.forEach((v, k, m) => {
-            this.logMISRAError(v.decl, `Variable ${v.decl.name} is declared with external linkage but is not referenced outside its file.`);
+            this.logMISRAError(this.currentRule, v.decl, `Variable ${v.decl.name} is declared with external linkage but is not referenced outside its file.`);
         }, this);
     }
 
     private r8_10_onlyStaticInline($startNode: Joinpoint) {
         Query.searchFrom($startNode, FunctionJp, {isInline: true}).get().forEach(fun => {
             if (fun.storageClass !== StorageClass.STATIC) {
-                this.logMISRAError(fun, "Inline functions must always be declared static.");
+                this.logMISRAError(this.currentRule, fun, "Inline functions must always be declared static.");
             }
         });
     }
@@ -93,14 +93,14 @@ export default class Section8_DeclarationsDefinitions extends MISRAAnalyser {
     private r8_11_externArrayExplicitSize($startNode: Joinpoint) {
         for (const varDecl of Query.searchFrom($startNode, Vardecl, {storageClass: StorageClass.EXTERN})) {
             if (varDecl.type.isArray && varDecl.type.arraySize === -1) {
-                this.logMISRAError(varDecl, `Size of external array ${varDecl.name} is not explicit.`)
+                this.logMISRAError(this.currentRule, varDecl, `Size of external array ${varDecl.name} is not explicit.`)
             }
         }
     }
 
     private setEnumMap(map: Map<number, boolean>, newValue: number, isExplicit: boolean, jp: EnumDecl) {
         if (map.has(newValue) && !(isExplicit && map.get(newValue))) {
-            this.logMISRAError(jp, `An implicitly numbered identifier in enum ${jp.name} shares a value with another identifier.`, new Fix(jp, jp => {
+            this.logMISRAError(this.currentRule, jp, `An implicitly numbered identifier in enum ${jp.name} shares a value with another identifier.`, new Fix(jp, jp => {
                 
             }));
         }

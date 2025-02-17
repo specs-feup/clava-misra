@@ -4,13 +4,13 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
 import Fix from "@specs-feup/clava/api/clava/analysis/Fix.js";
 
 export default class Section2_UnusedCode extends MISRAAnalyser {
-    ruleMapper: Map<number, (jp: Program | FileJp) => void>;
+    protected ruleMapper: Map<string, (jp: Program | FileJp) => void>;
     
-    constructor(rules: number[]) {
+    constructor(rules?: string[]) {
         super(rules);
         this.ruleMapper = new Map([
-            [6, this.r2_6_noUnusedLabels.bind(this)],
-            [7, this.r2_7_noUnusedParams.bind(this)]
+            ["2.6", this.r2_6_noUnusedLabels.bind(this)],
+            ["2.7", this.r2_7_noUnusedParams.bind(this)]
         ]);
     }
 
@@ -18,7 +18,7 @@ export default class Section2_UnusedCode extends MISRAAnalyser {
         Query.searchFrom($startNode, FunctionJp).get().forEach(fun => {
             Query.searchFrom(fun, LabelStmt).get().forEach(label => {
                 if (Query.searchFrom(fun, GotoStmt, {label: jp => jp.astId == label.decl.astId}).get().length === 0) {
-                    this.logMISRAError(label, `Label ${label.decl.name} is unused in function ${fun.name}.`);
+                    this.logMISRAError(this.currentRule, label, `Label ${label.decl.name} is unused in function ${fun.name}.`);
                 }
             },this);
         }, this);
@@ -36,7 +36,7 @@ export default class Section2_UnusedCode extends MISRAAnalyser {
             }, this);
 
             params.forEach((v, k, m) => {
-                this.logMISRAError(v, `Parameter ${v.name} is unused.`, new Fix(v, $jp => {
+                this.logMISRAError(this.currentRule, v, `Parameter ${v.name} is unused.`, new Fix(v, $jp => {
                     const fun = $jp.getAncestor("function") as FunctionJp;
                     const params = fun.params.filter(param => param.astId !== $jp.astId);
                     fun.setParams(params);
