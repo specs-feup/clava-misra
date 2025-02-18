@@ -2,17 +2,14 @@ import misraAnalysers from "./sections/index.js";
 
 import MISRAAnalyser from "./MISRAAnalyser.js";
 import MISRAAnalyserResult from "./MISRAAnalyserResult.js";
-import MessageGenerator from "@specs-feup/clava/api/clava/analysis/MessageGenerator.js";
 
 export default class MISRATool {
-    private messageManager: MessageGenerator;
     #analysers: Map<number, MISRAAnalyser>;
     // #pass: Map<number, MISRAPass>;
     #violations: MISRAAnalyserResult[] = [];
     //#corrections: MISRAPassResult[] = [];
 
     constructor(rules?: string[]) {
-        this.messageManager = new MessageGenerator();
         this.#analysers = misraAnalysers;
         
         // TODO: init pass
@@ -33,14 +30,11 @@ export default class MISRATool {
             const analysisResult = analyser.analyse();
             if (analysisResult !== undefined) {
                 this.#violations.push(...analysisResult.list as MISRAAnalyserResult[]); 
-            } 
-            if (printErrors) {
-                this.messageManager.append(analysisResult);
             }
         });
 
         if (printErrors) {
-            this.messageManager.generateReport();
+            this.printErrors();
         }
     } 
 
@@ -50,10 +44,17 @@ export default class MISRATool {
         // correct errors
     }
 
+    private printErrors() {
+        for (const violation of this.#violations) {
+            console.log(`${violation.name}. ${violation.message}`);
+        }
+    }
+
     private getRuleSection(rule: string): number {
         if (!/^\d+\.\d+$/.test(rule)) {
             throw new Error(`Invalid rule format: ${rule}`);
         }
         return Number(rule.split(".")[0]);
     }
+
 }
