@@ -21,7 +21,7 @@ export default class Section17_Functions extends MISRAAnalyser {
 
     private r17_7_returnValuesAreUsed($startNode: Joinpoint) {
         Query.searchFrom($startNode, Call, {returnType: (type) => !(type instanceof BuiltinType && type.isVoid)}).get().forEach(call => {
-            console.log(call.parent);
+            //console.log(call.parent);
             if (call.parent instanceof ExprStmt) {
                 this.logMISRAError(this.currentRule, call, `Return value of ${call.signature} must be used. It can be discarded with an explicit cast to void.`, new Fix(call, ($jp) => {
                     const newJp = ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), $jp.deepCopy() as Call);

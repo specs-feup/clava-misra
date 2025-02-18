@@ -204,8 +204,8 @@ export default class Section10_EssentialTypeModel extends MISRAAnalyser {
         }, this);
         Query.searchFrom($startNode, ReturnStmt).get().forEach(ret => {
             const fun = ret.getAncestor("function") as FunctionJp;
-            console.log(ret.returnExpr.code, ret.returnExpr.bitWidth);
-            console.log(fun.bitWidth);
+            //console.log(ret.returnExpr.code, ret.returnExpr.bitWidth);
+            //console.log(fun.bitWidth);
             if (Section10_EssentialTypeModel.getEssentialType(ret.returnExpr.type) !== Section10_EssentialTypeModel.getEssentialType(fun.returnType)) {
                 this.logMISRAError(this.currentRule, ret, `Value ${ret.returnExpr.code} cannot be returned by ${fun.signature}, since it has a different essential type category.`);
             }

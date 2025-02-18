@@ -76,7 +76,7 @@ export default class Section13_SideEffects extends MISRAAnalyser {
                 else {
                     $jp.insertBefore(jp.deepCopy());
                 }
-                console.log(jp);
+                //console.log(jp);
                 jp.replaceWith(jp.operand);
             }
         }));

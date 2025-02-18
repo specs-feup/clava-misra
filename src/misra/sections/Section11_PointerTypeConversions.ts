@@ -17,7 +17,7 @@ export default class Section11_PointerTypeConversions extends MISRAAnalyser {
     }
 
     private static functionTypesMatch(t1: FunctionType, t2: FunctionType) {
-        console.log(t1.returnType.kind, t2.returnType.kind);
+        //console.log(t1.returnType.kind, t2.returnType.kind);
         if (t1.returnType != t2.returnType) {
             return false;
         }
