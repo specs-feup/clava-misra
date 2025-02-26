@@ -15,7 +15,7 @@
     "test:watch": "npm run test -- --watch"
   },
   "dependencies": {
-    "@specs-feup/clava": "^3.0.5",
+    "@specs-feup/clava": "^3.0.8",
     "@specs-feup/clava-visualization": "^1.0.5",
     "@specs-feup/lara": "^3.0.4"
   },
