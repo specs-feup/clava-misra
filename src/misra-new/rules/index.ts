@@ -5,6 +5,7 @@ import Rule_3_2_CommentSequences from "./Section3_Comments/Rule_3_2_LineSplicing
 
 export function misraRules(context: MISRAContext) {
     return [
+        new Rule_2_6_UnusedLabels(context),
         new Rule_3_1_CommentSequences(context),
         new Rule_3_2_CommentSequences(context)
     ];
