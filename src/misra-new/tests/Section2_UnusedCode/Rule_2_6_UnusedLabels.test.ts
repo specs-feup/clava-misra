@@ -1,17 +1,18 @@
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 
-const passingCode = `int test(int argc, char *argv[]) {
-    int x = 0;
-    goto label1;
+const passingCode = `
+    int test1() {
+        int x = 0;
+        goto label1;
 
-    label1: 
-        x++;
+        label1: 
+            x++;
 
-    return 0;
-}`;
+        return 0;
+    }`;
 
 const failingCode = `
-    int test(int argc, char *argv[]) {
+    int test2() {
         int x = 0;
         label1: 
             x = 1;

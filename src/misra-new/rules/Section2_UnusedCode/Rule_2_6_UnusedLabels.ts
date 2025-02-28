@@ -29,7 +29,7 @@ export default class Rule_2_6_UnusedLabels extends MISRARule {
                 this.logMISRAError(label, `Label ${label.decl.name} is unused in function ${$jp.name}.`)
             )
         }
-        return this.getUnusedLabels($jp).length > 0;
+        return unusedLabels.length > 0;
     }
     
     transform($jp: Joinpoint): boolean {

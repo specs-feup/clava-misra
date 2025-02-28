@@ -31,6 +31,7 @@ export function registerSourceCode(files: TestFile[]): void {
     });
   
     afterAll(() => {
+      Clava.getProgram().rebuild();
       Clava.getProgram().pop();
     });
 }

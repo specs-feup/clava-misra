@@ -57,7 +57,7 @@ export default abstract class MISRARule {
         this.context.addMISRAError(
             this.ruleID, 
             $jp, 
-            `MISRA Rule ${this.ruleID} violation at ${$jp.filename}@${$jp.line}:${$jp.column}: ${msg}`
+            `MISRA Rule ${this.ruleID} violation at ${$jp.filepath}@${$jp.line}:${$jp.column}: ${msg}`
         )
     }
 }

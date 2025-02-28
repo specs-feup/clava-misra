@@ -1,12 +1,12 @@
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 
-const passingCode = `int main(int argc, char *argv[]) {
+const passingCode = `int main() {
     int x, y, z;// good inline comment
     // good */ comment
     return 0;
 }`;
 
-const failingCode = `int test(int argc, char *argv[]) {
+const failingCode = `int test() {
     int x, y, z; // bad inl/*ine comment
 
     /* bad /* block comment */
