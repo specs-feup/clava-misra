@@ -11,6 +11,7 @@ export default class MISRATool {
 
     //TODO: [optional] specify rules 
     constructor() {
+        console.log("hello")
         this.#context = new MISRAContext();
         this.#misraRules = misraRules(this.#context);
     }
@@ -26,7 +27,7 @@ export default class MISRATool {
         if (this.#context.errors.length > 0) {
             this.#context.printErrors();
         } else {
-            console.log("No MISRA violations detected.");
+            console.log("No MISRA-C violations detected.");
         }
     } 
 
@@ -36,13 +37,13 @@ export default class MISRATool {
 
         do {
             iteration++;
-            console.log(`Iteration #${iteration}: Applying MISRA transformations...`);
+            console.log(`Iteration #${iteration}: Applying MISRA-C transformations...`);
 
             modified = this.transformAST(Query.root() as Program);
         } while(modified);
 
         if (this.#context.errors.length > 0) {
-            console.log("Remaining MISRA violations:");
+            console.log("Remaining MISRA-C violations:");
             this.#context.printErrors();
         } else {
             console.log("All detected violations were corrected.");
@@ -59,6 +60,7 @@ export default class MISRATool {
         for (const rule of this.#misraRules) {
             if (rule.transform($jp)) 
                 modified = true;
+                break;
         }
 
         for (const child of $jp.children) {
