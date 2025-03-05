@@ -1,5 +1,5 @@
 import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
-import MISRAError from "./MISRAError.js";
+import { MISRAError } from "./MISRA.js";
 
 export default class MISRAContext {
     #misraErrors: MISRAError[] = [];

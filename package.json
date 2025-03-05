@@ -5,7 +5,7 @@
   "description": "A template for developing projects for Clava in Typescript",
   "type": "module",
   "scripts": {
-    "run": "npx clava classic dist/main.js -p CxxSources/",
+    "run": "npx clava classic dist/main.js -pi -p CxxSources/",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "lint": "eslint .",
@@ -17,7 +17,7 @@
   "dependencies": {
     "@specs-feup/clava": "^3.0.8",
     "@specs-feup/clava-visualization": "^1.0.5",
-    "@specs-feup/lara": "^3.0.4"
+    "@specs-feup/lara": "^3.0.5"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",

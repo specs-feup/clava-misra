@@ -3,7 +3,7 @@ import { Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "./MISRARule.js";
 import misraRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
-import MISRAError from "./MISRAError.js";
+import { MISRAError, MISRATransformationType } from "./MISRA.js";
 
 export default class MISRATool {
     #misraRules: MISRARule[];
@@ -26,7 +26,7 @@ export default class MISRATool {
         if (this.#context.errors.length > 0) {
             this.#context.printErrors();
         } else {
-            console.log("No MISRA violations detected.");
+            console.log("No MISRA-C violations detected.");
         }
     } 
 
@@ -36,13 +36,13 @@ export default class MISRATool {
 
         do {
             iteration++;
-            console.log(`Iteration #${iteration}: Applying MISRA transformations...`);
+            console.log(`Iteration #${iteration}: Applying MISRA-C transformations...`);
 
             modified = this.transformAST(Query.root() as Program);
         } while(modified);
 
         if (this.#context.errors.length > 0) {
-            console.log("Remaining MISRA violations:");
+            console.log("Remaining MISRA-C violations:");
             this.#context.printErrors();
         } else {
             console.log("All detected violations were corrected.");
@@ -57,8 +57,15 @@ export default class MISRATool {
         let modified = false;
 
         for (const rule of this.#misraRules) {
-            if (rule.transform($jp)) 
+            const transformReport = rule.transform($jp);
+
+            if (transformReport.type !== MISRATransformationType.NoChange) {
                 modified = true;
+                if (transformReport.type === MISRATransformationType.Removal)
+                    return modified;
+                else if (transformReport.type === MISRATransformationType.Replacement)
+                    $jp = transformReport.newNode as Joinpoint;
+            }
         }
 
         for (const child of $jp.children) {

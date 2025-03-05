@@ -1,25 +1,37 @@
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 
-const passingCode = `int main() {
-    int x, y, z;// good inline comment
-    // good */ comment
-    return 0;
-}`;
+const passingCode = `
+    int test1() {
+        int x = 0;
+        goto label1;
 
-const failingCode = `int test() {
-    int x, y, z; // bad inl/*ine comment
+        label1: 
+            x++;
 
-    /* bad /* block comment */
+        return 0;
+    }`;
 
-    return 0;
-}`;
+const failingCode = `
+    int test2() {
+        int x = 0;
+        label1: 
+            x = 1;
+            label2:
+                x++;
+
+        goto label3;
+
+        label3: 
+            x += 4;
+        return 0;
+    }`;
 
 const files: TestFile[] = [
     { name: "bad.c", code: failingCode },
     { name: "good.c", code: passingCode }
 ];
 
-describe("Rule 3.1", () => {
+describe("Rule 2.6", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {

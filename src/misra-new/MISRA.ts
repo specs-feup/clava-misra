@@ -1,6 +1,13 @@
 import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 
-export default class MISRAError {
+export enum MISRATransformationType {
+    NoChange,
+    DescendantChange,
+    Replacement,
+    Removal
+}
+
+export class MISRAError {
     public ruleID: string;
     public $jp: Joinpoint;
     public message: string;
@@ -17,3 +24,15 @@ export default class MISRAError {
                this.message === other.message;
     }
 }
+
+export class MISRATransformationReport {
+    type: MISRATransformationType;
+    newNode?: Joinpoint; 
+
+    constructor(type: MISRATransformationType, newNode?: Joinpoint) {
+        this.type = type;
+        this.newNode = newNode;
+    }
+}
+
+

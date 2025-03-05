@@ -1,5 +1,6 @@
 import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAContext from "./MISRAContext.js";
+import { MISRATransformationReport } from "./MISRA.js";
 
 /**
  * Represents a MISRA Rule that detects and corrects violations in the code according to MISRA standards.
@@ -45,7 +46,7 @@ export default abstract class MISRARule {
      * @returns Returns true if the joinpoint violates the rule and it was 
      * possible to transform it. Otherwise, returns false.
      */
-    abstract transform($jp: Joinpoint): boolean;
+    abstract transform($jp: Joinpoint): MISRATransformationReport;
 
     /**
      * Logs a MISRA rule violation error
@@ -57,7 +58,7 @@ export default abstract class MISRARule {
         this.context.addMISRAError(
             this.ruleID, 
             $jp, 
-            `MISRA Rule ${this.ruleID} violation at ${$jp.filename}@${$jp.line}:${$jp.column}: ${msg}`
+            `MISRA Rule ${this.ruleID} violation at ${$jp.filepath}@${$jp.line}:${$jp.column}: ${msg}`
         )
     }
 }

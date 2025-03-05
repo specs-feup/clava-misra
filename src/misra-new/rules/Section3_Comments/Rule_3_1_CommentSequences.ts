@@ -2,6 +2,7 @@ import { Comment, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { isInlineComment, getComments } from "../../utils.js";
+import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
  * MISRA Rule 3.1: 
@@ -25,8 +26,9 @@ export default class Rule_3_1_CommentSequences extends MISRARule {
         return invalidComments.length > 0;
     }
 
-    transform($jp: Joinpoint): boolean {
-        if (!this.match($jp)) return false;
+    transform($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
 
         const comments = getComments($jp);
         for (const comment of comments) {
@@ -34,6 +36,6 @@ export default class Rule_3_1_CommentSequences extends MISRARule {
             const newText = comment.text.replace(invalidSymbols, '');
             comment.setText(newText);
         }
-        return true;
+        return new MISRATransformationReport(MISRATransformationType.DescendantChange);;
     }
 }
