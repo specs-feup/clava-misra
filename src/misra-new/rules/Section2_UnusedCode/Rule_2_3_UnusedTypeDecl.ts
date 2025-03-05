@@ -2,6 +2,7 @@ import { Joinpoint, Program, PointerType, TypedefDecl, TypedefType, ArrayType, T
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
  * MISRA-C Rule 2.3: A project should not contain unused ty pe declarations.
@@ -57,10 +58,11 @@ export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
         return uses.length === 0;
     }
     
-    transform($jp: Joinpoint): boolean {
-        if (!this.match($jp)) return false;
+    transform($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
+        
         $jp.detach();
-       
-        return true;
+        return new MISRATransformationReport(MISRATransformationType.Removal);
     }
 }

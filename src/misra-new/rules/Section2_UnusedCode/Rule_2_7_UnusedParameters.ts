@@ -2,7 +2,7 @@ import { GotoStmt, FunctionJp, Joinpoint, Param, Varref, Call } from "@specs-feu
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-
+import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 export default class Rule_2_7_UnusedParameters extends MISRARule {
 
@@ -45,8 +45,9 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         return unusedParams.length > 0;
     }
     
-    transform($jp: Joinpoint): boolean {
-        if(!this.match($jp)) return false;
+    transform($jp: Joinpoint): MISRATransformationReport {
+        if(!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
 
         const usedParams = this.getUsedParams($jp as FunctionJp);
         const usedParamsPositions = this.getUsedParamsPositions($jp as FunctionJp);
@@ -62,6 +63,6 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
             const newCall = ($jp as FunctionJp).newCall(newArgs)
             call.replaceWith(newCall);
         }
-        return true;
+        return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }
 }

@@ -2,6 +2,7 @@ import { GotoStmt, FunctionJp, Joinpoint, LabelStmt } from "@specs-feup/clava/ap
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
  * Rule 2.6: Unused Labels. 
@@ -32,13 +33,14 @@ export default class Rule_2_6_UnusedLabels extends MISRARule {
         return unusedLabels.length > 0;
     }
     
-    transform($jp: Joinpoint): boolean {
-        if(!this.match($jp)) return false;
+    transform($jp: Joinpoint): MISRATransformationReport {
+        if(!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
 
         const unusedLabels = this.getUnusedLabels($jp as FunctionJp);
         for (const label of unusedLabels) {
             label.detach();
         }
-        return true;
+        return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }
 }
