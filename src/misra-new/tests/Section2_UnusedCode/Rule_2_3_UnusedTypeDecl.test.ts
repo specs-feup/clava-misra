@@ -70,6 +70,12 @@ const failingCode = `
 
     typedef int** MyUnusedPointer;
 
+    typedef enum {
+        A1,
+        B1,
+        C1
+    } MyUnusedEnum;
+
     int main() {
         return 0;
     }`;
@@ -83,7 +89,7 @@ describe("Rule 2.3", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {
-        expect(countMISRAErrors()).toBe(5);
+        expect(countMISRAErrors()).toBe(6);
     });
 
     it("should correct errors in bad.c", () => {
