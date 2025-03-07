@@ -1,5 +1,5 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { Comment, Joinpoint, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp } from "@specs-feup/clava/api/Joinpoints.js";
+import { Comment, Type, Joinpoint, ArrayType, TypedefDecl, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType } from "@specs-feup/clava/api/Joinpoints.js";
 
 export function isInlineComment($comment: Comment): boolean {
     return $comment.astName === "InlineComment";
@@ -13,7 +13,7 @@ export function astContainsNode($jp: Joinpoint): boolean {
     return (Query.root() as Joinpoint).contains($jp);
 }
 
-export function getTypedefs(): TypedefNameDecl[] {
+export function getTypeDefs(): TypedefNameDecl[] {
     return Query.search(TypedefNameDecl).get();
 }
 
@@ -32,4 +32,46 @@ export function getExternals(): (FunctionJp | Vardecl)[] {
         }
     }
     return result;
+}
+
+export function getBaseType($jp: Joinpoint): Type | undefined {
+    if (!$jp.hasType || $jp.type === null || $jp.type === undefined) return undefined;
+
+    let jpType: Type;
+    if ($jp.type instanceof PointerType) {
+        jpType = $jp.type.pointee;
+        while (jpType instanceof PointerType) {
+            jpType = jpType.pointee;
+        }
+    } else if ($jp.type instanceof ArrayType) {
+        jpType = $jp.type.elementType;
+    } else {
+        jpType = $jp.type;
+    }
+    return jpType;
+}
+
+export function getTypeDecl($jp: Joinpoint): TypedefDecl | undefined {
+    if ($jp instanceof DeclStmt && $jp.children.length === 1 && $jp.children[0] instanceof TypedefDecl)
+        return $jp.children[0];
+
+    if ($jp instanceof RecordJp || $jp instanceof EnumDecl) {
+        const typeDecls = Query.searchFrom($jp, TypedefDecl).get(); 
+        if (typeDecls.length === 1)
+            return typeDecls[0];
+    }
+}
+
+export function hasTypeDecl($jp: Joinpoint): boolean {
+    return getTypeDecl($jp) !== undefined;
+}
+
+export function getTypedJps(startingPoint?: Joinpoint): Joinpoint[] {
+    if (startingPoint) {
+        return Query.searchFrom(startingPoint, Joinpoint).get().filter(jp => jp.hasType && jp.type !== null && jp.type !== undefined)
+    }
+    return Query.search(Joinpoint).get().filter(jp => 
+        jp.hasType && 
+        jp.type !== null && 
+        jp.type !== undefined);
 }

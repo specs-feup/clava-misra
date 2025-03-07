@@ -1,4 +1,4 @@
-import { GotoStmt, FunctionJp, Joinpoint, Param, Varref, Call } from "@specs-feup/clava/api/Joinpoints.js";
+import { FunctionJp, Joinpoint, Param, Varref, Call } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
@@ -12,7 +12,7 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
 
     private getUnusedParams(func: FunctionJp): Param[] {
         return func.params.filter(param => 
-            Query.searchFrom(func, Varref, { decl: jp => jp.astId === param.astId }).get().length === 0
+            Query.searchFrom(func, Varref, { decl: jp => jp?.astId === param.astId }).get().length === 0
         );
     }
 
