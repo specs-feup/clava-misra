@@ -22,7 +22,7 @@ export default abstract class MISRARule {
 
     /**
      * 
-     * @param ruleID - Unique identifier for the MISRA rule
+     * @param ruleID - Unique identifier for the MISRA-C rule
      * @param context - MISRA context for error tracking and rule transformations state
      */
     constructor(ruleID: string, context: MISRAContext) {
@@ -33,14 +33,14 @@ export default abstract class MISRARule {
     /**
      * Checks if the joinpoint violates the rule
      * 
-     * @param $jp - Joinpoint to analyse
-     * @param logErrors - Log errors when violations are detected
+     * @param $jp - Joinpoint to analyze
+     * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected.
      * @returns Returns true if the joinpoint violates the rule, false otherwise.
      */
     abstract match($jp: Joinpoint, logErrors: boolean): boolean;
 
     /**
-     * Transforms the joinpoint to comply with the MISRA rule
+     * Transforms the joinpoint to comply with the MISRA-C rule
      * 
      * @param $jp - Joinpoint to transform
      * @returns Returns true if the joinpoint violates the rule and it was 
@@ -49,7 +49,7 @@ export default abstract class MISRARule {
     abstract transform($jp: Joinpoint): MISRATransformationReport;
 
     /**
-     * Logs a MISRA rule violation error
+     * Logs a MISRA-C rule violation error
      * 
      * @param $jp - The joinpoint where the violation occurred
      * @param msg - Description of the violation
@@ -58,7 +58,21 @@ export default abstract class MISRARule {
         this.context.addMISRAError(
             this.ruleID, 
             $jp, 
-            `MISRA Rule ${this.ruleID} violation at ${$jp.filepath}@${$jp.line}:${$jp.column}: ${msg}`
+            `MISRA-C Rule ${this.ruleID} violation at ${$jp.filepath}@${$jp.line}:${$jp.column}: ${msg}`
+        )
+    }
+
+    /**
+     * Logs a warning from automatic MISRA-C correction, which may change the program's behavior
+     * 
+     * @param $jp - The joinpoint where the correction was applied
+     * @param msg - Description of the warning
+     */
+    protected logMISRAWarning($jp: Joinpoint, msg:string): void {
+        this.context.addMISRAWarning(
+            this.ruleID, 
+            $jp, 
+            `Warning: MISRA-C Rule ${this.ruleID} correction at ${$jp.filepath}@${$jp.line}:${$jp.column}: ${msg}.`
         )
     }
 }

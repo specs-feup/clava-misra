@@ -41,11 +41,17 @@ export default class MISRATool {
             modified = this.transformAST(Query.root() as Program);
         } while(modified);
 
-        if (this.#context.errors.length > 0) {
-            console.log("Remaining MISRA-C violations:");
-            this.#context.printErrors();
-        } else {
+        if (this.#context.errors.length === 0 && this.#context.warnings.length === 0) {
             console.log("All detected violations were corrected.");
+        } else {
+            if (this.#context.warnings.length === 0) {
+                console.log("Warnings from automatic MISRA-C corrections (these may change the program's behavior):");
+                this.#context.printWarnings();
+            } 
+            if (this.#context.errors.length > 0) {
+                console.log("Remaining MISRA-C violations:");
+                this.#context.printErrors();
+            } 
         }
     }
 

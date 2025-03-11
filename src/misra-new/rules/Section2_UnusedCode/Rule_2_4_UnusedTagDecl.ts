@@ -38,11 +38,11 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
             return true;
         }
 
-        const uses = this.getTagUses($jp);
-        if (uses.length === 0 && logErrors) {
+        const isUnused = this.getTagUses($jp).length === 0;
+        if (isUnused && logErrors) {
             this.logMISRAError($jp, `The tag '${$jp.name}' is declared but not used.`);
         }
-        return uses.length === 0;
+        return isUnused;
     }
     
     transform($jp: Joinpoint): MISRATransformationReport {

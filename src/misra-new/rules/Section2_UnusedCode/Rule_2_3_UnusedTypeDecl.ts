@@ -26,11 +26,11 @@ export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
         const typeDecl = getTypeDecl($jp);
         if (typeDecl === undefined) return false;
 
-        const uses = this.getTypeDefUses(typeDecl);
-        if (logErrors && uses.length === 0) {
+        const isUnused = this.getTypeDefUses(typeDecl).length === 0;
+        if (logErrors && isUnused) {
             this.logMISRAError($jp, `Type declaration ${typeDecl.name} is declared but not used.`)
         }
-        return uses.length === 0;
+        return isUnused;
     }
     
     transform($jp: Joinpoint): MISRATransformationReport {

@@ -1,5 +1,5 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { Comment, Type, Joinpoint, ArrayType, TypedefDecl, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType } from "@specs-feup/clava/api/Joinpoints.js";
+import { Comment, Type, Case, Joinpoint, ArrayType, TypedefDecl, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType, Switch, BuiltinType, BinaryOp } from "@specs-feup/clava/api/Joinpoints.js";
 
 export function isInlineComment($comment: Comment): boolean {
     return $comment.astName === "InlineComment";
@@ -34,8 +34,12 @@ export function getExternals(): (FunctionJp | Vardecl)[] {
     return result;
 }
 
+export function hasDefinedType($jp: Joinpoint): boolean {
+    return $jp.hasType && $jp.type !== null || $jp.type !== undefined;
+}
+
 export function getBaseType($jp: Joinpoint): Type | undefined {
-    if (!$jp.hasType || $jp.type === null || $jp.type === undefined) return undefined;
+    if (!hasDefinedType($jp)) return undefined;
 
     let jpType: Type;
     if ($jp.type instanceof PointerType) {
@@ -74,4 +78,47 @@ export function getTypedJps(startingPoint?: Joinpoint): Joinpoint[] {
         jp.hasType && 
         jp.type !== null && 
         jp.type !== undefined);
+}
+
+export function getLastStmtOfCase($jp: Case): Joinpoint | undefined {
+    if ($jp.instructions.length === 0) { // Has a consecutive case
+        return undefined;
+    }
+
+    let lastStmt: Joinpoint | undefined;
+    for (const stmt of $jp.instructions) {
+        if (stmt instanceof Case) {
+            break;
+        }
+        lastStmt = stmt;
+    }
+    return lastStmt;
+} 
+
+export function getNumOfSwitchClauses($jp: Switch): number  {
+    let firstStatements = []
+
+    for (const caseLabel of $jp.cases) {
+        if (caseLabel.instructions.length === 0) { // Has a consecutive case
+            continue;
+        }
+        firstStatements.push(caseLabel.instructions[0])
+    }
+    return firstStatements.length;
+} 
+
+export function switchHasBooleanCondition(switchStmt: Switch): boolean {
+    return switchStmt.condition instanceof BinaryOp ||
+            (hasDefinedType(switchStmt.condition) &&
+             switchStmt.condition.type instanceof BuiltinType &&
+              switchStmt.condition.type.builtinKind === "Bool"
+            );
+}
+
+export function getSwitchConditionType(switchStmt: Switch): string | undefined {
+    if (hasDefinedType(switchStmt.condition) && switchStmt.condition.type instanceof BuiltinType) {
+        const conditionType = switchStmt.condition.type as BuiltinType;
+        return conditionType.builtinKind;
+    }
+    return undefined;
 }

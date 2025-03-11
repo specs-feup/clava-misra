@@ -3,12 +3,21 @@ import { MISRAError } from "./MISRA.js";
 
 export default class MISRAContext {
     #misraErrors: MISRAError[] = [];
+    #misraWarnings: MISRAError[] = [];
 
     #varCounter = 0;
     #funcCounter = 0;
 
     #varPrefix = "__misra_var_";
     #funcPrefix = "__misra_func_";
+
+    get errors(): MISRAError[] {
+        return this.#misraErrors;
+    }
+
+    get warnings(): MISRAError[] {
+        return this.#misraWarnings;
+    }
 
     generateVarName() {
         return `${this.#varPrefix}${this.#varCounter++}`;
@@ -26,14 +35,22 @@ export default class MISRAContext {
         }
     }
 
-    printErrors() {
-        for (const error of this.#misraErrors) {
-            console.log(error.message);
+    addMISRAWarning(ruleID: string, $jp: Joinpoint, message: string) {
+        const newWarning = new MISRAError(ruleID, $jp, message);
+
+        if (!this.#misraWarnings.some(warning => warning.equals(newWarning))) {
+            this.#misraWarnings.push(newWarning);
         }
     }
 
-    get errors(): MISRAError[] {
-        return this.#misraErrors;
+    printErrors() {
+        this.#misraErrors.forEach(error => console.log(error.message));
+        console.log(); 
+    }
+    
+    printWarnings() {
+        this.#misraWarnings.forEach(warning => console.log(warning.message));
+        console.log(); 
     }
 
 }

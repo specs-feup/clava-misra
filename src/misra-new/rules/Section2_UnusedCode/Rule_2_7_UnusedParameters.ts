@@ -18,7 +18,7 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
 
     private getUsedParams(func: FunctionJp): Param[] {
         return func.params.filter(param => 
-            Query.searchFrom(func, Varref, { decl: jp => jp.astId === param.astId }).get().length > 0
+            Query.searchFrom(func, Varref, { decl: jp => jp?.astId === param.astId }).get().length > 0
         );
     }
 
@@ -26,7 +26,7 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         let result = [];
         for (let i = 0; i < func.params.length; i++) {
             const param = func.params[i];
-            if (Query.searchFrom(func, Varref, { decl: jp => jp.astId === param.astId }).get().length > 0) {
+            if (Query.searchFrom(func, Varref, { decl: jp => jp?.astId === param.astId }).get().length > 0) {
                 result.push(i);
             }
         }
