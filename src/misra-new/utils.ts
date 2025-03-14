@@ -86,7 +86,7 @@ export function getLastStmtOfCase($jp: Case): Joinpoint | undefined {
     }
 
     let lastStmt: Joinpoint | undefined;
-    for (const stmt of $jp.instructions) {
+    for (const stmt of $jp.siblingsRight) {
         if (stmt instanceof Case) {
             break;
         }

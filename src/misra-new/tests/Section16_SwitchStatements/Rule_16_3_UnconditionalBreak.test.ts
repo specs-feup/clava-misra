@@ -29,24 +29,21 @@ const passingCode =
 const failingCode = 
 `void foo16_3_2( void )
 {
-    int x, a, b;
-    switch ( x )
-    {
-        case 0:
-            break; 
-        case 1: /* Compliant - empty fall through allows a group */
-        case 2:
+    int x = 4;
+    switch (x) {
+        case 1:
+            foo();
             break;
-        case 4:
-            a = b; /* Non-compliant */
-        case 5:
-            if ( a == b )
-            {
-                ++a; 
-                break;/* Non-compliant - conditional break */
-            }
+        case 2:  // Missing break
+            bar();
+        case 6: 
+        case 3:
+            x++;
+            // comment1
+            x--;
+            // comment2
         default:
-            ; /* Non-compliant - default must also have a break */
+            baz();
     }
 }`;
 

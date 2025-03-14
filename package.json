@@ -5,7 +5,7 @@
   "description": "A template for developing projects for Clava in Typescript",
   "type": "module",
   "scripts": {
-    "run": "npx clava classic dist/main.js -std c90 -p CxxSources/",
+    "run": "npx clava classic dist/main.js -pi -std c90 -p CxxSources/",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "lint": "eslint .",

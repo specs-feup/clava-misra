@@ -34,7 +34,6 @@ export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
 
         const switchToIfPass = new TransformSwitchToIf();
         const transformResult = switchToIfPass.transformJoinpoint($jp as Switch);
-        console.log(transformResult.insertedLiteralCode);
         
         return new MISRATransformationReport(
             MISRATransformationType.Replacement,

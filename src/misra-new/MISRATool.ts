@@ -74,9 +74,11 @@ export default class MISRATool {
             }
         }
 
-        for (const child of $jp.children) {
-            if(this.transformAST(child)) 
+        let child = $jp.children[0];
+        while (child) {
+            if (this.transformAST(child)) 
                 modified = true;
+            child = child.rightJp;
         }
         return modified;
     }

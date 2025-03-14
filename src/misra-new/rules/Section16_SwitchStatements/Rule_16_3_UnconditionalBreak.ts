@@ -1,4 +1,4 @@
-import { Break, Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
+import { Break, Joinpoint, Statement, Switch, Case } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
@@ -29,12 +29,40 @@ export default class Rule_16_3_UnconditionalBreak extends MISRARule {
         return this.#statementsNeedingBreakAfter.length > 0;
     }
 
+    private getNextStatementsToExecute(jp: Joinpoint): Joinpoint[] {
+        let stmts = [];
+
+        for (const sibling of jp.siblingsRight) {
+            if (sibling instanceof Break)
+                break;
+            if (sibling instanceof Case)
+                continue;
+            stmts.push(sibling.deepCopy());
+        }
+        return stmts;
+    }
+
+    private insertNextStatementsToExecute(jp: Joinpoint) {
+        const nextStmts = this.getNextStatementsToExecute(jp);
+        let lastStmt = jp;
+
+        for (const stmt of nextStmts) {
+            lastStmt.insertAfter(stmt);
+            lastStmt = stmt;
+        }
+        lastStmt.insertAfter(ClavaJoinPoints.breakStmt());
+    }
+
     transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         for (const stmt of this.#statementsNeedingBreakAfter) {
-            stmt.insertAfter(ClavaJoinPoints.breakStmt());
-            this.logMISRAWarning($jp, `Unconditional break statement was added after statement '${stmt.code}'`);
+            if (stmt.rightJp === undefined) { // last statement of the switch
+                stmt.insertAfter(ClavaJoinPoints.breakStmt());
+            } else {
+                this.insertNextStatementsToExecute(stmt);
+            }
         }
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }
