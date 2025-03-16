@@ -34,8 +34,8 @@ export default abstract class MISRARule {
      * Checks if the joinpoint violates the rule
      * 
      * @param $jp - Joinpoint to analyze
-     * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected.
-     * @returns Returns true if the joinpoint violates the rule, false otherwise.
+     * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected
+     * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     abstract match($jp: Joinpoint, logErrors: boolean): boolean;
 
@@ -43,8 +43,7 @@ export default abstract class MISRARule {
      * Transforms the joinpoint to comply with the MISRA-C rule
      * 
      * @param $jp - Joinpoint to transform
-     * @returns Returns true if the joinpoint violates the rule and it was 
-     * possible to transform it. Otherwise, returns false.
+     * @returns Report detailing the transformation result
      */
     abstract transform($jp: Joinpoint): MISRATransformationReport;
 

@@ -1,9 +1,8 @@
 import { BuiltinType, Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import TransformSwitchToIf from "@specs-feup/clava/api/clava/pass/TransformSwitchToIf.js"
-import { getSwitchConditionType, switchHasBooleanCondition } from "../../utils.js";
+import { MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils.js";
 
 /**
  * MISRA Rule 16.7: A switch-expression shall not have essentially Boolean type.
@@ -15,6 +14,9 @@ export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
 
     /**
      * Checks if the given joinpoint is a switch statement with an essentially Boolean condition
+     * @param $jp - Joinpoint to analyze
+     * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected
+     * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
         if (!($jp instanceof Switch)) return false;
@@ -27,17 +29,28 @@ export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
     }
 
     /**
-     * Transforms a switch statement with a Boolean condition into an equivalent `if` statement
+     * Transforms a switch statement with a Boolean condition into equivalent statement(s), only if there is no conditional break.
+     * If a conditional break is present, no transformation is performed and an error is generated.
+     * 
+     * @param $jp - Joinpoint to transform
+     * @returns Report detailing the transformation result
      */
     transform($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        const switchToIfPass = new TransformSwitchToIf();
-        const transformResult = switchToIfPass.transformJoinpoint($jp as Switch);
+        if (switchHasConditionalBreak($jp as Switch)) {
+            this.logMISRAError($jp, `The switch statement's controlling expression ${($jp as Switch).condition.code} must not be of a boolean type and cannot be transformed due to a conditional break statement.`)
+            new MISRATransformationReport(MISRATransformationType.NoChange);
+        }
         
-        return new MISRATransformationReport(
-            MISRATransformationType.Replacement,
-            transformResult.jp as Joinpoint
-        ); 
+        const transformResultNode = MISRASwitchConverter.convert($jp as Switch);
+        if (transformResultNode) {
+            return new MISRATransformationReport(
+                MISRATransformationType.Replacement,
+                transformResultNode
+            );
+        } 
+        // Only breaks were present, so the switch was removed
+        return new MISRATransformationReport(MISRATransformationType.Removal);
     }
 }

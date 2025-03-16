@@ -3,7 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { getNumOfSwitchClauses } from "../../utils.js";
+import { getNumOfSwitchClauses, switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils.js";
 
 /**
  * MISRA Rule 16.4: Every switch statement shall have a default label
@@ -26,7 +26,10 @@ export default class Rule_16_4_SwitchHasDefault extends MISRARule {
     transform($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        if (getNumOfSwitchClauses($jp as Switch) < 2 || ($jp as Switch).condition.type instanceof Boolean) return new MISRATransformationReport(MISRATransformationType.NoChange);
+        if ((getNumOfSwitchClauses($jp as Switch) < 2 || switchHasBooleanCondition($jp as Switch)) &&
+            !switchHasConditionalBreak($jp as Switch)) { // Will be handled by rules 16.6 or 16.7
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
+        } 
 
         $jp.children[1].lastChild
             .insertAfter(ClavaJoinPoints.defaultStmt())

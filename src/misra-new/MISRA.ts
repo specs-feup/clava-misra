@@ -41,7 +41,7 @@ export class MISRAError {
     /**
      * Checks if two instances of MISRAError are equal based on all properties
      * @param other 
-     * @returns - `true` if the errors are the same, `false` otherwise.
+     * @returns Returns `true` if the errors are the same, `false` otherwise
      */
     equals(other: MISRAError): boolean {
         return this.ruleID === other.ruleID &&
@@ -81,8 +81,8 @@ export class MISRATransformationReport {
 
 /**
  * Converts a switch statement into either consecutive statements or if statements
- * - If the switch has only one clause and a default case, it is converted to consecutive statements.
- * - Otherwise, it is converted to if statements.
+ * - If the switch has only one clause and a default case, it is converted to consecutive statements
+ * - Otherwise, it is converted to if statements
  */
 export class MISRASwitchConverter {
     /**
@@ -138,7 +138,7 @@ export class MISRASwitchConverter {
      * Converts a switch statement into a series of if statements
      * 
      * @param switchStmt - The switch statement to convert
-     * @returns - The first if statement created
+     * @returns The first if statement created
      */
     static convertToIfStatements(switchStmt: Switch): If {
         const scope = switchStmt.children[1] as Scope;
@@ -170,7 +170,7 @@ export class MISRASwitchConverter {
      * @param cases - A list of consecutive cases
      * @param index - The index of the current case group
      * @param lastIfStmt - The last if statement, used to chain else
-     * @returns - The new if statement
+     * @returns The new if statement
      */
     private static createIfStatement(condition: Expression, cases: Case[], index: number, lastIfStmt: If | undefined): If {
         const conditionExpr = this.equivalentCondition(condition, cases);
@@ -190,7 +190,7 @@ export class MISRASwitchConverter {
      * 
      * @param condition - The switch condition
      * @param cases - A list of case` statements
-     * @returns - The combined condition
+     * @returns The combined condition
      */
     private static equivalentCondition(condition: Expression, cases: Case[]): Expression {
         let lastBinaryOp: BinaryOp;
@@ -230,7 +230,7 @@ export class MISRASwitchConverter {
      * Groups case statements into consecutive blocks, ensuring the block with the default case is last
      * 
      * @param switchStmt - The switch statement
-     * @returns - The grouped case statements
+     * @returns The grouped case statements
      */
     private static consecutiveCases(switchStmt: Switch): Case[][] {
         let caseGroups: Case[][] = [];
@@ -253,7 +253,7 @@ export class MISRASwitchConverter {
      * Organizes case groups such that the group with default case is placed last.
      * 
      * @param caseGroups - The groups of case statements
-     * @returns - The organized case groups
+     * @returns The organized case groups
      */
     private static organizeCaseGroups(caseGroups: Case[][]): Case[][] {
         const nonDefaultGroups = caseGroups.filter(block => !block.some(caseStmt => caseStmt.isDefault));
