@@ -16,7 +16,7 @@ const passingCode =
     }
 }`;
 
-const failingCode = 
+const failingCode1 = 
 `
 void foo16_6_2( int num )
 {
@@ -51,8 +51,30 @@ void foo16_6_3( bool flag )
 }
 `;
 
+const failingCode2 = 
+`void foo16_6_4( bool flag )
+{
+    int a = 7, b = 10;
+    switch (flag) { 
+        case 1:
+            a *= 2;
+            if (a * a > 10) {
+                b = 12;
+                break;
+            }
+            break;
+        case 0:
+            a += 5;
+            break;
+        default:
+            a -= 3;
+            break;
+    }
+}`;
+
 const files: TestFile[] = [
-    { name: "bad.c", code: failingCode },
+    { name: "bad1.c", code: failingCode1 },
+    { name: "bad2.c", code: failingCode2 },
     { name: "good.c", code: passingCode }
 ];
 
@@ -60,10 +82,10 @@ describe("Rule 16.7", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {
-        expect(countMISRAErrors()).toBe(2);
+        expect(countMISRAErrors()).toBe(3);
     });
 
     it("should correct errors in bad.c", () => {
-        expect(countErrorsAfterCorrection()).toBe(0);
+        expect(countErrorsAfterCorrection()).toBe(1);
     });
 });
