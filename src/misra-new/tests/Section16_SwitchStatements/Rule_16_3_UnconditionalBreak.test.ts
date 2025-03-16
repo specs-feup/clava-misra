@@ -29,13 +29,13 @@ const passingCode =
 const failingCode = 
 `void foo16_3_2( void )
 {
-    int x = 4;
+    int x = 4, a, b, c;
     switch (x) {
         case 1:
-            foo();
+            a = 1;
             break;
         case 2:  // Missing break
-            bar();
+            b = 10;
         case 6: 
         case 3:
             x++;
@@ -43,7 +43,7 @@ const failingCode =
             x--;
             // comment2
         default:
-            baz();
+            c = 30;
     }
 }`;
 

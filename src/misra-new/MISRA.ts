@@ -1,5 +1,5 @@
 import { BinaryOp, Break, Case, Expression, If, Joinpoint, Scope, Statement, Switch } from "@specs-feup/clava/api/Joinpoints.js";
-import { getNumOfSwitchClauses } from "./utils.js";
+import { getNumOfSwitchClauses, isCommentStmt } from "./utils.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 export enum MISRATransformationType {
@@ -45,7 +45,7 @@ export class MISRAError {
      */
     equals(other: MISRAError): boolean {
         return this.ruleID === other.ruleID &&
-               this.$jp === other.$jp &&
+               this.$jp.astId === other.$jp.astId &&
                this.message === other.message;
     }
 }
@@ -110,8 +110,8 @@ export class MISRASwitchConverter {
         this.removeBreakStmts(scope);
         this.removeCases(scope);
 
-        // If there are no statements except break, the switch can be removed
-        if (scope.children.length === 0) {
+        // If there are no statements except break and comments, the switch can be removed
+        if (scope.children.length === 0 || scope.children.every(stmt => isCommentStmt(stmt))) {
             switchStmt.detach();
             return undefined;
         }

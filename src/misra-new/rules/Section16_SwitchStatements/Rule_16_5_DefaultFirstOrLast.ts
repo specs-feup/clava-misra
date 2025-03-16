@@ -2,6 +2,7 @@ import {Case, Comment, Joinpoint, Statement, Switch, WrapperStmt } from "@specs-
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { isCommentStmt } from "../../utils.js";
 
 /**
  * MISRA Rule 16.5: A default label shall appear as either the fi rst or the last switch label of
@@ -16,7 +17,7 @@ export default class Rule_16_5_DefaultFirstOrLast extends MISRARule {
     private getConsecutiveRightCases($jp: Case): Joinpoint[] {
         const cases = [];
         for (const stmt of $jp.siblingsRight) {
-            if (!(stmt instanceof Case || (stmt instanceof WrapperStmt && stmt.kind === "comment")))
+            if (!(stmt instanceof Case || isCommentStmt($jp)))
                 break;
             cases.push(stmt);
         }
@@ -27,7 +28,7 @@ export default class Rule_16_5_DefaultFirstOrLast extends MISRARule {
         let cases: Joinpoint[] = [];
         for (let i = $jp.siblingsLeft.length - 1; i >= 0; i--) {
             const currentStmt = $jp.siblingsLeft[i];
-            if (!(currentStmt instanceof Case || (currentStmt instanceof WrapperStmt && currentStmt.kind === "comment"))) {
+            if (!(currentStmt instanceof Case || isCommentStmt($jp))) {
                 break;
             }
            cases.push($jp.siblingsLeft[i]);

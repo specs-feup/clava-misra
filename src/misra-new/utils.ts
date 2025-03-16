@@ -1,5 +1,5 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { Comment, Type, Case, Joinpoint, ArrayType, TypedefDecl, If, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType, Switch, BuiltinType, BinaryOp, Break, Scope, Statement, Expression } from "@specs-feup/clava/api/Joinpoints.js";
+import { Comment, Type, Case, Joinpoint, ArrayType, TypedefDecl, If, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType, Switch, BuiltinType, BinaryOp, Break, Scope, Statement, Expression, WrapperStmt } from "@specs-feup/clava/api/Joinpoints.js";
 
 /**
  * Checks if the comment is an inline comment
@@ -17,6 +17,16 @@ export function isInlineComment($comment: Comment): boolean {
  */
 export function getComments($jp: Joinpoint): Comment[] {
     return $jp instanceof Comment ? [$jp] : $jp.inlineComments;
+}
+
+/**
+ * Checks if a given join point is a comment statement
+ *
+ * @param $jp The join point to check
+ * @returns Returns true if the given join point is a comment statement, otherwise false
+ */
+export function isCommentStmt($jp: Joinpoint): boolean {
+    return $jp instanceof WrapperStmt && $jp.kind === "comment";
 }
 
 /**

@@ -9,7 +9,6 @@ export default class MISRATool {
     #misraRules: MISRARule[];
     #context: MISRAContext;
 
-    //TODO: [optional] specify rules 
     constructor() {
         this.#context = new MISRAContext();
         this.#misraRules = misraRules(this.#context);
@@ -44,7 +43,7 @@ export default class MISRATool {
         if (this.#context.errors.length === 0 && this.#context.warnings.length === 0) {
             console.log("All detected violations were corrected.");
         } else {
-            if (this.#context.warnings.length === 0) {
+            if (this.#context.warnings.length > 0) {
                 console.log("Warnings from automatic MISRA-C corrections (these may change the program's behavior):");
                 this.#context.printWarnings();
             } 

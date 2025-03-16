@@ -41,7 +41,7 @@ export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
         
         if (switchHasConditionalBreak($jp as Switch)) {
             this.logMISRAError($jp, "switch statement must have at least two clauses and cannot be transformed due to a conditional break statement.")
-            new MISRATransformationReport(MISRATransformationType.NoChange);
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
 
         const transformResultNode = MISRASwitchConverter.convert($jp as Switch);

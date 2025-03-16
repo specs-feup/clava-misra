@@ -62,5 +62,4 @@ export default class MISRAContext {
         this.#misraWarnings.forEach(warning => console.log(warning.message));
         console.log(); 
     }
-
 }
