@@ -119,10 +119,10 @@ describe("Rule 16.6", () => {
     it("should correct errors in non-compliant files", () => {
         expect(countErrorsAfterCorrection()).toBe(1);
 
-        const bad1File = Query.search(FileJp, {name: "bad1.c"}).first()!;
-        expect(Query.searchFrom(bad1File, Switch).get().length).toBe(0);
-        expect(Query.searchFrom(bad1File, If).get().length).toBe(0);
-        expect(Query.searchFrom(bad1File, FunctionJp).first()?.body.children.length).toBe(2);
+        const badFile = Query.search(FileJp, {name: "bad1.c"}).first()!;
+        expect(Query.searchFrom(badFile, Switch).get().length).toBe(0);
+        expect(Query.searchFrom(badFile, If).get().length).toBe(0);
+        expect(Query.searchFrom(badFile, FunctionJp).first()?.body.children.length).toBe(2);
 
         const bad2File = Query.search(FileJp, {name: "bad2.c"}).first()!;
         expect(Query.searchFrom(bad2File, Switch).get().length).toBe(0);
