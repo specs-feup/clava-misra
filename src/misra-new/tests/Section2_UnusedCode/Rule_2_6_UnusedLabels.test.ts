@@ -1,4 +1,6 @@
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
+import { FileJp } from "@specs-feup/clava/api/Joinpoints.js";
 
 const passingCode = `
     int test1() {
@@ -36,6 +38,9 @@ describe("Rule 2.6", () => {
 
     it("should detect errors in bad.c", () => {
         expect(countMISRAErrors()).toBe(2);
+
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad.c"}).first()!)).toBe(2);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!)).toBe(0);
     });
 
     it("should correct errors in bad.c", () => {

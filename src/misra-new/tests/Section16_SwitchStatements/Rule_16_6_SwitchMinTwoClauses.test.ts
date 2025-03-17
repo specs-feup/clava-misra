@@ -63,6 +63,7 @@ const failingCode2 =
     return x;
 }`;
 
+// 2 erros: one is related to not having a default case
 const failingCode3 = 
 `int foo16_6_4( void )
 {
@@ -114,6 +115,12 @@ describe("Rule 16.6", () => {
 
     it("should detect errors in non-compliant files", () => {
         expect(countMISRAErrors()).toBe(6);
+
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad1.c"}).first()!)).toBe(2);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad2.c"}).first()!)).toBe(1);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad3.c"}).first()!)).toBe(2);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad4.c"}).first()!)).toBe(1);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!)).toBe(0);
     });
 
     it("should correct errors in non-compliant files", () => {

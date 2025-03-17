@@ -1,4 +1,6 @@
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
+import { FileJp } from "@specs-feup/clava/api/Joinpoints.js";
 
 const failingCodeEnum1 = `
     enum MyEnum { 
@@ -224,6 +226,12 @@ describe("Rule 2.4", () => {
 
     it("should detect errors in bad.c", () => {
         expect(countMISRAErrors()).toBe(6);
+
+        expect(countMISRAErrors(Query.search(FileJp, {name: "testEnum1.c"}).first()!)).toBe(1);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "testEnum2.c"}).first()!)).toBe(1);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "testStruct1.c"}).first()!)).toBe(1);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "testUnion1.c"}).first()!)).toBe(1);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "testUnion2.c"}).first()!)).toBe(1);
     });
 
     it("should correct errors in bad.c", () => {

@@ -1,16 +1,18 @@
 import MISRATool from "../MISRATool.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
+import { Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 
-export function countMISRAErrors(): number {
+export function countMISRAErrors(startingPoint: Joinpoint= Query.root() as Program): number {
     const misraTool = new MISRATool();
-    misraTool.checkCompliance();
+    misraTool.checkCompliance(startingPoint);
     return misraTool.getMISRAErrors().length;
 }
 
-export function countErrorsAfterCorrection(): number {
+export function countErrorsAfterCorrection(startingPoint: Joinpoint= Query.root() as Program): number {
     const misraTool = new MISRATool();
-    misraTool.applyCorrections();
+    misraTool.applyCorrections(startingPoint);
     return misraTool.getMISRAErrors().length;
 }
 

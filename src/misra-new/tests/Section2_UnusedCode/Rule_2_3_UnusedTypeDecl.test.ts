@@ -108,7 +108,7 @@ const failingCode3 = `
     union NumberUnion unionInst = {.intValue = 10};
 `;
 
-// 4 errors, one is from...
+// 4 errors, one is from the other class
 const failingCode4 = `
     // Should be removed
     typedef enum {
@@ -146,6 +146,12 @@ describe("Rule 2.3", () => {
 
     it("should detect errors in bad.c", () => {
         expect(countMISRAErrors()).toBe(15);
+
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad1.c"}).first()!)).toBe(3);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad2.c"}).first()!)).toBe(4);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad3.c"}).first()!)).toBe(4);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad4.c"}).first()!)).toBe(4);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!)).toBe(0);
     });
 
     it("should correct errors in bad.c", () => {

@@ -14,8 +14,8 @@ export default class MISRATool {
         this.#misraRules = misraRules(this.#context);
     }
 
-    public checkCompliance() {
-        const nodes = (Query.root() as Program).descendants;
+    public checkCompliance(startingPoint: Joinpoint= Query.root() as Program) {
+        const nodes = startingPoint.descendants;
 
         for (const node of nodes) {
             for (const rule of this.#misraRules) {
@@ -29,7 +29,7 @@ export default class MISRATool {
         }
     } 
 
-    public applyCorrections() {
+    public applyCorrections(startingPoint: Joinpoint= Query.root() as Program) {
         let iteration = 0;
         let modified = false;
 
@@ -37,7 +37,7 @@ export default class MISRATool {
             iteration++;
             console.log(`Iteration #${iteration}: Applying MISRA-C transformations...`);
 
-            modified = this.transformAST(Query.root() as Program);
+            modified = this.transformAST(startingPoint);
         } while(modified);
 
         if (this.#context.errors.length === 0 && this.#context.warnings.length === 0) {
