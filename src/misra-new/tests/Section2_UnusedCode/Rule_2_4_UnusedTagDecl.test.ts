@@ -1,6 +1,6 @@
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 
-const test1 = `
+const failingCodeEnum1 = `
     enum MyEnum { 
         RED, GREEN, BLUE 
     };
@@ -25,6 +25,7 @@ const test1 = `
         RED6, GREEN6, BLUE6
     };
 
+    // Non-compliant
     enum UnusedEnum {
         RED7, GREEN7, BLUE7
     };
@@ -49,18 +50,35 @@ const test1 = `
 
     enum EnumForPtr *colorPtr;
 
-    enum EnumForArray colorArray[3];`;
+    enum EnumForArray colorArray[3];
+`;
 
-const test2 = `
+const failingCodeEnum2 = `
     typedef enum {
         A1,
         B1,
         C1
     } ColorEnum2;
+    ColorEnum2 colorEnum2 = A1;
 
-    ColorEnum2 colorEnum2 = A1;`;
+    typedef enum MyColors {
+        A2,
+        B3,
+        C4
+    } ColorOption;
+    enum MyColors myColor = A2;
+    ColorOption color = B3;
 
-const test3 = `
+    // MyColors2 tag should be removed
+    typedef enum MyColors2 {
+        A5,
+        B6,
+        C7
+    } ColorOption2;
+    ColorOption2 color2 = B6;
+`;
+
+const failingCodeStruct1 = `
     struct MyStruct {
         int x;
         float y;
@@ -86,6 +104,7 @@ const test3 = `
         float y;
     };
 
+    // Non-compliant: should be removed
     struct UnusedStruct {
         int x;
         float y;
@@ -99,25 +118,33 @@ const test3 = `
         return (struct StructForReturn1){1, 1.5f};
     }
 
-    struct MyStruct2 mystruct = {10, 20.5f};
+    struct MyStruct2 myStruct = {10, 20.5f};
     struct StructForPtr *structPtr;
-    struct StructForArray structArray[3];`;
+    struct StructForArray structArray[3];
+`;
 
-const test4 = `
-    typedef struct MyStruct2 { // Violation: MyStruct2 will not be used
-        int x;
-        float y;
-    } ColorStruct;
-
+const failingCodeStruct2 = `
     typedef struct {
         int x;
         float y;
+    } ColorStruct;
+    ColorStruct colorStruct = {1, 2.5};
+
+    typedef struct MyStruct2 {
+        int x;
+        float y;
     } ColorStruct2;
+    struct MyStruct2 struct2 = {2, 4.5};
+    ColorStruct2 colorStruct2 = {1, 2.5};
 
-    ColorStruct colorStruct = {10, 5.5};
-    ColorStruct2 colorStruct2 = {1, 2.5};`;
+    // Violation: MyStruct3 tag will be removed
+    typedef struct MyStruct3 { 
+        int x;
+        float y;
+    } ColorStruct3;
+    ColorStruct3 colorStruct3 = {10, 5.5};`;
 
-const test5 = `
+const failingCodeUnion1 = `
     union MyUnion {
         int x;
         float y;
@@ -143,6 +170,7 @@ const test5 = `
         float y;
     };
 
+    // Non-compliant: should be removed
     union UnusedUnion {
         int x;
         float y;
@@ -160,34 +188,42 @@ const test5 = `
     union UnionForPtr *unionPtr;
     union UnionForArray unionArray[3];`;
 
-const test6 = `
-    typedef union MyUnion2 { // Violation: MyUnion2 will not be used
-        int x;
-        float y;
-    } Color;
-
+const failingCodeUnion2 = `
     typedef union {
         int x;
         float y;
-    } Color2;
+    } Color;
+    Color color = { .y = 2.5f };
 
-    Color color = { .x = 10 };
-    Color2 color2 = { .y = 2.5f };`;
+    typedef union MyUnion { 
+        int x;
+        float y;
+    } Color2;
+    union MyUnion myUnion = { .x = 20 };
+    Color2 color2 = { .x = 10 };
+
+    // Violation: MyUnion2 will not be used
+    typedef union MyUnion2 { 
+        int x;
+        float y;
+    } Color3;
+    Color3 color3 = { .x = 10 };
+`;
 
 const files: TestFile[] = [
-    { name: "test1.c", code: test1 },
-    { name: "test2.c", code: test2 },
-    { name: "test3.c", code: test3 },
-    { name: "test4.c", code: test4 },
-    { name: "test5.c", code: test5 },
-    { name: "test6.c", code: test6 },
+    { name: "testEnum1.c", code: failingCodeEnum1 },
+    { name: "testEnum2.c", code: failingCodeEnum2 },
+    { name: "testStruct1.c", code: failingCodeStruct1 },
+    { name: "testStruct2.c", code: failingCodeStruct2 },
+    { name: "testUnion1.c", code: failingCodeUnion1 },
+    { name: "testUnion2.c", code: failingCodeUnion2 },
 ];
 
 describe("Rule 2.4", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {
-        expect(countMISRAErrors()).toBe(5);
+        expect(countMISRAErrors()).toBe(6);
     });
 
     it("should correct errors in bad.c", () => {

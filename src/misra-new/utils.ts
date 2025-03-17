@@ -1,5 +1,5 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { Comment, Type, Case, Joinpoint, ArrayType, TypedefDecl, If, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType, Switch, BuiltinType, BinaryOp, Break, Scope, Statement, Expression, WrapperStmt } from "@specs-feup/clava/api/Joinpoints.js";
+import { Comment, Type, Case, Joinpoint, ArrayType, TypedefDecl, If, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType, Switch, BuiltinType, BinaryOp, Break, Scope, Statement, Expression, WrapperStmt, ElaboratedType, TagType } from "@specs-feup/clava/api/Joinpoints.js";
 
 /**
  * Checks if the comment is an inline comment
@@ -124,6 +124,30 @@ export function getTypedJps(startingPoint?: Joinpoint): Joinpoint[] {
         jp.hasType && 
         jp.type !== null && 
         jp.type !== undefined);
+}
+
+/**
+ * Checks if a given joinpoint uses the specified tag declaration
+ * @param $jp The joinpoint to analyze
+ * @param tag The tag to check against
+ * @returns Returns true if the joinpoint uses the given tag, false otherwise
+ */
+export function isTagUsed($jp: Joinpoint, tag: RecordJp | EnumDecl): boolean {
+    const jpType = getBaseType($jp);
+    return jpType instanceof ElaboratedType && 
+        jpType.namedType instanceof TagType && 
+        jpType.namedType.decl.astId === tag.astId &&
+        $jp.astId !== getTypeDecl(tag)?.astId
+}
+
+/**
+ * Retrieves all joinpoints that use the specified tag declaration
+ * 
+ * @param tag The tag to search for in the joinpoints
+ * @returns Array of joinpoints that use the specified tag declaration
+ */
+export function getTagUses(tag: RecordJp | EnumDecl): Joinpoint[] {
+    return getTypedJps().filter(jp => isTagUsed(jp, tag));
 }
 
 /**
