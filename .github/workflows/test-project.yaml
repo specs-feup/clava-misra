@@ -20,6 +20,7 @@ jobs:
       matrix:
         node-version: ['20.x', '18.x']
         os: [ubuntu-latest, windows-latest, macos-latest]
+        std: [c90, c99, c11]
 
     runs-on: ${{ matrix.os }}
 
@@ -35,7 +36,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org/'
-      
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -45,5 +46,5 @@ jobs:
       - name: Build the project
         run: npm run build
 
-      - name: Run tests
-        run: npm run test
+      - name: Run tests for std=${{ matrix.std }}
+        run: npm run test:${{ matrix.std }}
