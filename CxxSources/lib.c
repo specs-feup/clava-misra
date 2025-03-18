@@ -1,8 +1,3 @@
-void f ( void )
-{
- int x = 0; // comment \
- if ( b )
- {
- ++x; /* This is always executed */
- }
-}
+#include <stdio.h>
+
+void foo() { printf("Hello, world!"); }

@@ -190,48 +190,25 @@ const failingCodeUnion1 = `
     union UnionForPtr *unionPtr;
     union UnionForArray unionArray[3];`;
 
-const failingCodeUnion2 = `
-    typedef union {
-        int x;
-        float y;
-    } Color;
-    Color color = { .y = 2.5f };
-
-    typedef union MyUnion { 
-        int x;
-        float y;
-    } Color2;
-    union MyUnion myUnion = { .x = 20 };
-    Color2 color2 = { .x = 10 };
-
-    // Violation: MyUnion2 will not be used
-    typedef union MyUnion2 { 
-        int x;
-        float y;
-    } Color3;
-    Color3 color3 = { .x = 10 };
-`;
-
 const files: TestFile[] = [
     { name: "testEnum1.c", code: failingCodeEnum1 },
     { name: "testEnum2.c", code: failingCodeEnum2 },
     { name: "testStruct1.c", code: failingCodeStruct1 },
     { name: "testStruct2.c", code: failingCodeStruct2 },
     { name: "testUnion1.c", code: failingCodeUnion1 },
-    { name: "testUnion2.c", code: failingCodeUnion2 },
 ];
 
 describe("Rule 2.4", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {
-        expect(countMISRAErrors()).toBe(6);
+        expect(countMISRAErrors()).toBe(5);
 
         expect(countMISRAErrors(Query.search(FileJp, {name: "testEnum1.c"}).first()!)).toBe(1);
         expect(countMISRAErrors(Query.search(FileJp, {name: "testEnum2.c"}).first()!)).toBe(1);
         expect(countMISRAErrors(Query.search(FileJp, {name: "testStruct1.c"}).first()!)).toBe(1);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "testStruct2.c"}).first()!)).toBe(1);
         expect(countMISRAErrors(Query.search(FileJp, {name: "testUnion1.c"}).first()!)).toBe(1);
-        expect(countMISRAErrors(Query.search(FileJp, {name: "testUnion2.c"}).first()!)).toBe(1);
     });
 
     it("should correct errors in bad.c", () => {

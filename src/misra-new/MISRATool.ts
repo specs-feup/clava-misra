@@ -5,6 +5,8 @@ import misraRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRAError, MISRATransformationType } from "./MISRA.js";
 
+const  allowedVersions = ["c90", "c99", "c11"];
+
 export default class MISRATool {
     #misraRules: MISRARule[];
     #context: MISRAContext;
@@ -15,6 +17,8 @@ export default class MISRATool {
     }
 
     public checkCompliance(startingPoint: Joinpoint= Query.root() as Program) {
+        console.log(`Environment variable CLAVA_STD set to: ${process.env.STD_VERSION}`);
+
         const nodes = startingPoint.descendants;
 
         for (const node of nodes) {
