@@ -1,26 +1,35 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "./MISRARule.js";
 import misraRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRAError, MISRATransformationType } from "./MISRA.js";
 
-const  allowedVersions = ["c90", "c99", "c11"];
-
 export default class MISRATool {
-    #misraRules: MISRARule[];
-    #context: MISRAContext;
+    static #misraRules: MISRARule[];
+    static #context: MISRAContext;
 
-    constructor() {
+    private static init(startingPoint: FileJp | Program) {
+        this.validateStdVersion(startingPoint);
         this.#context = new MISRAContext();
         this.#misraRules = misraRules(this.#context);
     }
 
-    public checkCompliance(startingPoint: Joinpoint= Query.root() as Program) {
-        console.log(`Environment variable CLAVA_STD set to: ${process.env.STD_VERSION}`);
+    private static validateStdVersion(startingPoint: FileJp | Program) {
+        const allowedVersions = ["c90", "c99", "c11"];
+        const stdVersion = startingPoint instanceof Program ? startingPoint.standard : (startingPoint.getAncestor("program") as Program).standard;
+        if (!allowedVersions.includes(stdVersion)) {
+            console.error(
+              `Invalid --std value. Allowed values: ${allowedVersions.join(", ")}`
+            );
+            process.exit(1);
+        }
+    }
+
+    public static checkCompliance(startingPoint: Program | FileJp = Query.root() as Program) {
+        this.init(startingPoint);
 
         const nodes = startingPoint.descendants;
-
         for (const node of nodes) {
             for (const rule of this.#misraRules) {
                 rule.match(node, true);
@@ -33,14 +42,13 @@ export default class MISRATool {
         }
     } 
 
-    public applyCorrections(startingPoint: Joinpoint= Query.root() as Program) {
+    public static applyCorrections(startingPoint: Program | FileJp = Query.root() as Program) {
+        this.init(startingPoint);
+
         let iteration = 0;
         let modified = false;
-
         do {
-            iteration++;
-            console.log(`Iteration #${iteration}: Applying MISRA-C transformations...`);
-
+            console.log(`Iteration #${++iteration}: Applying MISRA-C transformations...`);
             modified = this.transformAST(startingPoint);
         } while(modified);
 
@@ -58,11 +66,7 @@ export default class MISRATool {
         }
     }
 
-    public getMISRAErrors(): MISRAError[] {
-        return this.#context.errors;
-    }
-
-    private transformAST($jp: Joinpoint): boolean {
+    private static transformAST($jp: Joinpoint): boolean {
         let modified = false;
 
         for (const rule of this.#misraRules) {
@@ -84,5 +88,9 @@ export default class MISRATool {
             child = child.rightJp;
         }
         return modified;
+    }
+
+    public static getMISRAErrors(): MISRAError[] {
+        return this.#context.errors;
     }
 }

@@ -1,19 +1,17 @@
 import MISRATool from "../MISRATool.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { Field, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
-export function countMISRAErrors(startingPoint: Joinpoint= Query.root() as Program): number {
-    const misraTool = new MISRATool();
-    misraTool.checkCompliance(startingPoint);
-    return misraTool.getMISRAErrors().length;
+export function countMISRAErrors(startingPoint: FileJp | Program = Query.root() as Program): number {
+  MISRATool.checkCompliance(startingPoint);
+  return MISRATool.getMISRAErrors().length;
 }
 
-export function countErrorsAfterCorrection(startingPoint: Joinpoint= Query.root() as Program): number {
-    const misraTool = new MISRATool();
-    misraTool.applyCorrections(startingPoint);
-    return misraTool.getMISRAErrors().length;
+export function countErrorsAfterCorrection(startingPoint: FileJp | Program = Query.root() as Program): number {
+  MISRATool.applyCorrections(startingPoint);
+  return MISRATool.getMISRAErrors().length;
 }
 
 export interface TestFile {
