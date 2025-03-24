@@ -11,15 +11,27 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
     }
 
     private getUnusedParams(func: FunctionJp): Param[] {
-        return func.params.filter(param => 
-            Query.searchFrom(func, Varref, { decl: jp => jp?.astId === param.astId }).get().length === 0
-        );
-    }
+        return func.params.filter(param => {
+            try {
+                return Query.searchFrom(func, Varref, { 
+                    decl: jp => jp?.astId === param.astId 
+                }).get().length === 0;
+            } catch (error) {
+                return false; 
+            }
+        });
+    }    
 
     private getUsedParams(func: FunctionJp): Param[] {
-        return func.params.filter(param => 
-            Query.searchFrom(func, Varref, { decl: jp => jp?.astId === param.astId }).get().length > 0
-        );
+        return func.params.filter(param => {
+            try {
+                return Query.searchFrom(func, Varref, { 
+                    decl: jp => jp?.astId === param.astId 
+                }).get().length > 0;
+            } catch (error) {
+                return false; 
+            }
+        });
     }
 
     private getUsedParamsPositions(func: FunctionJp): number[] {
