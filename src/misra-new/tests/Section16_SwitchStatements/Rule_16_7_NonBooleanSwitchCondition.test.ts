@@ -20,6 +20,8 @@ const passingCode =
 
 const failingCode1 = 
 `
+#include <stdbool.h>
+
 void foo16_6_2( int num )
 {
     int a = 7;
@@ -54,7 +56,10 @@ void foo16_6_3( bool flag )
 `;
 
 const failingCode2 = 
-`void foo16_6_4( bool flag )
+`
+#include <stdbool.h>
+
+void foo16_6_4( bool flag )
 {
     int a = 7, b = 10;
     switch (flag) { 
