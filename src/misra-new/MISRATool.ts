@@ -17,7 +17,8 @@ export default class MISRATool {
 
     private static validateStdVersion(startingPoint: FileJp | Program) {
         const allowedVersions = ["c90", "c99", "c11"];
-        const stdVersion = startingPoint instanceof Program ? startingPoint.standard : (startingPoint.getAncestor("program") as Program).standard;
+        const stdVersion = startingPoint instanceof Program ? startingPoint.standard : (startingPoint.root as Program).standard;
+
         if (!allowedVersions.includes(stdVersion)) {
             console.error(
               `Invalid --std value. Allowed values: ${allowedVersions.join(", ")}`

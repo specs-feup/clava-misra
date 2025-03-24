@@ -1,6 +1,7 @@
 import MISRATool from "../MISRATool.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
+import ClavaDataStore from "@specs-feup/clava/api/clava/util/ClavaDataStore.js";
 import { Field, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
@@ -21,6 +22,7 @@ export interface TestFile {
 
 export function registerSourceCode(files: TestFile[]): void {
     beforeAll(() => {
+      Clava.getData().setStandard(process.env.STD_VERSION!);
       Clava.getProgram().push();
       const program = Clava.getProgram();
       files.forEach(file => {
