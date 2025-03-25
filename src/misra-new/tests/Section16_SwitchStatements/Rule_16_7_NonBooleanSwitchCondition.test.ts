@@ -91,9 +91,9 @@ describe("Rule 16.7", () => {
     it("should detect errors in bad.c", () => {
         expect(countMISRAErrors()).toBe(3);
 
-                expect(countMISRAErrors(Query.search(FileJp, {name: "bad1.c"}).first()!)).toBe(2);
-                expect(countMISRAErrors(Query.search(FileJp, {name: "bad2.c"}).first()!)).toBe(1);
-                expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!)).toBe(0);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad1.c"}).first()!)).toBe(2);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "bad2.c"}).first()!)).toBe(1);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!)).toBe(0);
     });
 
     it("should correct errors in bad.c", () => {
