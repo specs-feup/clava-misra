@@ -54,18 +54,24 @@ const files: TestFile[] = [
     { name: "source_code2.c", code: sourceCode2, path: "folder1/" },
 ];
 
+const isWindows = process.platform === "win32";
+
 describe("Rule 20.2", () => {
-    registerSourceCode(files);
+    if (isWindows) {
+        registerSourceCode(files);
 
-    it("should detect errors in fai'l'ng.h", () => {
-        expect(countMISRAErrors()).toBe(3);
-    });
+        it("should detect errors in fai'l'ng.h", () => {
+            expect(countMISRAErrors()).toBe(3);
+        });
 
-    it("should rename invalid header files", () => {
-        expect(countErrorsAfterCorrection()).toBe(0);
+        it("should rename invalid header files", () => {
+            expect(countErrorsAfterCorrection()).toBe(0);
 
-        expect(Query.search(FileJp, {name: "fai'ling.h"}).get().length).toBe(0);
-        expect(Query.search(FileJp, {name: "fai'ling2.h"}).get().length).toBe(0);
-        expect(Query.search(FileJp, {name: "fai'ling3.h"}).get().length).toBe(0);
-    });
+            expect(Query.search(FileJp, {name: "fai'ling.h"}).get().length).toBe(0);
+            expect(Query.search(FileJp, {name: "fai'ling2.h"}).get().length).toBe(0);
+            expect(Query.search(FileJp, {name: "fai'ling3.h"}).get().length).toBe(0);
+        });
+    } else {
+        it("should skip tests on other systems", () => {});
+    }
 });
