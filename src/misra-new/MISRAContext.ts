@@ -17,9 +17,11 @@ export default class MISRAContext {
 
     #varCounter = 0;
     #funcCounter = 0;
+    #headerCounter = 0;
 
     #varPrefix = "__misra_var_";
     #funcPrefix = "__misra_func_";
+    #headerPrefix = "misra_hdr_";
 
     get errors(): MISRAError[] {
         return this.#misraErrors;
@@ -35,6 +37,10 @@ export default class MISRAContext {
 
     generateFuncName() {
         return `${this.#funcPrefix}${this.#funcCounter++}`;
+    }
+
+    generateHeaderFilename() {
+        return `${this.#headerPrefix}${this.#headerCounter++}.h`;
     }
 
     addMISRAError(ruleID: string, $jp: Joinpoint, message: string) {

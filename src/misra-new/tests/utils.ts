@@ -18,6 +18,7 @@ export function countErrorsAfterCorrection(startingPoint: FileJp | Program = Que
 export interface TestFile {
     name: string,
     code: string
+    path?: string
 }
 
 export function registerSourceCode(files: TestFile[]): void {
@@ -26,7 +27,7 @@ export function registerSourceCode(files: TestFile[]): void {
       Clava.getProgram().push();
       const program = Clava.getProgram();
       files.forEach(file => {
-        const sourceFile = ClavaJoinPoints.fileWithSource(file.name, file.code);
+        const sourceFile = ClavaJoinPoints.fileWithSource(file.name, file.code, file.path);
         program.addFile(sourceFile);
       });
       program.rebuild();
