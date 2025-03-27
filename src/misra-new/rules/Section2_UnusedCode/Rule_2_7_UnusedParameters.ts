@@ -3,6 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { getVarReferences } from "../../utils.js";
 
 export default class Rule_2_7_UnusedParameters extends MISRARule {
 
@@ -12,25 +13,13 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
 
     private getUnusedParams(func: FunctionJp): Param[] {
         return func.params.filter(param => {
-            try {
-                return Query.searchFrom(func, Varref, { 
-                    decl: jp => jp?.astId === param.astId 
-                }).get().length === 0;
-            } catch (error) {
-                return false; 
-            }
+            getVarReferences(param, func).length === 0
         });
     }    
 
     private getUsedParams(func: FunctionJp): Param[] {
         return func.params.filter(param => {
-            try {
-                return Query.searchFrom(func, Varref, { 
-                    decl: jp => jp?.astId === param.astId 
-                }).get().length > 0;
-            } catch (error) {
-                return false; 
-            }
+            getVarReferences(param, func).length > 0
         });
     }
 
