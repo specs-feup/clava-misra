@@ -1,5 +1,6 @@
 import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import { MISRAError } from "./MISRA.js";
+import * as fs from 'fs';
 
 /**
  * Tracks MISRA errors and warnings during the analysis and/or transformation of the code.
@@ -15,6 +16,11 @@ export default class MISRAContext {
      */
     #misraWarnings: MISRAError[] = [];
 
+    /**
+     * Configuration provided by the user to assist in rule corrections
+     */
+    #config: Map<string, any> | undefined = undefined;
+
     #varCounter = 0;
     #funcCounter = 0;
     #headerCounter = 0;
@@ -29,6 +35,20 @@ export default class MISRAContext {
 
     get warnings(): MISRAError[] {
         return this.#misraWarnings;
+    }
+
+    get config(): Map<string, any> | undefined {
+        return this.#config;
+    }
+
+    set config(configFilePath: string) {
+        if (fs.existsSync(configFilePath)) {
+            const data = fs.readFileSync(configFilePath, 'utf-8');
+            this.#config = new Map(Object.entries(JSON.parse(data)));
+        } else {
+            console.error(`[Clava-MISRATool] Provided configuration file was not found.`);
+            process.exit(1);
+        }
     }
 
     generateVarName() {
@@ -61,11 +81,11 @@ export default class MISRAContext {
 
     printErrors() {
         this.#misraErrors.forEach(error => console.log(error.message));
-        console.log(); 
+        console.log('\n'); 
     }
     
     printWarnings() {
         this.#misraWarnings.forEach(warning => console.log(warning.message));
-        console.log(); 
+        console.log('\n'); 
     }
 }

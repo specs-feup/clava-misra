@@ -20,9 +20,7 @@ export default class MISRATool {
         const stdVersion = startingPoint instanceof Program ? startingPoint.standard : (startingPoint.root as Program).standard;
 
         if (!allowedVersions.includes(stdVersion)) {
-            console.error(
-              `Invalid --std value. Allowed values: ${allowedVersions.join(", ")}`
-            );
+            console.error(`[Clava-MISRATool] Invalid --std value. Allowed values: ${allowedVersions.join(", ")}`);
             process.exit(1);
         }
     }
@@ -39,29 +37,32 @@ export default class MISRATool {
         if (this.#context.errors.length > 0) {
             this.#context.printErrors();
         } else {
-            console.log("No MISRA-C violations detected.");
+            console.log("[Clava-MISRATool] No MISRA-C violations detected.");
         }
     } 
 
-    public static applyCorrections(startingPoint: Program | FileJp = Query.root() as Program) {
+    public static applyCorrections(configFilePath?: string, startingPoint: Program | FileJp = Query.root() as Program) {
         this.init(startingPoint);
+        if (configFilePath) {
+            this.#context.config = configFilePath;
+        }
 
         let iteration = 0;
         let modified = false;
         do {
-            console.log(`Iteration #${++iteration}: Applying MISRA-C transformations...`);
+            console.log(`[Clava-MISRATool] Iteration #${++iteration}: Applying MISRA-C transformations...`);
             modified = this.transformAST(startingPoint);
         } while(modified);
 
         if (this.#context.errors.length === 0 && this.#context.warnings.length === 0) {
-            console.log("All detected violations were corrected.");
+            console.log("[Clava-MISRATool] All detected violations were corrected.");
         } else {
             if (this.#context.warnings.length > 0) {
-                console.log("Warnings from automatic MISRA-C corrections (these may change the program's behavior):");
+                console.log("\n[Clava-MISRATool] Warnings from automatic MISRA-C corrections (these may change the program's behavior):");
                 this.#context.printWarnings();
             } 
             if (this.#context.errors.length > 0) {
-                console.log("Remaining MISRA-C violations:");
+                console.log("\n[Clava-MISRATool] Remaining MISRA-C violations:");
                 this.#context.printErrors();
             } 
         }
@@ -82,11 +83,9 @@ export default class MISRATool {
             }
         }
 
-        let child = $jp.children[0];
-        while (child) {
+        for (const child of $jp.children) {
             if (this.transformAST(child)) 
                 modified = true;
-            child = child.rightJp;
         }
         return modified;
     }

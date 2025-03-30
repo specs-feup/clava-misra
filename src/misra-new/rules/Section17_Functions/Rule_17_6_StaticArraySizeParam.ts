@@ -59,8 +59,8 @@ export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
             const newParam = invalidParam.replaceWith(newJp) as Param;
 
             // Replace all references to the invalid parameter with the new one
-            for (const u of paramRefs) {
-                u.replaceWith(newParam.varref());
+            for (const ref of paramRefs) {
+                ref.replaceWith(newParam.varref());
             }
         }
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);

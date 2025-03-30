@@ -42,7 +42,6 @@ export default class Rule_17_7_UnusedReturnValue extends MISRARule {
         if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         const newJp =  ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), $jp as Call);
-        $jp.replaceWith(newJp);
-        return new MISRATransformationReport(MISRATransformationType.Replacement, newJp);
+        return new MISRATransformationReport(MISRATransformationType.Replacement, $jp.replaceWith(newJp));
     }
 }
