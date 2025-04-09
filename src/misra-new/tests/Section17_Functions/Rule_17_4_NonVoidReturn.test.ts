@@ -1,7 +1,8 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 import { FileJp } from "@specs-feup/clava/api/Joinpoints.js"; 
-import path from 'path';
+import path from "path";
+import { fileURLToPath } from "url";
 
 const passingCode = `
 unsigned int test_17_4_1() {
@@ -73,9 +74,11 @@ describe("Rule 17.4", () => {
     });
 
     it("should correct errors", () => {
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+
         const configFilename = "misra_config.json";
-        const folderPath = path.dirname(new URL(import.meta.url).pathname);
-        const configFilePath = path.join(folderPath, configFilename);
+        const configFilePath = path.join(__dirname, configFilename);
 
         expect(countErrorsAfterCorrection(configFilePath)).toBe(1);
     });
