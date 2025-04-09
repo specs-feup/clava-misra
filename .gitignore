@@ -3,6 +3,9 @@ woven_code/
 /dist
 /docs
 package-lock.json
+CxxSources
+/misra_config.json
+/src/main.ts
 
 # Extensions
 ltex.dictionary.*

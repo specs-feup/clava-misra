@@ -29,14 +29,14 @@ export function isCommentStmt($jp: Joinpoint): boolean {
     return $jp instanceof WrapperStmt && $jp.kind === "comment";
 }
 
-export function getVarReferences($var: Param, $startingPoint: Joinpoint): Varref[] {
-    try {
-        return Query.searchFrom($startingPoint, Varref, { 
-            decl: jp => jp?.astId === $var.astId
-        }).get();
-    } catch (error) {
-        return [];
-    }
+export function getParamReferences($param: Param, $startingPoint: Joinpoint): Varref[] {
+    return Query.searchFrom($startingPoint, Varref, (ref) => {
+                try {
+                    return ref.decl && ref.decl.astId === $param.astId;
+                } catch (error) {
+                    return false;
+                }
+            }).get();
 }
 
 /**

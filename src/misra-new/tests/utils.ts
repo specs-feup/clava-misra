@@ -1,7 +1,7 @@
 import MISRATool from "../MISRATool.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { Field, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { FileJp, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 export function countMISRAErrors(startingPoint: FileJp | Program = Query.root() as Program): number {
@@ -9,8 +9,8 @@ export function countMISRAErrors(startingPoint: FileJp | Program = Query.root() 
   return MISRATool.getMISRAErrors().length;
 }
 
-export function countErrorsAfterCorrection(): number {
-  MISRATool.applyCorrections();
+export function countErrorsAfterCorrection(configPath?: string): number {
+  MISRATool.applyCorrections(configPath);
   return MISRATool.getMISRAErrors().length;
 }
 
@@ -21,7 +21,7 @@ export interface TestFile {
 }
 
 export function registerSourceCode(files: TestFile[]): void {
-    beforeAll(() => {
+    beforeEach(() => {
       Clava.getData().setStandard(process.env.STD_VERSION!);
       Clava.getProgram().push();
       const program = Clava.getProgram();
@@ -32,7 +32,7 @@ export function registerSourceCode(files: TestFile[]): void {
       program.rebuild();
     });
   
-    afterAll(() => {
+    afterEach(() => {
       Clava.getProgram().rebuild();
       Clava.getProgram().pop();
     });

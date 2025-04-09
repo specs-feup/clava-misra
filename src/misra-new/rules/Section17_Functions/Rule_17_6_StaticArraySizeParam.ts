@@ -3,7 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getVarReferences } from "../../utils.js";
+import { getParamReferences } from "../../utils.js";
 
 /**
  * MISRA Rule 17.6: The declaration of an array parameter shall not contain the static keyword between the [ ]
@@ -48,7 +48,7 @@ export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
         if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         for (const invalidParam of this.#invalidParams) {
-            const paramRefs = getVarReferences(invalidParam, $jp);
+            const paramRefs = getParamReferences(invalidParam, $jp);
 
             // Replace the parameter with a new array parameter whose size is variant
             const originalType = (invalidParam.type as AdjustedType).originalType;

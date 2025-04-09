@@ -3,7 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getVarReferences } from "../../utils.js";
+import { getParamReferences } from "../../utils.js";
 
 export default class Rule_2_7_UnusedParameters extends MISRARule {
 
@@ -12,15 +12,11 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
     }
 
     private getUnusedParams(func: FunctionJp): Param[] {
-        return func.params.filter(param => {
-            getVarReferences(param, func).length === 0
-        });
+        return func.params.filter(param => getParamReferences(param, func).length === 0);
     }    
 
     private getUsedParams(func: FunctionJp): Param[] {
-        return func.params.filter(param => {
-            getVarReferences(param, func).length > 0
-        });
+        return func.params.filter(param => getParamReferences(param, func).length > 0);
     }
 
     private getUsedParamsPositions(func: FunctionJp): number[] {
@@ -40,7 +36,7 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         const unusedParams = this.getUnusedParams($jp);
         if (logErrors) {
             unusedParams.forEach(param => 
-                this.logMISRAError(param, `Parameter ${param.name} is unused in function ${$jp.name}.`)
+                this.logMISRAError(param, `Parameter '${param.name}' is unused in function ${$jp.name}.`)
             )
         }
         return unusedParams.length > 0;

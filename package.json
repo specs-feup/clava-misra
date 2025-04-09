@@ -2,7 +2,7 @@
   "name": "@specs-feup/clava-misra",
   "version": "1.0.0",
   "author": "L. Sousa",
-  "description": "A template for developing projects for Clava in Typescript",
+  "description": "Clava library to automatically detect and correct violations of the MISRA-C:2012 standard in C code",
   "type": "module",
   "scripts": {
     "run": "cross-env-shell \"if [ $(uname) = 'Darwin' ] || [ $(uname) = 'Linux' ]; then npm run run:macos-linux; else npm run run:windows; fi\"",

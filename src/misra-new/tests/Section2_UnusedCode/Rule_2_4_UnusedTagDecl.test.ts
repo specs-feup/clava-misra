@@ -48,7 +48,7 @@ const failingCodeEnum1 = `
         return (enum EnumForCast2) id;
     };
 
-    enum MyEnum2 color = RED4;
+    enum MyEnum2 color_enum = RED4;
 
     enum EnumForPtr *colorPtr;
 
@@ -68,8 +68,8 @@ const failingCodeEnum2 = `
         B3,
         C4
     } ColorOption;
-    enum MyColors myColor = A2;
-    ColorOption color = B3;
+    enum MyColors my_color = A2;
+    ColorOption color_option = B3;
 
     // MyColors2 tag should be removed
     typedef enum MyColors2 {
@@ -132,11 +132,11 @@ const failingCodeStruct2 = `
     } ColorStruct;
     ColorStruct colorStruct = {1, 2.5};
 
-    typedef struct MyStruct2 {
+    typedef struct MyStruct5 {
         int x;
         float y;
     } ColorStruct2;
-    struct MyStruct2 struct2 = {2, 4.5};
+    struct MyStruct5 struct5 = {2, 4.5};
     ColorStruct2 colorStruct2 = {1, 2.5};
 
     // Violation: MyStruct3 tag will be removed
@@ -144,7 +144,8 @@ const failingCodeStruct2 = `
         int x;
         float y;
     } ColorStruct3;
-    ColorStruct3 colorStruct3 = {10, 5.5};`;
+    ColorStruct3 colorStruct3 = {10, 5.5};
+`;
 
 const failingCodeUnion1 = `
     union MyUnion {
@@ -188,7 +189,8 @@ const failingCodeUnion1 = `
 
     union MyUnion2 myUnion = {.y = 20.5f};
     union UnionForPtr *unionPtr;
-    union UnionForArray unionArray[3];`;
+    union UnionForArray unionArray[3];
+`;
 
 const files: TestFile[] = [
     { name: "testEnum1.c", code: failingCodeEnum1 },
