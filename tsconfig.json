@@ -1,6 +1,6 @@
 {
   "include": ["src/**/*.ts", "src/**/*.json"],
-  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "src/misra-old"],
   "compilerOptions": {
     "outDir": "dist",
     "target": "ES2022",

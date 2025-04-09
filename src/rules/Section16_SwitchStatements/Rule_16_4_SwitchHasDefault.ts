@@ -3,7 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { getNumOfSwitchClauses, switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils.js";
+import { getNumOfSwitchClauses, switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils/utils.js";
 
 /**
  * MISRA Rule 16.4: Every switch statement shall have a default label

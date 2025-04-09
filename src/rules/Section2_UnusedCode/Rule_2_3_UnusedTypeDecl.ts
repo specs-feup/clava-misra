@@ -2,7 +2,7 @@ import { EnumDecl, Joinpoint,RecordJp,TypedefDecl, TypedefType } from "@specs-fe
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getBaseType, getTagUses, getTypeDecl, getTypedJps } from "../../utils.js";
+import { getBaseType, getTagUses, getTypeDecl, getTypedJps } from "../../utils/utils.js";
 
 /**
  * MISRA-C Rule 2.3: A project should not contain unused type declarations.

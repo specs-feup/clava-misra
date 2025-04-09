@@ -2,7 +2,7 @@ import {Break, Case, Joinpoint, Statement, Expression, Switch } from "@specs-feu
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getNumOfSwitchClauses, switchHasConditionalBreak } from "../../utils.js";
+import { getNumOfSwitchClauses, switchHasConditionalBreak } from "../../utils/utils.js";
 
 /**
  * MISRA Rule 16.6:  Every switch statement shall have at least two switch-clauses.

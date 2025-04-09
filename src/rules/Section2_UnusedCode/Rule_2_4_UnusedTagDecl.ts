@@ -2,7 +2,7 @@ import { Joinpoint, RecordJp, EnumDecl, TagType, ElaboratedType } from "@specs-f
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getTagUses, hasTypeDecl } from "../../utils.js";
+import { getTagUses, hasTypeDecl } from "../../utils/utils.js";
 
 /**
  * MISRA-C Rule 2.4: A project should not contain unused tag declarations.

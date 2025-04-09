@@ -2,7 +2,7 @@ import {Case, Comment, Joinpoint, Statement, Switch, WrapperStmt } from "@specs-
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { isCommentStmt } from "../../utils.js";
+import { isCommentStmt } from "../../utils/utils.js";
 
 /**
  * MISRA Rule 16.5: A default label shall appear as either the first or the last switch label of

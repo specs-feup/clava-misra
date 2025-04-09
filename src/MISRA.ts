@@ -1,5 +1,5 @@
 import { BinaryOp, Break, Case, Expression, If, Joinpoint, Scope, Statement, Switch } from "@specs-feup/clava/api/Joinpoints.js";
-import { getNumOfSwitchClauses, isCommentStmt } from "./utils.js";
+import { getNumOfSwitchClauses, isCommentStmt } from "./utils/utils.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 export enum MISRATransformationType {

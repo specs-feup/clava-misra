@@ -3,7 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getParamReferences } from "../../utils.js";
+import { getParamReferences } from "../../utils/utils.js";
 
 export default class Rule_2_7_UnusedParameters extends MISRARule {
 
