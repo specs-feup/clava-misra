@@ -5,6 +5,6 @@
       "float": 0.0,
       "enum Status": "SUCCESS",
       "Color": "RED",
-      "my_int_type": "0"
+      "my_int_type": 0
     }
 }
