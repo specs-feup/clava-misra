@@ -5,6 +5,7 @@
       "float": 0.0,
       "enum Status": "SUCCESS",
       "Color": "RED",
+      "Size": "MEDIUM",
       "my_int_type": 0
     }
 }
