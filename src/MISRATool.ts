@@ -1,7 +1,7 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "./MISRARule.js";
-import misraRules from "./rules/index.js";
+import sortRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRAError, MISRATransformationType } from "./MISRA.js";
 
@@ -54,17 +54,11 @@ export default class MISRATool {
             modified = this.transformAST(startingPoint);
         } while(modified);
 
-        if (this.#context.errors.length === 0 && this.#context.warnings.length === 0) {
+        if (this.#context.errors.length === 0) {
             console.log("[Clava-MISRATool] All detected violations were corrected.");
         } else {
-            if (this.#context.warnings.length > 0) {
-                console.log("\n[Clava-MISRATool] Warnings from automatic MISRA-C corrections (these may change the program's behavior):");
-                this.#context.printWarnings();
-            } 
-            if (this.#context.errors.length > 0) {
-                console.log("\n[Clava-MISRATool] Remaining MISRA-C violations:");
-                this.#context.printErrors();
-            } 
+            console.log("\n[Clava-MISRATool] Remaining MISRA-C violations:");
+            this.#context.printErrors();
         }
     }
 

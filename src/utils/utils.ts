@@ -1,5 +1,6 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { Comment, Type, Case, Joinpoint, ArrayType, TypedefDecl, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType, Switch, BuiltinType, BinaryOp, Break, Scope, Statement, Expression, WrapperStmt, ElaboratedType, TagType, Param, Varref } from "@specs-feup/clava/api/Joinpoints.js";
+import { Comment, Type, Case, Joinpoint, ArrayType, TypedefDecl, DeclStmt, TypedefNameDecl, StorageClass, FunctionJp, Vardecl, FileJp, RecordJp, EnumDecl, PointerType, Switch, BuiltinType, BinaryOp, Break, Scope, Statement, Expression, WrapperStmt, ElaboratedType, TagType, Param, Varref, Program, Include, Call } from "@specs-feup/clava/api/Joinpoints.js";
+import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 /**
  * Checks if the comment is an inline comment
@@ -72,28 +73,21 @@ export function getExternals(): (FunctionJp | Vardecl)[] {
  * @returns true if the joinpoint has a defined type, otherwise false
  */
 export function hasDefinedType($jp: Joinpoint): boolean {
-    return $jp.hasType && $jp.type !== null || $jp.type !== undefined;
+    return $jp.hasType && $jp.type !== null && $jp.type !== undefined;
 }
 
 /**
  * Retrieves the base type of the provided joinpoint. 
  * @param $jp The joinpoint to retrieve its type
- * @returns The base type of the joinpoint, or undefined if the type is not defined
+ * @returns The base type of the joinpoint, or undefined if the joinpoint does not have a type
  */
 export function getBaseType($jp: Joinpoint): Type | undefined {
     if (!hasDefinedType($jp)) return undefined;
+    let jpType = $jp.type;
 
-    let jpType: Type;
-    if ($jp.type instanceof PointerType) {
-        jpType = $jp.type.pointee;
-        while (jpType instanceof PointerType) {
-            jpType = jpType.pointee;
-        }
-    } else if ($jp.type instanceof ArrayType) {
-        jpType = $jp.type.elementType;
-    } else {
-        jpType = $jp.type;
-    }
+    while (jpType instanceof PointerType || jpType instanceof ArrayType) {
+        jpType = jpType instanceof PointerType ? jpType.pointee : jpType.elementType;
+    } 
     return jpType;
 }
 
@@ -128,12 +122,9 @@ export function hasTypeDecl($jp: Joinpoint): boolean {
  */
 export function getTypedJps(startingPoint?: Joinpoint): Joinpoint[] {
     if (startingPoint) {
-        return Query.searchFrom(startingPoint, Joinpoint).get().filter(jp => jp.hasType && jp.type !== null && jp.type !== undefined)
+        return Query.searchFrom(startingPoint, Joinpoint, (jp) => hasDefinedType(jp)).get();
     }
-    return Query.search(Joinpoint).get().filter(jp => 
-        jp.hasType && 
-        jp.type !== null && 
-        jp.type !== undefined);
+    return Query.search(Joinpoint, (jp) => hasDefinedType(jp)).get();
 }
 
 /**
@@ -213,9 +204,41 @@ export function switchHasBooleanCondition(switchStmt: Switch): boolean {
 
 /**
  * Checks if the provided switch statement contains any conditional break
+ * 
  * @param switchStmt - The switch statement to analyze
  * @returns Returns true if the switch statement contains a conditional break, otherwise false
  */
 export function switchHasConditionalBreak(switchStmt: Switch): boolean {
     return Query.searchFrom(switchStmt, Break, { currentRegion: region => region.astId !== switchStmt.astId, enclosingStmt: jp => jp.astId === switchStmt.astId }).get().length > 0;
+}
+
+ /**
+ * Checks if a file compiles correctly after adding a statement by rebuilding it.
+ * If rebuilding fails, the file is considered invalid with the new statement.
+ * 
+ * @param fileJp - The file to validate.
+ */
+export function isValidFile(fileJp: FileJp) : boolean {
+    const programJp = fileJp.parent as Program;
+    let copyFile = ClavaJoinPoints.fileWithSource(`temp_misra_${fileJp.name}`, fileJp.code, fileJp.relativeFolderpath);
+
+    copyFile = programJp.addFile(copyFile) as FileJp;
+    try {
+        const rebuiltFile = copyFile.rebuild();
+        const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first();
+        fileToRemove?.detach();
+        return true;
+    } catch(error) {
+        copyFile.detach();
+        return false;
+    }
+}
+
+export function removeIncludeFromFile(includeName: string, fileJp: FileJp) {
+    const include = Query.searchFrom(fileJp, Include, {name: includeName}).first();
+    include?.detach();
+}
+
+export function isCallToImplicitFunction(callJp: Call): boolean {
+    return callJp.function.definitionJp === undefined && !callJp.function.isInSystemHeader;
 }
