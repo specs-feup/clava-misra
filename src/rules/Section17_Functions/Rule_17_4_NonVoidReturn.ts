@@ -1,14 +1,15 @@
-import { BuiltinType, Call, EnumDecl, ExprStmt, FileJp, FunctionJp, Joinpoint, Program, ReturnStmt } from "@specs-feup/clava/api/Joinpoints.js";
+import { BuiltinType, FileJp, FunctionJp, Joinpoint, ReturnStmt } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { isValidFile } from "../../utils/utils.js";
 
 /**
  * MISRA Rule 17.4: All exit paths from a function with non-void return type shall have an
 explicit return statement with an expression. In a non-void function:
-- Every return statement has an expression, and a 
+- Every return statement has an expression, and 
 - Control cannot reach the end of the function without encountering a return statement
  */
 export default class Rule_17_4_NonVoidReturn extends MISRARule {
@@ -42,30 +43,6 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
     }
 
     /**
-     * Checks if the newly added return statement is valid by attempting to rebuild the file that contains it.
-     * If rebuilding fails, the return statement is considered invalid.
-     * 
-     * @param returnStmt - The return statement to validate.
-     */
-    private isValidReturnStmt(returnStmt: ReturnStmt) : boolean {
-        const fileJp = returnStmt.getAncestor("file") as FileJp;
-        const programJp = fileJp.parent as Program;
-        let copyFile = (fileJp.deepCopy() as FileJp);
-        copyFile.setName(`temp_misra_${copyFile.name}`);
-
-        copyFile = programJp.addFile(copyFile) as FileJp;
-        try {
-            const rebuiltFile = copyFile.rebuild();
-            const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first();
-            fileToRemove?.detach();
-            return true;
-        } catch(error) {
-            copyFile.detach();
-            return false;
-        }
-    }
-
-    /**
      * Transforms a non-void function joinpoint that has no return statement at the end, by adding a default return value based on the config file.
      * - If the configuration file is missing/invalid or the specified default value is invalid, no transformation is performed and the function is left unchanged.
      * - Otherwise, a return statement is inserted as the last statement of the function. 
@@ -77,6 +54,7 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
         if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         const functionJp = $jp as FunctionJp;
+        const fileJp = functionJp.getAncestor("file") as FileJp;
         const returnType = functionJp.type.code;
         const errorMsgPrefix = `Function '${functionJp.name}' reaches the end without a return statement.`;
 
@@ -89,7 +67,7 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
         try {
             defaultValueReturn = this.context.config.get("defaultValues")[returnType];
         } catch (error) {  
-            this.logMISRAError($jp, `${errorMsgPrefix} Default value return not added due to invalid structure of configuration file.`);
+            this.logMISRAError($jp, `${errorMsgPrefix} Default value return was not added as \'defaultValues\' is not defined in the configuration file.`);
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
 
@@ -103,7 +81,7 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
         functionJp.body.lastChild ? functionJp.body.lastChild.insertAfter(returnStmt) : functionJp.body.setFirstChild(returnStmt);
 
         // Validate the provided default value. If it is invalid, the return stmt is removed
-        if (this.isValidReturnStmt(returnStmt)) {
+        if (isValidFile(fileJp)) {
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         } 
         returnStmt.detach();

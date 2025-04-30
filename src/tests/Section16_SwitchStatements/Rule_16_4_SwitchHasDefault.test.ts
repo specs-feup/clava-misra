@@ -61,7 +61,7 @@ const failingCode2 =
             break;
     }
 
-     switch ( x == 4)
+    switch ( x == 4)
     {
         case 0:
             ++x;
@@ -80,7 +80,7 @@ const failingCode3 =
 `void foo16_4_5( void )
 {
     int x, a = 14;
-    switch (x) { /* Default will not be introduced, as it Will be converted by the other rule*/
+    switch (x) { /* Default will not be introduced, as it will be converted by the other rule*/
         case 1:
             ++x;
             break;

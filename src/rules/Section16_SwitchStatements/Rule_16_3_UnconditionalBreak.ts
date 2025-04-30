@@ -9,6 +9,7 @@ import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
  * MISRA Rule 16.3: An unconditional break statement shall terminate every switch-clause
  */
 export default class Rule_16_3_UnconditionalBreak extends MISRARule {
+    priority = 2; 
     #statementsNeedingBreakAfter: Joinpoint[] = [];
 
     constructor(context: MISRAContext) {

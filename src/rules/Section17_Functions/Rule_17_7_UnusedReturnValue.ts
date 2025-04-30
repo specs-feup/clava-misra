@@ -3,6 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { isCallToImplicitFunction } from "../../utils/utils.js";
 
 /**
  * MISRA Rule 17.7: The value returned by a function having non-void return type shall be
@@ -41,7 +42,8 @@ export default class Rule_17_7_UnusedReturnValue extends MISRARule {
     transform($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
         
-        const newJp =  ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), $jp as Call);
+        const callJp = $jp as Call;
+        const newJp =  ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), callJp);
         return new MISRATransformationReport(MISRATransformationType.Replacement, $jp.replaceWith(newJp));
     }
 }

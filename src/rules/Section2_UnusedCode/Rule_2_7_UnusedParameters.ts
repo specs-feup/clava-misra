@@ -4,8 +4,10 @@ import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getParamReferences } from "../../utils/utils.js";
+import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 export default class Rule_2_7_UnusedParameters extends MISRARule {
+    priority = 3; 
 
     constructor(context: MISRAContext) {
         super("2.7", context);
@@ -43,21 +45,21 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
     }
     
     transform($jp: Joinpoint): MISRATransformationReport {
-        if(!this.match($jp)) 
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
+        if(!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        const usedParams = this.getUsedParams($jp as FunctionJp);
-        const usedParamsPositions = this.getUsedParamsPositions($jp as FunctionJp);
+        const functionJp = $jp as FunctionJp;
+        const usedParams = this.getUsedParams(functionJp);
+        const usedParamsPositions = this.getUsedParamsPositions(functionJp);
         const calls = Query.search(Call, {function: jp => jp.astId === $jp.astId}).get();
         
-        ($jp as FunctionJp).setParams(usedParams);
-        for (const funcDecl of ($jp as FunctionJp).declarationJps) {
+        functionJp.setParams(usedParams);
+        for (const funcDecl of functionJp.declarationJps) {
             funcDecl.setParams(usedParams);
         }
 
         for (const call of calls) {
             const newArgs = usedParamsPositions.map(i => call.args[i]);
-            const newCall = ($jp as FunctionJp).newCall(newArgs)
+            const newCall = functionJp.newCall(newArgs)
             call.replaceWith(newCall);
         }
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);

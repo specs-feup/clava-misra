@@ -32,11 +32,6 @@ export default class Rule_16_4_SwitchHasDefault extends MISRARule {
     transform($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        if ((getNumOfSwitchClauses($jp as Switch) < 2 || switchHasBooleanCondition($jp as Switch)) &&
-            !switchHasConditionalBreak($jp as Switch)) { // Will be handled by rules 16.6 or 16.7
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
-        } 
-
         $jp.children[1].lastChild
             .insertAfter(ClavaJoinPoints.defaultStmt())
             .insertAfter(ClavaJoinPoints.emptyStmt())

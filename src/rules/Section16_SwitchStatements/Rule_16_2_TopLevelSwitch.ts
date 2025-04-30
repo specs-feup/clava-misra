@@ -5,10 +5,11 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
- * MISRA Rule 16.2: A switch label shall only be used when the most closely-enclos ing
+ * MISRA Rule 16.2: A switch label shall only be used when the most closely-enclosing
 compound statement is the body of a switch statement
  */
 export default class Rule_16_2_TopLevelSwitch extends MISRARule {
+    priority = 2; 
     #misplacedCases: Case[] = [];
 
     constructor(context: MISRAContext) {

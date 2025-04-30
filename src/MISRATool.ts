@@ -12,7 +12,7 @@ export default class MISRATool {
     private static init(startingPoint: FileJp | Program) {
         this.validateStdVersion(startingPoint);
         this.#context = new MISRAContext();
-        this.#misraRules = misraRules(this.#context);
+        this.#misraRules = sortRules(this.#context);
     }
 
     private static validateStdVersion(startingPoint: FileJp | Program) {

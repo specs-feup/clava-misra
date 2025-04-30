@@ -15,6 +15,11 @@ export default abstract class MISRARule {
      */
     readonly ruleID: string;
 
+    /**
+     * Priority of the rule which is low by default.
+     */
+    readonly priority: number = 4;
+    
     /** 
      * MISRA context for error tracking and rule transformations state
      */    
@@ -54,24 +59,6 @@ export default abstract class MISRARule {
      * @param msg - Description of the violation
      */
     protected logMISRAError($jp: Joinpoint, msg:string): void {
-        this.context.addMISRAError(
-            this.ruleID, 
-            $jp, 
-            `MISRA-C Rule ${this.ruleID} violation at ${$jp.filepath}@${$jp.line}:${$jp.column}: ${msg}`
-        )
-    }
-
-    /**
-     * Logs a warning from automatic MISRA-C correction, which may change the program's behavior
-     * 
-     * @param $jp - The joinpoint where the correction was applied
-     * @param msg - Description of the warning
-     */
-    protected logMISRAWarning($jp: Joinpoint, msg:string): void {
-        this.context.addMISRAWarning(
-            this.ruleID, 
-            $jp, 
-            `Warning: MISRA-C Rule ${this.ruleID} correction at ${$jp.filepath}@${$jp.line}:${$jp.column}: ${msg}.`
-        )
+        this.context.addMISRAError(this.ruleID, $jp, msg); 
     }
 }

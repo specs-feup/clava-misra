@@ -8,6 +8,7 @@ import { getBaseType, getTagUses, getTypeDecl, getTypedJps } from "../../utils/u
  * MISRA-C Rule 2.3: A project should not contain unused type declarations.
  */
 export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
+    priority = 3;
 
     constructor(context: MISRAContext) {
         super("2.3", context);
@@ -65,11 +66,13 @@ export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        if (($jp instanceof RecordJp || $jp instanceof EnumDecl) && $jp.name && getTagUses($jp)) { 
+        if (($jp instanceof RecordJp || $jp instanceof EnumDecl) && $jp.name && getTagUses($jp).length > 0) { 
             $jp.lastChild.detach();
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
-        } 
-        $jp.detach();
-        return new MISRATransformationReport(MISRATransformationType.Removal);
+        } else {
+            $jp.detach();
+            return new MISRATransformationReport(MISRATransformationType.Removal);
+        }
+
     }
 }

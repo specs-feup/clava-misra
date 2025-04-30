@@ -8,7 +8,8 @@ import { getTagUses, hasTypeDecl } from "../../utils/utils.js";
  * MISRA-C Rule 2.4: A project should not contain unused tag declarations.
  */
 export default class Rule_2_4_UnusedTagDecl extends MISRARule {
-
+    priority = 3; 
+    
     constructor(context: MISRAContext) {
         super("2.4", context);
     }
@@ -40,8 +41,8 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
     
     /**
      * Transforms the joinpoint if it is an unused tag declaration
-     * - If the Joinpoint is a tag declared in a typedef, it removes the name. 
-     * - Otherwise, the Joinpoint is detached.
+     * - If the joinpoint is a tag declared in a typedef, it removes the name. 
+     * - Otherwise, the joinpoint is detached.
      * 
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result

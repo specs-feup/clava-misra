@@ -8,6 +8,7 @@ import { getNumOfSwitchClauses, switchHasConditionalBreak } from "../../utils/ut
  * MISRA Rule 16.6:  Every switch statement shall have at least two switch-clauses.
  */
 export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
+    priority = 3;
 
     constructor(context: MISRAContext) {
         super("16.6", context);
@@ -39,12 +40,15 @@ export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
     transform($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
         
-        if (switchHasConditionalBreak($jp as Switch)) {
-            this.logMISRAError($jp, "switch statement must have at least two clauses and cannot be transformed due to a conditional break statement.")
+        const switchJp = $jp as Switch;
+        if (switchHasConditionalBreak(switchJp)) {
+            if (switchJp.hasDefaultCase) {
+                this.logMISRAError($jp, "Switch statement must have at least two clauses and cannot be transformed due to a conditional break statement.")
+            }
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
 
-        const transformResultNode = MISRASwitchConverter.convert($jp as Switch);
+        const transformResultNode = MISRASwitchConverter.convert(switchJp);
         if (transformResultNode) {
             return new MISRATransformationReport(
                 MISRATransformationType.Replacement,

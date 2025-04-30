@@ -88,7 +88,7 @@ export default class Rule_16_5_DefaultFirstOrLast extends MISRARule {
         const defaultCase = ($jp as Switch).getDefaultCase;
         const rightStatements = defaultCase.siblingsRight.filter(sibling => !isCommentStmt(sibling));
        
-        //  Reposition the default case to the last position within its case clause lis
+        //  Reposition the default case to the last position within its case clause list
         if (rightStatements[0] instanceof Case) { // At least one of the first statements is a Case
             const rightConsecutiveCases = this.getConsecutiveRightCases(defaultCase);
             const lastRightCase = rightConsecutiveCases[rightConsecutiveCases.length - 1];
