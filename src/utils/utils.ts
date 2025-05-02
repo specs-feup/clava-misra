@@ -190,9 +190,8 @@ export function getNumOfSwitchClauses($jp: Switch): number  {
 
 /**
  * Checks if the provided switch statement has a Boolean condition
- * @param switchStmt - The switch statement to check
- * @returns 
- * Returns true if the switch statement has a Boolean condition, otherwise false
+ * @param switchStmt The switch statement to check
+ * @returns Returns true if the switch statement has a Boolean condition, otherwise false
  */
 export function switchHasBooleanCondition(switchStmt: Switch): boolean {
     return switchStmt.condition instanceof BinaryOp ||
@@ -234,11 +233,48 @@ export function isValidFile(fileJp: FileJp) : boolean {
     }
 }
 
+/**
+ * Retrieves the list of header files included in the given file
+ *
+ * @param fileJp The file join point
+ * @returns An array of strings with the names of the includes
+ */
+export function getIncludesOfFile(fileJp: FileJp): string[] {
+    return fileJp.includes.map(includeJp => includeJp.name);
+}
+
+/**
+ * Removes a specific include directive from the given file, if it exists
+ *
+ * @param includeName The name of the include to remove 
+ * @param fileJp The file from which the include should be removed
+ */
 export function removeIncludeFromFile(includeName: string, fileJp: FileJp) {
     const include = Query.searchFrom(fileJp, Include, {name: includeName}).first();
     include?.detach();
 }
 
+/**
+ * Check if the given joinpoint represents a call to an implicit function.
+ *
+ * @param callJp The call join point to analyze
+ */
 export function isCallToImplicitFunction(callJp: Call): boolean {
     return callJp.function.definitionJp === undefined && !callJp.function.isInSystemHeader;
 }
+
+/**
+ * Returns all files in the program that contain at least one call to an implicit function
+ *
+ * @param programJp - The program to analyze
+ * @returns A list of files with implicit function calls
+ */
+export function getFilesWithCallToImplicitFunction(programJp: Program): FileJp[] {
+    const files = Query.searchFrom(programJp, FileJp).get();
+    return files.filter(
+      (fileJp) =>
+        Query.searchFrom(fileJp, Call, (callJp) =>
+          isCallToImplicitFunction(callJp)
+        ).get().length > 0
+    );
+} 

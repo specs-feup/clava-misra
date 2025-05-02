@@ -6,6 +6,7 @@ import Rule_16_4_SwitchHasDefault from "./Section16_SwitchStatements/Rule_16_4_S
 import Rule_16_5_DefaultFirstOrLast from "./Section16_SwitchStatements/Rule_16_5_DefaultFirstOrLast.js";
 import Rule_16_6_SwitchMinTwoClauses from "./Section16_SwitchStatements/Rule_16_6_SwitchMinTwoClauses.js";
 import Rule_16_7_NonBooleanSwitchCondition from "./Section16_SwitchStatements/Rule_16_7_NonBooleanSwitchCondition.js";
+import Rule_17_3_ImplicitFunction from "./Section17_Functions/Rule_17_3_ImplicitFunction.js";
 import Rule_17_4_NonVoidReturn from "./Section17_Functions/Rule_17_4_NonVoidReturn.js";
 import Rule_17_6_StaticArraySizeParam from "./Section17_Functions/Rule_17_6_StaticArraySizeParam.js";
 import Rule_17_7_UnusedReturnValue from "./Section17_Functions/Rule_17_7_UnusedReturnValue.js";
@@ -31,6 +32,7 @@ export function sortRules(context: MISRAContext) {
         new Rule_16_5_DefaultFirstOrLast(context),
         new Rule_16_6_SwitchMinTwoClauses(context),
         new Rule_16_7_NonBooleanSwitchCondition(context), 
+        new Rule_17_3_ImplicitFunction(context),
         new Rule_17_4_NonVoidReturn(context),
         new Rule_17_6_StaticArraySizeParam(context),
         new Rule_17_7_UnusedReturnValue(context),
