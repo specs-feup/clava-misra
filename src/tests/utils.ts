@@ -6,12 +6,12 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 export function countMISRAErrors(startingPoint: FileJp | Program = Query.root() as Program): number {
   MISRATool.checkCompliance(startingPoint);
-  return MISRATool.getMISRAErrors().length;
+  return MISRATool.getErrorCount();
 }
 
 export function countErrorsAfterCorrection(configPath?: string): number {
   MISRATool.applyCorrections(configPath);
-  return MISRATool.getMISRAErrors().length;
+  return MISRATool.getActiveErrorCount();
 }
 
 export interface TestFile {

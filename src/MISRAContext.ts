@@ -29,6 +29,10 @@ export default class MISRAContext {
         return this.#misraErrors;
     }
 
+    get activeErrors(): MISRAError[] {
+        return this.#misraErrors.filter(error => error.isActiveError());
+    }
+
     get config(): Map<string, any> | undefined {
         return this.#config;
     }
@@ -63,9 +67,18 @@ export default class MISRAContext {
         }
     }
 
-    printErrors() {
-        this.#misraErrors.forEach(error => {
-            console.log(`MISRA-C Rule ${error.ruleID} violation at ${error.$jp.filepath}@${error.$jp.line}:${error.$jp.column}: ${error.message}\n`);
-        });
+    private printError(error: MISRAError): void {
+        console.log(`MISRA-C Rule ${error.ruleID} violation at ${error.$jp.filepath}@${error.$jp.line}:${error.$jp.column}: ${error.message}\n`);
     }
+    
+    public printAllErrors(): void {
+        this.#misraErrors.forEach(error => this.printError(error));
+    }
+    
+    public printActiveErrors(): void {
+        this.#misraErrors
+            .filter(error => error.isActiveError())
+            .forEach(error => this.printError(error));
+    }
+    
 }

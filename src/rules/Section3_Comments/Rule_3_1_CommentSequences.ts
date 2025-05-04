@@ -20,7 +20,7 @@ export default class Rule_3_1_CommentSequences extends MISRARule {
 
         if (logErrors) {
             invalidComments.forEach(comment =>
-                this.logMISRAError(comment, `Comment ${comment.text} contains invalid character sequences.`)
+                this.logMISRAError(comment, `Comment \'${comment.text}\' contains invalid character sequences.`)
             )
         }
         return invalidComments.length > 0;

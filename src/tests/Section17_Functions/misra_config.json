@@ -1,11 +1,19 @@
 {
-    "defaultValues": {
-      "int": 0,
-      "unsigned int": 0,  
-      "float": 0.0,
-      "enum Status": "SUCCESS",
-      "Color": "RED",
-      "Size": "MEDIUM",
-      "my_int_type": 0
-    }
+  "defaultValues": {
+    "int": 0,
+    "unsigned int": 0,  
+    "float": 0.0,
+    "enum Status": "SUCCESS",
+    "Color": "RED",
+    "Size": "MEDIUM",
+    "my_int_type": 0
+  },
+  "implicitCalls": {
+    "printf": "stdio.h",
+    "print": "stdio.h",
+    "sin": "math.h",
+    "pow": "math.h",
+    "half": "math.h",
+    "println": "stdio.h"
+  }
 }

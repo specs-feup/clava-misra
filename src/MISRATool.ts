@@ -1,9 +1,10 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { Call, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "./MISRARule.js";
 import sortRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRAError, MISRATransformationType } from "./MISRA.js";
+import { isCallToImplicitFunction } from "./utils/utils.js";
 
 export default class MISRATool {
     static #misraRules: MISRARule[];
@@ -28,21 +29,21 @@ export default class MISRATool {
     public static checkCompliance(startingPoint: Program | FileJp = Query.root() as Program) {
         this.init(startingPoint);
 
-        const nodes = startingPoint.descendants;
+        const nodes = [startingPoint, ...startingPoint.descendants];
         for (const node of nodes) {
             for (const rule of this.#misraRules) {
                 rule.match(node, true);
             }
         }
         if (this.#context.errors.length > 0) {
-            this.#context.printErrors();
+            this.#context.printAllErrors();
         } else {
             console.log("[Clava-MISRATool] No MISRA-C violations detected.");
         }
     } 
 
-    public static applyCorrections(configFilePath?: string, startingPoint: Program | FileJp = Query.root() as Program) {
-        this.init(startingPoint);
+    public static applyCorrections(configFilePath?: string) {
+        this.init(Query.root() as Program);
         if (configFilePath) {
             this.#context.config = configFilePath;
         }
@@ -51,14 +52,14 @@ export default class MISRATool {
         let modified = false;
         do {
             console.log(`[Clava-MISRATool] Iteration #${++iteration}: Applying MISRA-C transformations...`);
-            modified = this.transformAST(startingPoint);
+            modified = this.transformAST(Query.root() as Program);
         } while(modified);
 
         if (this.#context.errors.length === 0) {
             console.log("[Clava-MISRATool] All detected violations were corrected.");
         } else {
             console.log("\n[Clava-MISRATool] Remaining MISRA-C violations:");
-            this.#context.printErrors();
+            this.#context.printActiveErrors();
         }
     }
 
@@ -84,7 +85,11 @@ export default class MISRATool {
         return modified;
     }
 
-    public static getMISRAErrors(): MISRAError[] {
-        return this.#context.errors;
+    public static getErrorCount(): number {
+        return this.#context.errors.length;
+    }
+
+    public static getActiveErrorCount(): number {
+        return this.#context.activeErrors.length;
     }
 }

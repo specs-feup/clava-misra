@@ -1,4 +1,4 @@
-import { Call, FileJp, FunctionJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { Call, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
@@ -27,8 +27,6 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         if (!($jp instanceof Program)) return false;
         
         const implicitCalls = Query.searchFrom($jp, Call, (callJp) => isCallToImplicitFunction(callJp)). get();
-        const isNonCompliant = implicitCalls.length > 0;
-
         for (const callJp of implicitCalls) {
             if (logErrors) {
                 this.logMISRAError(callJp, `Function '${callJp.name}' is declared implicitly.`);
@@ -66,6 +64,12 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         }
     }
 
+    /**
+     * Retrieves the fix for a implicit call specified on the config file (.h or .c)
+     * @param callJp 
+     * @param errorMsgPrefix 
+     * @returns 
+     */
     private getImplicitFixFromConfig(callJp: Call, errorMsgPrefix: string): string | undefined {
         if (!this.context.config) {
             this.logMISRAError(callJp, `${errorMsgPrefix} Include or extern not added due to missing config file.`);
@@ -92,6 +96,11 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         return configFix;
     }
 
+    /**
+     * Attempts to resolve implicit function calls in a file by adding missing includes or extern statements based on the configuration file.
+     * @param fileJp The file to analyze
+     * @returns `true` if any changes were made to the file, otherwise `false`.
+     */
     private solveImplicitCalls(fileJp: FileJp): boolean {
         const implicitCalls = Query.searchFrom(fileJp, Call, (callJp) => (isCallToImplicitFunction(callJp))).get();
         const originalIncludes = getIncludesOfFile(fileJp);
@@ -111,30 +120,31 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
                 continue;
             }
 
-            const callIndex = Query.searchFrom(fileJp, Call, {name: callJp.name}).get().indexOf(callJp);
+            const callIndex = Query.searchFrom(fileJp, Call, { name: callJp.name }).get().findIndex(c => c.equals(callJp));
             const isInclude = configFix.endsWith(".h");
-
             if (isInclude) {
                 if (originalIncludes.includes(configFix)) {
-                    this.logMISRAError(callJp, `${errorMsgPrefix} Provided include ${configFix} does not fix the violation.`);
+                    this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${configFix}\' does not fix the violation.`);
                 } 
                 else if (addedIncludes.includes(configFix)) {
+                    
                     if (this.isValidFileWithExplicitCall(fileJp, callJp.name, callIndex)) {
                         solvedCalls.add(callJp.name);
                     } else {
-                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided include ${configFix} does not fix the violation.`);
+                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${configFix}\' does not fix the violation.`);
                     }
                 } 
                 else {
                     fileJp.addInclude(configFix);
                     const fileCompiles = this.isValidFileWithExplicitCall(fileJp, callJp.name, callIndex);
+
                     if (fileCompiles) {
                         solvedCalls.add(callJp.name);
                         addedIncludes.push(configFix);
                         changedFile = true;
                     } else {
                         removeIncludeFromFile(configFix, fileJp);
-                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided include ${configFix} does not fix the violation.`);
+                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${configFix}\' does not fix the violation.`);
                     }
                 }
             }
@@ -143,7 +153,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
     }
 
     /**
-     * Checks if the rebuilt version of the file compiles and if the provided call is not longer a implicit
+     * Checks if the rebuilt version of the file compiles and if the provided call is no longer implicit
      * @param fileJp The file to analyze
      * @param funcName The function name to search the call
      * @param callIndex The index of the call 

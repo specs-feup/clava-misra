@@ -1,6 +1,8 @@
-import { BinaryOp, Break, Case, Expression, If, Joinpoint, Scope, Statement, Switch } from "@specs-feup/clava/api/Joinpoints.js";
+import { BinaryOp, Break, Case, Expression, If, Joinpoint, Program, Scope, Statement, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 import { getNumOfSwitchClauses, isCommentStmt } from "./utils/utils.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import Clava from "@specs-feup/clava/api/clava/Clava.js";
 
 export enum MISRATransformationType {
     NoChange,
@@ -14,7 +16,7 @@ export enum MISRATransformationType {
  */
 export class MISRAError {
     /**
-     * Represents the specific MISRA rule that was violated
+     * Represents the specific MISRA-C rule that was violated
      */
     public ruleID: string;
     /**
@@ -47,6 +49,13 @@ export class MISRAError {
         return this.ruleID === other.ruleID &&
                this.$jp.astId === other.$jp.astId &&
                this.message === other.message;
+    }
+
+    /**
+     * 
+     */
+    isActiveError(): boolean {
+        return (Query.root() as Joinpoint).contains(this.$jp);
     }
 }
 
@@ -258,6 +267,7 @@ export class MISRASwitchConverter {
     private static organizeCaseGroups(caseGroups: Case[][]): Case[][] {
         const nonDefaultGroups = caseGroups.filter(block => !block.some(caseStmt => caseStmt.isDefault));
         const defaultBlock = caseGroups.find(block => block.some(caseStmt => caseStmt.isDefault));
+        
         if (defaultBlock) {
             nonDefaultGroups.push(defaultBlock);
         }
