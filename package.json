@@ -30,6 +30,10 @@
     "test:cov": "npm run test -- --coverage",
     "test:watch": "npm run test -- --watch"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/specs-feup/clava-misra.git"
+  },
   "dependencies": {
     "@specs-feup/clava": "^3.0.11",
     "@specs-feup/clava-visualization": "^1.0.5",
