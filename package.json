@@ -1,9 +1,20 @@
 {
   "name": "@specs-feup/clava-misra",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "L. Sousa",
   "description": "Clava library to automatically detect and correct violations of the MISRA-C:2012 standard in C code",
   "type": "module",
+  "files": [
+    "dist",
+    "src",
+    "jest.config.js",
+    ".gitignore",
+    "package.json",
+    "README.md",
+    "tsconfig.jest.json",
+    "tsconfig.json",
+    "typedoc.config.js"
+  ],
   "scripts": {
     "run": "cross-env-shell \"if [ $(uname) = 'Darwin' ] || [ $(uname) = 'Linux' ]; then npm run run:macos-linux; else npm run run:windows; fi\"",
     "run:windows": "cross-env STD_VERSION=%npm_config_std% npx clava classic dist/main.js -pi -std %npm_config_std% -p CxxSources/",
@@ -18,6 +29,10 @@
     "test:c11": "cross-env STD_VERSION=c11 NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --detectOpenHandles --forceExit src --std=c11",
     "test:cov": "npm run test -- --coverage",
     "test:watch": "npm run test -- --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/specs-feup/clava-misra.git"
   },
   "dependencies": {
     "@specs-feup/clava": "^3.0.11",
