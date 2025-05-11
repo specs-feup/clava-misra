@@ -1,8 +1,8 @@
-import { BinaryOp, Break, Case, Expression, If, Joinpoint, Program, Scope, Statement, Switch } from "@specs-feup/clava/api/Joinpoints.js";
-import { getNumOfSwitchClauses, isCommentStmt } from "./utils/utils.js";
+import { BinaryOp, Break, Case, Expression, If, Joinpoint, Scope, Statement, Switch } from "@specs-feup/clava/api/Joinpoints.js";
+import { isCommentStmt } from "./utils/CommentUtils.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import Clava from "@specs-feup/clava/api/clava/Clava.js";
+import { countSwitchClauses } from "./utils/SwitchUtils.js";
 
 export enum MISRATransformationType {
     NoChange,
@@ -101,7 +101,7 @@ export class MISRASwitchConverter {
      * @returns The converted statements or `undefined` if no statements remain
      */
     static convert(switchStmt: Switch): Statement | undefined {
-        if (switchStmt.hasDefaultCase && getNumOfSwitchClauses(switchStmt) < 2) {  // The statements will always be executed 
+        if (switchStmt.hasDefaultCase && countSwitchClauses(switchStmt) < 2) {  // The statements will always be executed 
             return this.convertToConsecutiveStmts(switchStmt);
         } else {
             return this.convertToIfStatements(switchStmt);

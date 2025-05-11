@@ -1,8 +1,9 @@
-import { Joinpoint, RecordJp, EnumDecl, TagType, ElaboratedType } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, RecordJp, EnumDecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getTagUses, hasTypeDecl } from "../../utils/utils.js";
+import { hasTypeDefDecl, isTypeDeclUsed } from "../../utils/TypeDeclUtils.js";
+import { isTagDecl } from "../../utils/JoinpointUtils.js";
 
 /**
  * MISRA-C Rule 2.4: A project should not contain unused tag declarations.
@@ -23,15 +24,15 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!($jp instanceof RecordJp || $jp instanceof EnumDecl)) return false;
+        if (!isTagDecl($jp)) return false;
 
-        const containsTypeDecl = hasTypeDecl($jp);
+        const containsTypeDecl = hasTypeDefDecl($jp);
         const jpName = $jp.name;
         if (containsTypeDecl && jpName === undefined || jpName === null || (jpName as string).trim().length === 0) {
             return false;
         }
 
-        const isUnused = getTagUses($jp).length === 0;
+        const isUnused = !isTypeDeclUsed($jp);
         if (isUnused && logErrors) {
             this.logMISRAError($jp, 
                 containsTypeDecl ? `The tag '${$jp.name}' is declared but only used in a typedef.` : `The tag '${$jp.name}' is declared but not used.`);
@@ -51,7 +52,7 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         
-        if (hasTypeDecl($jp)) {
+        if (hasTypeDefDecl($jp)) {
             ($jp as RecordJp | EnumDecl).setName('');
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         }

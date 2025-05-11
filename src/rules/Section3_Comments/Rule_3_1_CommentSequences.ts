@@ -1,7 +1,7 @@
 import { Comment, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
-import { isInlineComment, getComments } from "../../utils/utils.js";
+import { isInlineComment, getComments } from "../../utils/CommentUtils.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**

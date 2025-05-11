@@ -2,9 +2,10 @@ import { Call, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoin
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getFilesWithCallToImplicitFunction, getIncludesOfFile, isCallToImplicitFunction, isValidFile, removeIncludeFromFile } from "../../utils/utils.js";
+import { isCallToImplicitFunction } from "../../utils/FunctionUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
+import { getFilesWithCallToImplicitFunction, getIncludesOfFile, removeIncludeFromFile } from "../../utils/FileUtils.js";
 
 /**
  * MISRA Rule 17.3: A function shall not be declared implicitly

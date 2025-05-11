@@ -3,8 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getParamReferences } from "../../utils/utils.js";
-import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
+import { getParamReferences } from "../../utils/FunctionUtils.js";
 
 export default class Rule_2_7_UnusedParameters extends MISRARule {
     priority = 3; 

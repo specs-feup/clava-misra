@@ -2,8 +2,8 @@ import { Break, Joinpoint, Statement, Switch, Case } from "@specs-feup/clava/api
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getLastStmtOfCase } from "../../utils/utils.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
+import { getLastStmtOfCase } from "../../utils/SwitchUtils.js";
 
 /**
  * MISRA Rule 16.3: An unconditional break statement shall terminate every switch-clause

@@ -2,7 +2,7 @@ import { BuiltinType, Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils/utils.js";
+import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils/SwitchUtils.js";
 
 /**
  * MISRA Rule 16.7: A switch-expression shall not have essentially Boolean type.

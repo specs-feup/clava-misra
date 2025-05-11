@@ -2,7 +2,7 @@ import {Break, Case, Joinpoint, Statement, Expression, Switch } from "@specs-feu
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getNumOfSwitchClauses, switchHasConditionalBreak } from "../../utils/utils.js";
+import { countSwitchClauses, switchHasConditionalBreak } from "../../utils/SwitchUtils.js";
 
 /**
  * MISRA Rule 16.6:  Every switch statement shall have at least two switch-clauses.
@@ -23,7 +23,7 @@ export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
         if (!($jp instanceof Switch)) return false;
 
-        const nonCompliant = getNumOfSwitchClauses($jp) < 2;
+        const nonCompliant = countSwitchClauses($jp) < 2;
         if (nonCompliant && logErrors) {
             this.logMISRAError($jp, "Switch statements should have at least two clauses.")
         }

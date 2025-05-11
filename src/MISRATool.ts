@@ -4,7 +4,6 @@ import MISRARule from "./MISRARule.js";
 import sortRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRAError, MISRATransformationType } from "./MISRA.js";
-import { isCallToImplicitFunction } from "./utils/utils.js";
 
 export default class MISRATool {
     static #misraRules: MISRARule[];
@@ -36,6 +35,7 @@ export default class MISRATool {
             }
         }
         if (this.#context.errors.length > 0) {
+            console.log("[Clava-MISRATool] Detected violations:\n")
             this.#context.printAllErrors();
         } else {
             console.log("[Clava-MISRATool] No MISRA-C violations detected.");

@@ -49,6 +49,10 @@ The config file should follow this structure:
     "enum Status": "SUCCESS",
     "Color": "RED",
     "my_int_type": "0"
+  }, 
+  "implicitCalls": {
+    "printf": "stdio.h",
+    "foo": "CxxSources/utils/functions.c"
   }
 }
 ```
@@ -83,5 +87,5 @@ npx clava classic main.js -pi -std c99 -p CxxSources/
 To view other available options, run:
 
 ```bash
-npx clava classic -dummy
+npx clava classic --help
 ```

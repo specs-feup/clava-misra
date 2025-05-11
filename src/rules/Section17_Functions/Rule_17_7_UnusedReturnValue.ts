@@ -3,7 +3,6 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { isCallToImplicitFunction } from "../../utils/utils.js";
 
 /**
  * MISRA Rule 17.7: The value returned by a function having non-void return type shall be

@@ -4,7 +4,7 @@ import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { isValidFile } from "../../utils/utils.js";
+import { isValidFile } from "../../utils/FileUtils.js";
 
 /**
  * MISRA Rule 17.4: All exit paths from a function with non-void return type shall have an
