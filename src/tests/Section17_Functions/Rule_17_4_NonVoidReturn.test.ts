@@ -76,7 +76,13 @@ const files: TestFile[] = [
 ];
 
 describe("Rule 17.4", () => {
-    registerSourceCode(files);
+    const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+
+        const configFilename = "misra_config.json";
+        const configFilePath = path.join(__dirname, configFilename);
+
+    registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
         expect(countMISRAErrors()).toBe(7);
@@ -87,12 +93,6 @@ describe("Rule 17.4", () => {
     });
 
     it("should correct errors", () => {
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-
-        const configFilename = "misra_config.json";
-        const configFilePath = path.join(__dirname, configFilename);
-
-        expect(countErrorsAfterCorrection(configFilePath)).toBe(2);
+        expect(countErrorsAfterCorrection()).toBe(2);
     });
 });

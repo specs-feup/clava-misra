@@ -4,6 +4,7 @@ import MISRARule from "./MISRARule.js";
 import sortRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRAError, MISRATransformationType } from "./MISRA.js";
+import Clava from "@specs-feup/clava/api/clava/Clava.js";
 
 export default class MISRATool {
     static #misraRules: MISRARule[];
@@ -42,8 +43,10 @@ export default class MISRATool {
         }
     } 
 
-    public static applyCorrections(configFilePath?: string) {
+    public static applyCorrections() {
         this.init(Query.root() as Program);
+
+        const configFilePath = Clava.getData().get("argv");
         if (configFilePath) {
             this.#context.config = configFilePath;
         }
