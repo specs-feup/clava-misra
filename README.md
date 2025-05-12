@@ -58,30 +58,31 @@ The config file should follow this structure:
 ```
 **Note:** Not all fields are required and if the config file is not provided or lacks the necessary information to fix a violation, the violation will remain and be displayed as unresolved. 
 
-After preparing the config file, provide its full path to `applyCorrections` method call:
-
-```ts
-import MISRATool from "@specs-feup/clava-misra/dist/MISRATool.js";
-
-MISRATool.applyCorrections("/full/path/to/json/config/file");
-```
 
 ## Execution
 
-To execute a project that uses this tool, you must provide the following information:
+To execute a project that uses this tool, provide the following information:
 
 - The path to your **script file**. 
 - The **C standard** to use (`c90`, `c99`, or `c11`).
 - The path to the **source code** to process.
+- *(Optional)* The full path to a **config file**.
 
 ```bash
-npx clava classic [path/to/scriptFile.js] -pi -std [c90 | c99 | c11] -p [path/to/source/code]
+npx clava classic <scriptFile.js> -pi -std <c90 | c99 | c11> -p <path/to/source/code> [-av <path/to/config.json>]
 ```
 
-**Example:**
+### Examples:
+
+Default use without a config file:
 
 ```bash
-npx clava classic main.js -pi -std c99 -p CxxSources/
+npx clava classic src/main.js -pi -std c99 -p CxxSources/
+```
+
+Using a config file:
+```bash
+npx clava classic src/main.js -pi -std c99 -p CxxSources/ -av config/misra_config.json
 ```
 
 To view other available options, run:
