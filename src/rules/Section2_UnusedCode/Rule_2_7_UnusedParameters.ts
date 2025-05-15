@@ -52,13 +52,10 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         const calls = Query.search(Call, {function: jp => jp.astId === $jp.astId}).get();
         
         functionJp.setParams(usedParams);
-        for (const funcDecl of functionJp.declarationJps) {
-            funcDecl.setParams(usedParams);
-        }
 
         for (const call of calls) {
             const newArgs = usedParamsPositions.map(i => call.args[i]);
-            const newCall = functionJp.newCall(newArgs)
+            const newCall = functionJp.newCall(newArgs);
             call.replaceWith(newCall);
         }
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);

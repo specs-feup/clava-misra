@@ -1,7 +1,8 @@
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { FileJp, Program, Include, Call } from "@specs-feup/clava/api/Joinpoints.js";
+import { FileJp, Program, Include, Call, FunctionJp, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isCallToImplicitFunction } from "./FunctionUtils.js";
+import { hasExternalLinkage } from "./JoinpointUtils.js";
 
 /**
  * Checks if a file compiles correctly after adding a statement by rebuilding it.
@@ -61,3 +62,53 @@ export function getFilesWithCallToImplicitFunction(programJp: Program): FileJp[]
         ).get().length > 0
     );
 } 
+
+/**
+ * Checks if the rebuilt version of the file compiles and if the provided call is no longer implicit.
+ * 
+ * @param fileJp The file to analyze
+ * @param funcName The function name to search the call
+ * @param callIndex The index of the call 
+ */
+export function isValidFileWithExplicitCall(fileJp: FileJp, funcName: string, callIndex: number, checkNumParams: boolean = false): boolean {
+    const programJp = fileJp.parent as Program;
+    let copyFile = ClavaJoinPoints.fileWithSource(`temp_misra_${fileJp.name}`, fileJp.code, fileJp.relativeFolderpath);
+
+    copyFile = programJp.addFile(copyFile) as FileJp;
+    try {
+        const rebuiltFile = copyFile.rebuild();
+        const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first() as FileJp;
+        const callJp = Query.searchFrom(fileToRemove, Call, {name: funcName}).get().at(callIndex);
+        let isExplicitCall = callJp !== undefined && !isCallToImplicitFunction(callJp);
+        
+        if (checkNumParams && isExplicitCall) {
+            isExplicitCall = isExplicitCall && callJp!.args.length === callJp!.directCallee.params.length;
+        }
+        fileToRemove?.detach();
+        return isExplicitCall;
+
+    } catch(error) {
+        copyFile.detach();
+        return false;
+    }
+}
+
+/**
+ * 
+ */
+export function addExternFunctionDecl(fileJp: FileJp, functionJp: FunctionJp): Joinpoint | undefined {
+    if (!hasExternalLinkage(functionJp.storageClass)) {
+        return undefined;
+    }
+
+    let childAfterExtern: Joinpoint = fileJp.firstChild;
+    
+    while(childAfterExtern instanceof Include) {
+        childAfterExtern = childAfterExtern.siblingsRight[0];
+    }
+
+    const externStr = `extern ${functionJp.getDeclaration(true)};`;
+    const externStmt = ClavaJoinPoints.stmtLiteral(externStr);
+    const newExternStmt = childAfterExtern.insertBefore(externStmt);
+    return newExternStmt;
+}

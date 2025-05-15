@@ -2,10 +2,9 @@ import { Call, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoin
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { isCallToImplicitFunction } from "../../utils/FunctionUtils.js";
+import { findFunctionDef, isCallToImplicitFunction } from "../../utils/FunctionUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { getFilesWithCallToImplicitFunction, getIncludesOfFile, removeIncludeFromFile } from "../../utils/FileUtils.js";
+import { addExternFunctionDecl, getFilesWithCallToImplicitFunction, getIncludesOfFile, isValidFileWithExplicitCall, removeIncludeFromFile } from "../../utils/FileUtils.js";
 
 /**
  * MISRA Rule 17.3: A function shall not be declared implicitly
@@ -28,11 +27,12 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         if (!($jp instanceof Program)) return false;
         
         const implicitCalls = Query.searchFrom($jp, Call, (callJp) => isCallToImplicitFunction(callJp)). get();
-        for (const callJp of implicitCalls) {
-            if (logErrors) {
+        if (logErrors) {
+            for (const callJp of implicitCalls) {
                 this.logMISRAError(callJp, `Function '${callJp.name}' is declared implicitly.`);
             }
         }
+        
         return implicitCalls.length > 0;
     }
 
@@ -54,7 +54,9 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         let changedDescendant = false;
 
         for (const fileJp of filesWithImplicitCall) {
-            changedDescendant = changedDescendant || this.solveImplicitCalls(fileJp);
+            if (this.solveImplicitCalls(fileJp)) {
+                changedDescendant = true;
+            }
         }
 
         if (changedDescendant) {
@@ -109,7 +111,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         let addedIncludes: string[] = [];
         let changedFile = false;
 
-        for (const callJp of implicitCalls) {
+        for (const callJp of implicitCalls) {            
             const errorMsgPrefix = `Function '${callJp.name}' is declared implicitly.`;
             
             if (solvedCalls.has(callJp.name)) {
@@ -129,7 +131,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
                 } 
                 else if (addedIncludes.includes(configFix)) {
                     
-                    if (this.isValidFileWithExplicitCall(fileJp, callJp.name, callIndex)) {
+                    if (isValidFileWithExplicitCall(fileJp, callJp.name, callIndex)) {
                         solvedCalls.add(callJp.name);
                     } else {
                         this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${configFix}\' does not fix the violation.`);
@@ -137,7 +139,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
                 } 
                 else {
                     fileJp.addInclude(configFix);
-                    const fileCompiles = this.isValidFileWithExplicitCall(fileJp, callJp.name, callIndex);
+                    const fileCompiles = isValidFileWithExplicitCall(fileJp, callJp.name, callIndex);
 
                     if (fileCompiles) {
                         solvedCalls.add(callJp.name);
@@ -148,34 +150,32 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
                         this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${configFix}\' does not fix the violation.`);
                     }
                 }
+            } else {
+                const functionDef = findFunctionDef(callJp, configFix);
+
+                if (!functionDef) {
+                    this.logMISRAError(callJp, `${errorMsgPrefix} Provided file \'${configFix}\' does not have function definition.`);
+                    continue;
+                } else {
+                    const externDecl = addExternFunctionDecl(fileJp, functionDef);
+
+                    if (!externDecl) {
+                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${configFix}\' does not have external linkage.`);
+                        continue;
+                    } 
+
+                    const fileCompiles = isValidFileWithExplicitCall(fileJp, callJp.name, callIndex, true);
+                    if (fileCompiles) {
+                        solvedCalls.add(callJp.name);
+                        changedFile = true;
+                    } else {
+                        externDecl.detach();
+                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${configFix}\' does not fix the violation.`);
+                    }
+                    
+                }
             }
         }
         return changedFile;
-    }
-
-    /**
-     * Checks if the rebuilt version of the file compiles and if the provided call is no longer implicit
-     * @param fileJp The file to analyze
-     * @param funcName The function name to search the call
-     * @param callIndex The index of the call 
-     */
-    private isValidFileWithExplicitCall(fileJp: FileJp, funcName: string, callIndex: number) {
-        const programJp = fileJp.parent as Program;
-        let copyFile = ClavaJoinPoints.fileWithSource(`temp_misra_${fileJp.name}`, fileJp.code, fileJp.relativeFolderpath);
-    
-        copyFile = programJp.addFile(copyFile) as FileJp;
-        try {
-            const rebuiltFile = copyFile.rebuild();
-            const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first() as FileJp;
-            const callJp = Query.searchFrom(fileToRemove, Call, {name: funcName}).get().at(callIndex);
-            const isExplicitCall = callJp !== undefined && !isCallToImplicitFunction(callJp);
-
-            fileToRemove?.detach();
-            return isExplicitCall;
-
-        } catch(error) {
-            copyFile.detach();
-            return false;
-        }
     }
 }

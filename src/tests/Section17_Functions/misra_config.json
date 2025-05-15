@@ -14,6 +14,9 @@
     "sin": "math.h",
     "pow": "math.h",
     "half": "math.h",
-    "println": "stdio.h"
+    "println": "stdio.h",
+    "func": "good.c",
+    "func2": "good.c",
+    "test_17_3_1": "good.c"
   }
 }

@@ -36,7 +36,7 @@ export default class MISRATool {
             }
         }
         if (this.#context.errors.length > 0) {
-            console.log("[Clava-MISRATool] Detected violations:\n")
+            console.log(`[Clava-MISRATool] Detected ${this.getErrorCount()} violation${this.getErrorCount() === 1 ? '' : 's'}:\n`);
             this.#context.printAllErrors();
         } else {
             console.log("[Clava-MISRATool] No MISRA-C violations detected.");
