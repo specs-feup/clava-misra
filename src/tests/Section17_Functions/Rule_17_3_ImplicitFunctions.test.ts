@@ -41,7 +41,7 @@ void test_17_3_2() {
 const failingCode2 = `
 #include <math.h>
 
-int func() {
+int func2() {
     double a = 2.0, b = 3.0;
 
     double pow_result = pow(a, b); 
@@ -54,9 +54,24 @@ int func() {
     return 0;
 }`;
 
+const failingCode3 = `
+int test_17_3_3() {
+    int x = func(); // Implicit call to func() in good.c
+
+    // Implicit call to func2() in bad2.c; Provided file in config does not include definition
+    int y = func2(); 
+
+    // Implicit call with wrong params
+    // Return value is not being used
+    test_17_3_1(1, 4);
+    return 0;
+}
+`;
+
 const files: TestFile[] = [
     { name: "bad1.c", code: failingCode },
     { name: "bad2.c", code: failingCode2 },
+    { name: "bad3.c", code: failingCode3 },
     { name: "good.c", code: passingCode },
 ];
 
@@ -70,10 +85,10 @@ describe("Rule 17.4", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(12);
+        expect(countMISRAErrors()).toBe(16);
     });
 
     it("should correct errors", () => {
-        expect(countErrorsAfterCorrection()).toBe(3);
+        expect(countErrorsAfterCorrection()).toBe(5);
     });
 });
