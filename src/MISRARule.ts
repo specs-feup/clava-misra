@@ -18,7 +18,7 @@ export default abstract class MISRARule {
     /**
      * Priority of the rule which is low by default.
      */
-    readonly priority: number = 4;
+    readonly priority: number = Number.MAX_VALUE;
     
     /** 
      * MISRA context for error tracking and rule transformations state

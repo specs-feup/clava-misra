@@ -10,15 +10,15 @@ export default class MISRATool {
     static #misraRules: MISRARule[];
     static #context: MISRAContext;
 
-    private static init(startingPoint: FileJp | Program) {
-        this.validateStdVersion(startingPoint);
+    private static init() {
+        this.validateStdVersion();
         this.#context = new MISRAContext();
         this.#misraRules = sortRules(this.#context);
     }
 
-    private static validateStdVersion(startingPoint: FileJp | Program) {
+    private static validateStdVersion() {
         const allowedVersions = ["c90", "c99", "c11"];
-        const stdVersion = startingPoint instanceof Program ? startingPoint.standard : (startingPoint.root as Program).standard;
+        const stdVersion = (Query.root() as Program).standard;
 
         if (!allowedVersions.includes(stdVersion)) {
             console.error(`[Clava-MISRATool] Invalid --std value. Allowed values: ${allowedVersions.join(", ")}`);
@@ -27,7 +27,7 @@ export default class MISRATool {
     }
 
     public static checkCompliance(startingPoint: Program | FileJp = Query.root() as Program) {
-        this.init(startingPoint);
+        this.init();
 
         const nodes = [startingPoint, ...startingPoint.descendants];
         for (const node of nodes) {
@@ -44,7 +44,7 @@ export default class MISRATool {
     } 
 
     public static applyCorrections() {
-        this.init(Query.root() as Program);
+        this.init();
 
         const configFilePath = Clava.getData().get("argv");
         if (configFilePath) {
@@ -52,11 +52,11 @@ export default class MISRATool {
         }
 
         let iteration = 0;
-        let modified = false;
-        do {
+        let modified = true;
+        while (modified) {
             console.log(`[Clava-MISRATool] Iteration #${++iteration}: Applying MISRA-C transformations...`);
             modified = this.transformAST(Query.root() as Program);
-        } while(modified);
+        }
 
         if (this.#context.errors.length === 0) {
             console.log("[Clava-MISRATool] All detected violations were corrected.");
