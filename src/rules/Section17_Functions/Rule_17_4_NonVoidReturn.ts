@@ -58,24 +58,11 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
         
         const functionJp = $jp as FunctionJp;
         const fileJp = functionJp.getAncestor("file") as FileJp;
-        const returnType = functionJp.type.code;
         const errorMsgPrefix = `Function '${functionJp.name}' reaches the end without a return statement.`;
 
-        if (!this.context.config) {
-            this.logMISRAError($jp, `${errorMsgPrefix} Default value return not added due to missing config file.`)
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
-        }
-
-        let defaultValueReturn;
-        try {
-            defaultValueReturn = this.context.config.get("defaultValues")[returnType];
-        } catch (error) {  
-            this.logMISRAError($jp, `${errorMsgPrefix} Default value return was not added as \'defaultValues\' is not defined in the configuration file.`);
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
-        }
-
-        if (defaultValueReturn === undefined) {
-            this.logMISRAError($jp, `${errorMsgPrefix} Default value return not added due to missing default value configuration for type '${returnType}'.`);
+        const defaultValueReturn = this.getFixFromConfig(functionJp, errorMsgPrefix);
+        if (!defaultValueReturn) {
+            // TODO: store in context
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
 
@@ -90,5 +77,26 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
         returnStmt.detach();
         this.logMISRAError($jp, `${errorMsgPrefix} Provided default value for type '${functionJp.type.code}' is invalid and was therefore not inserted.`);
         return new MISRATransformationReport(MISRATransformationType.NoChange);
+    }
+
+    override getFixFromConfig(functionJp: FunctionJp, errorMsgPrefix: string): string | undefined {
+        if (!this.context.config) {
+            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return not added due to missing config file.`)
+            return undefined;
+        }
+
+        let defaultValueReturn: string | undefined = undefined;
+        const returnType = functionJp.type.code;
+        try {
+            defaultValueReturn = this.context.config.get("defaultValues")[returnType];
+        } catch (error) {  
+            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return was not added as \'defaultValues\' is not defined in the configuration file.`);
+            return undefined;
+        }
+
+        if (defaultValueReturn === undefined) {
+            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return not added due to missing default value configuration for type '${returnType}'.`);
+        }
+        return defaultValueReturn;
     }
 }

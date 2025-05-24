@@ -74,7 +74,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
      * @param errorMsgPrefix 
      * @returns 
      */
-    private getImplicitFixFromConfig(callJp: Call, errorMsgPrefix: string): string | undefined {
+    override getFixFromConfig(callJp: Call, errorMsgPrefix: string): string | undefined {
         if (!this.context.config) {
             this.logMISRAError(callJp, `${errorMsgPrefix} Include or extern not added due to missing config file.`);
             return undefined;
@@ -119,7 +119,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
                 continue;
             } 
             
-            const configFix = this.getImplicitFixFromConfig(callJp, errorMsgPrefix);
+            const configFix = this.getFixFromConfig(callJp, errorMsgPrefix);
             if (!configFix) {
                 // TODO: store in context
                 continue;

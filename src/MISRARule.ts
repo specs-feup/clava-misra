@@ -32,12 +32,26 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
         this.ruleID = ruleID;
     }
 
-    getName(): string {
+    override get name(): string {
         return this.ruleID;
     }
 
-    initialValue(): MISRATransformationResults {
+    override initialValue(): MISRATransformationResults {
         return new Map();
+    }
+
+    getFixFromConfig($jp: Joinpoint, errorMsgPrefix: string): string | undefined {
+        return undefined;
+    }
+
+    /**
+     * Logs a MISRA-C rule violation error
+     * 
+     * @param $jp - The joinpoint where the violation occurred
+     * @param msg - Description of the violation
+     */
+    protected logMISRAError($jp: Joinpoint, msg:string): void {
+        this.context.addMISRAError(this.ruleID, $jp, msg); 
     }
 
     /**
@@ -56,14 +70,4 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
      * @returns Report detailing the transformation result
      */
     abstract apply($jp: LaraJoinPoint): MISRATransformationReport;
-
-    /**
-     * Logs a MISRA-C rule violation error
-     * 
-     * @param $jp - The joinpoint where the violation occurred
-     * @param msg - Description of the violation
-     */
-    protected logMISRAError($jp: Joinpoint, msg:string): void {
-        this.context.addMISRAError(this.ruleID, $jp, msg); 
-    }
 }

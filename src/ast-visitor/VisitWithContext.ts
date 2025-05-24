@@ -7,10 +7,10 @@ export default abstract class VisitWithContext<T, C extends Context<T> = Context
     constructor(context: C) {
         super();
         this.context = context;
-        context.put(this.getName(), this.initialValue());
+        context.put(this.name, this.initialValue());
     }
 
-    getName(): string {
+    get name(): string {
         return this.constructor.name;
     }
 
