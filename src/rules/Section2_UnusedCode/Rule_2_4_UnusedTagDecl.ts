@@ -48,7 +48,7 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    transform($jp: Joinpoint): MISRATransformationReport {
+    apply($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         

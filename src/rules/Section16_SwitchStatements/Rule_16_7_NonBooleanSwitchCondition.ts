@@ -36,8 +36,9 @@ export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
 
         if (switchHasConditionalBreak($jp as Switch)) {
             this.logMISRAError($jp, `The switch statement's controlling expression ${($jp as Switch).condition.code} must not be of a boolean type and cannot be transformed due to a conditional break statement.`)

@@ -36,10 +36,9 @@ export default class Rule_20_2_InvalidHeaderFileName extends MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) {
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp))
             return new MISRATransformationReport(MISRATransformationType.NoChange);
-        }
     
         const fileJp = $jp as FileJp;
         const includesOfHeader = this.getMatchingIncludes(fileJp);

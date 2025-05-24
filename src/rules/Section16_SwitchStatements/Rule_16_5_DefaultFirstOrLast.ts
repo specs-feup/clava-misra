@@ -1,4 +1,4 @@
-import {Case, Comment, Joinpoint, Statement, Switch, WrapperStmt } from "@specs-feup/clava/api/Joinpoints.js";
+import {Case, Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
@@ -82,8 +82,11 @@ export default class Rule_16_5_DefaultFirstOrLast extends MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        const previousResult = $jp instanceof Switch ? this.context.getRuleResult("16.4", $jp) : undefined;
+        if (previousResult === MISRATransformationType.DescendantChange || !this.match($jp)) {
+            return new MISRATransformationReport(MISRATransformationType.NoChange);   
+        }
 
         const defaultCase = ($jp as Switch).getDefaultCase;
         const rightStatements = defaultCase.siblingsRight.filter(sibling => !isCommentStmt(sibling));

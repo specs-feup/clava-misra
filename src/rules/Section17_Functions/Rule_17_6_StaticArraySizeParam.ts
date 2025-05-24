@@ -45,8 +45,9 @@ export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         for (const invalidParam of this.#invalidParams) {
             const paramRefs = getParamReferences(invalidParam, $jp);

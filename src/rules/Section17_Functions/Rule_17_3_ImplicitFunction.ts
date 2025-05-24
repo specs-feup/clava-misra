@@ -46,8 +46,9 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
 
         const programJp = $jp as Program;
         const filesWithImplicitCall = getFilesWithCallToImplicitFunction(programJp);
@@ -120,6 +121,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
             
             const configFix = this.getImplicitFixFromConfig(callJp, errorMsgPrefix);
             if (!configFix) {
+                // TODO: store in context
                 continue;
             }
 

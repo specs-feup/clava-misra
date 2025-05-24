@@ -54,7 +54,7 @@ export default class Rule_16_3_UnconditionalBreak extends MISRARule {
         lastStmt.insertAfter(ClavaJoinPoints.breakStmt());
     }
 
-    transform($jp: Joinpoint): MISRATransformationReport {
+    apply($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         

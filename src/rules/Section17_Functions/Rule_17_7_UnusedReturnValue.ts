@@ -38,8 +38,9 @@ export default class Rule_17_7_UnusedReturnValue extends MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         const callJp = $jp as Call;
         const newJp =  ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), callJp);

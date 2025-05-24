@@ -28,13 +28,16 @@ export default class Rule_16_4_SwitchHasDefault extends MISRARule {
         return noDefaultCase;
     }
 
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
 
         $jp.children[1].lastChild
             .insertAfter(ClavaJoinPoints.defaultStmt())
             .insertAfter(ClavaJoinPoints.emptyStmt())
             .insertAfter(ClavaJoinPoints.breakStmt());
+
+        this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.DescendantChange);
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }
 }

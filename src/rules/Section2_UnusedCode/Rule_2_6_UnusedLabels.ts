@@ -34,8 +34,8 @@ export default class Rule_2_6_UnusedLabels extends MISRARule {
         return unusedLabels.length > 0;
     }
     
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if(!this.match($jp)) 
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
 
         const unusedLabels = this.getUnusedLabels($jp as FunctionJp);

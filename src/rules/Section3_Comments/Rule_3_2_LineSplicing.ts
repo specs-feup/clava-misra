@@ -22,7 +22,7 @@ export default class Rule_3_2_LineSplicing extends MISRARule {
         return invalidComments.length > 0;
     }
 
-    transform($jp: Joinpoint): MISRATransformationReport {
+    apply($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp))
             return new MISRATransformationReport(MISRATransformationType.NoChange);
 

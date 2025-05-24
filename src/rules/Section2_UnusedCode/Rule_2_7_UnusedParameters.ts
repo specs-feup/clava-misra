@@ -43,8 +43,9 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         return unusedParams.length > 0;
     }
     
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if(!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
 
         const functionJp = $jp as FunctionJp;
         const usedParams = this.getUsedParams(functionJp);

@@ -1,15 +1,17 @@
 import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAContext from "./MISRAContext.js";
-import { MISRATransformationReport } from "./MISRA.js";
+import { MISRATransformationReport, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
+import VisitWithContext from "./ast-visitor/VisitWithContext.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 
 /**
  * Represents a MISRA Rule that detects and corrects violations in the code according to MISRA standards.
  * 
  * Need to implement:
  *  - match($jp, logErrors)
- *  - transform($jp)
+ *  - apply($jp)
  */
-export default abstract class MISRARule {
+export default abstract class MISRARule extends VisitWithContext<MISRATransformationResults, MISRAContext> {
     /**
      * Unique identifier for the MISRA rule.
      */
@@ -19,11 +21,6 @@ export default abstract class MISRARule {
      * Priority of the rule which is low by default.
      */
     readonly priority: number = Number.MAX_VALUE;
-    
-    /** 
-     * MISRA context for error tracking and rule transformations state
-     */    
-    protected context: MISRAContext;
 
     /**
      * 
@@ -31,8 +28,16 @@ export default abstract class MISRARule {
      * @param context - MISRA context for error tracking and rule transformations state
      */
     constructor(ruleID: string, context: MISRAContext) {
+        super(context);
         this.ruleID = ruleID;
-        this.context = context;
+    }
+
+    getName(): string {
+        return this.ruleID;
+    }
+
+    initialValue(): MISRATransformationResults {
+        return new Map();
     }
 
     /**
@@ -50,7 +55,7 @@ export default abstract class MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    abstract transform($jp: Joinpoint): MISRATransformationReport;
+    abstract apply($jp: LaraJoinPoint): MISRATransformationReport;
 
     /**
      * Logs a MISRA-C rule violation error

@@ -50,8 +50,11 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        const previousResult = $jp instanceof FunctionJp ? this.context.getRuleResult(this.ruleID, $jp) : undefined;
+        if (previousResult === MISRATransformationType.NoChange || !this.match($jp)) {
+            return new MISRATransformationReport(MISRATransformationType.NoChange);   
+        }
         
         const functionJp = $jp as FunctionJp;
         const fileJp = functionJp.getAncestor("file") as FileJp;

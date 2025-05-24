@@ -1,12 +1,13 @@
 import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
-import { MISRAError } from "./MISRA.js";
+import { MISRAError, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
 import * as fs from 'fs';
+import Context from "./ast-visitor/Context.js";
 
 /**
  * Tracks MISRA errors and warnings during the analysis and/or transformation of the code.
  * Also generated unique variable and function names.
  */
-export default class MISRAContext {
+export default class MISRAContext extends Context<MISRATransformationResults> {
     /**
      * List of MISRA errors, that could not be resolved during the transformation process
      */
@@ -24,6 +25,15 @@ export default class MISRAContext {
     #varPrefix = "__misra_var_";
     #funcPrefix = "__misra_func_";
     #headerPrefix = "misra_hdr_";
+
+    getRuleResult(ruleID: string, $jp: Joinpoint): MISRATransformationType | undefined {
+        return this.get(ruleID)?.get($jp.astId);
+    }
+
+    addRuleResult(ruleID: string, $jp: Joinpoint, result: MISRATransformationType) {
+        let transformations = this.get(ruleID);
+        transformations?.set($jp.astId, result);
+    }
 
     get errors(): MISRAError[] {
         return this.#misraErrors;
@@ -71,11 +81,11 @@ export default class MISRAContext {
         console.log(`MISRA-C Rule ${error.ruleID} violation at ${error.$jp.filepath}@${error.$jp.line}:${error.$jp.column}: ${error.message}\n`);
     }
     
-    public printAllErrors(): void {
+    printAllErrors(): void {
         this.#misraErrors.forEach(error => this.printError(error));
     }
     
-    public printActiveErrors(): void {
+    printActiveErrors(): void {
         this.#misraErrors
             .filter(error => error.isActiveError())
             .forEach(error => this.printError(error));

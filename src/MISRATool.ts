@@ -1,9 +1,9 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { Call, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "./MISRARule.js";
 import sortRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
-import { MISRAError, MISRATransformationType } from "./MISRA.js";
+import { MISRATransformationType } from "./MISRA.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
 
 export default class MISRATool {
@@ -70,7 +70,7 @@ export default class MISRATool {
         let modified = false;
 
         for (const rule of this.#misraRules) {
-            const transformReport = rule.transform($jp);
+            const transformReport = rule.apply($jp);
 
             if (transformReport.type !== MISRATransformationType.NoChange) {
                 modified = true;

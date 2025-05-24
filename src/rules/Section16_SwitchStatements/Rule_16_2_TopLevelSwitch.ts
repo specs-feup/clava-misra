@@ -30,8 +30,9 @@ export default class Rule_16_2_TopLevelSwitch extends MISRARule {
         return this.#misplacedCases.length > 0;
     }
 
-    transform($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         for (const caseLabel of this.#misplacedCases) {
             caseLabel.detach();

@@ -11,6 +11,9 @@ export enum MISRATransformationType {
     Removal
 }
 
+type NodeID = string;
+export type MISRATransformationResults = Map<NodeID, MISRATransformationType>;
+
 /**
  * Represents an error in MISRA compliance, including the rule ID, the joinpoint where the violation occurred, and a descriptive message.
  */
