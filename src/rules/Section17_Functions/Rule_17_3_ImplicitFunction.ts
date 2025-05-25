@@ -2,7 +2,8 @@ import { Call, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoin
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { findFunctionDef, isCallToImplicitFunction } from "../../utils/FunctionUtils.js";
+import { findFunctionDef } from "../../utils/FunctionUtils.js";
+import { getCallIndex, isCallToImplicitFunction } from "../../utils/CallUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { addExternFunctionDecl, getFilesWithCallToImplicitFunction, getIncludesOfFile, isValidFileWithExplicitCall, removeIncludeFromFile } from "../../utils/FileUtils.js";
 
@@ -74,7 +75,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
      * @param errorMsgPrefix 
      * @returns 
      */
-    override getFixFromConfig(callJp: Call, errorMsgPrefix: string): string | undefined {
+    protected override getFixFromConfig(callJp: Call, errorMsgPrefix: string): string | undefined {
         if (!this.context.config) {
             this.logMISRAError(callJp, `${errorMsgPrefix} Include or extern not added due to missing config file.`);
             return undefined;
@@ -109,75 +110,106 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         const implicitCalls = Query.searchFrom(fileJp, Call, (callJp) => (isCallToImplicitFunction(callJp))).get();
         const originalIncludes = getIncludesOfFile(fileJp);
         let solvedCalls = new Set<string>();
-        let addedIncludes: string[] = [];
+        let addedIncludes = new Set<string>();
         let changedFile = false;
 
-        for (const callJp of implicitCalls) {            
-            const errorMsgPrefix = `Function '${callJp.name}' is declared implicitly.`;
+        for (const callJp of implicitCalls) {   
+            if (this.context.getRuleResult(this.ruleID, callJp) === MISRATransformationType.NoChange) {
+                continue;
+            }
             
             if (solvedCalls.has(callJp.name)) {
                 continue;
             } 
-            
+
+            const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
             const configFix = this.getFixFromConfig(callJp, errorMsgPrefix);
             if (!configFix) {
-                // TODO: store in context
+                this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
                 continue;
             }
 
-            const callIndex = Query.searchFrom(fileJp, Call, { name: callJp.name }).get().findIndex(c => c.equals(callJp));
+            const callIndex = getCallIndex(fileJp, callJp);
             const isInclude = configFix.endsWith(".h");
-            if (isInclude) {
-                if (originalIncludes.includes(configFix)) {
-                    this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${configFix}\' does not fix the violation.`);
-                } 
-                else if (addedIncludes.includes(configFix)) {
-                    
-                    if (isValidFileWithExplicitCall(fileJp, callJp.name, callIndex)) {
-                        solvedCalls.add(callJp.name);
-                    } else {
-                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${configFix}\' does not fix the violation.`);
-                    }
-                } 
-                else {
-                    fileJp.addInclude(configFix);
-                    const fileCompiles = isValidFileWithExplicitCall(fileJp, callJp.name, callIndex);
+            const success = isInclude ? 
+                this.solveWithInclude(fileJp, callJp, configFix, originalIncludes, addedIncludes, callIndex) :
+                this.solveWithExtern(fileJp, callJp, configFix, callIndex);
 
-                    if (fileCompiles) {
-                        solvedCalls.add(callJp.name);
-                        addedIncludes.push(configFix);
-                        changedFile = true;
-                    } else {
-                        removeIncludeFromFile(configFix, fileJp);
-                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${configFix}\' does not fix the violation.`);
-                    }
+            if (success) {
+                solvedCalls.add(callJp.name);
+                changedFile = true;
+                if (isInclude) {
+                    addedIncludes.add(configFix);
                 }
             } else {
-                const functionDef = findFunctionDef(callJp, configFix);
-
-                if (!functionDef) {
-                    this.logMISRAError(callJp, `${errorMsgPrefix} Provided file \'${configFix}\' does not have function definition.`);
-                    continue;
-                } else {
-                    const externDecl = addExternFunctionDecl(fileJp, functionDef);
-
-                    if (!externDecl) {
-                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${configFix}\' does not have external linkage.`);
-                        continue;
-                    } 
-
-                    const fileCompiles = isValidFileWithExplicitCall(fileJp, callJp.name, callIndex, true);
-                    if (fileCompiles) {
-                        solvedCalls.add(callJp.name);
-                        changedFile = true;
-                    } else {
-                        externDecl.detach();
-                        this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${configFix}\' does not fix the violation.`);
-                    }
-                    
-                }
+                this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
             }
         }
         return changedFile;
+    }
+
+    private getErrorMsgPrefix(callJp: Call): string {
+        return `Function '${callJp.name}' is declared implicitly.`;
+    }
+
+    private solveWithInclude(
+        fileJp: FileJp, 
+        callJp: Call, 
+        includePath: string, 
+        originalIncludes: string[], 
+        addedIncludes: Set<string>, 
+        callIndex: number
+    ): boolean {
+        const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
+        let success = false;
+
+        if (originalIncludes.includes(includePath)) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${includePath}\' does not fix the violation.`);
+        } 
+        else if (addedIncludes.has(includePath)) {
+            
+            if (isValidFileWithExplicitCall(fileJp, callJp.name, callIndex)) {
+                success = true;
+            } else {
+                this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${includePath}\' does not fix the violation.`);
+            }
+        } 
+        else {
+            fileJp.addInclude(includePath);
+            const fileCompiles = isValidFileWithExplicitCall(fileJp, callJp.name, callIndex);
+
+            if (fileCompiles) {
+                success = true;
+            } else {
+                removeIncludeFromFile(includePath, fileJp);
+                this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${includePath}\' does not fix the violation.`);
+            }
+        }
+        return success;
+    }
+
+    private solveWithExtern(fileJp: FileJp, callJp: Call, functionLocation: string, callIndex: number): boolean {
+        const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
+        const functionDef = findFunctionDef(callJp, functionLocation);
+        let success = false;
+
+        if (!functionDef) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Provided file \'${functionLocation}\' does not have function definition.`);
+        } else {
+            const externDecl = addExternFunctionDecl(fileJp, functionDef);
+
+            if (!externDecl) {
+                this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${functionLocation}\' does not have external linkage.`);
+            } else {
+                const fileCompiles = isValidFileWithExplicitCall(fileJp, callJp.name, callIndex, true);
+                if (fileCompiles) {
+                    success = true;
+                } else {
+                    externDecl.detach();
+                    this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${functionLocation}\' does not fix the violation.`);
+                }
+            }
+        }
+        return success;
     }
 }

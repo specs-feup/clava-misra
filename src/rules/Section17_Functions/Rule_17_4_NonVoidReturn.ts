@@ -62,7 +62,7 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
 
         const defaultValueReturn = this.getFixFromConfig(functionJp, errorMsgPrefix);
         if (!defaultValueReturn) {
-            // TODO: store in context
+            this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
 
@@ -70,12 +70,15 @@ export default class Rule_17_4_NonVoidReturn extends MISRARule {
         const returnStmt = ClavaJoinPoints.returnStmt(ClavaJoinPoints.exprLiteral(String(defaultValueReturn), functionJp.returnType)) as ReturnStmt;
         functionJp.body.lastChild ? functionJp.body.lastChild.insertAfter(returnStmt) : functionJp.body.setFirstChild(returnStmt);
 
-        // Validate the provided default value. If it is invalid, the return stmt is removed
+        // Validate the provided default value
         if (isValidFile(fileJp)) {
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         } 
+
+        // If the default value is invalid, the return stmt is removed
         returnStmt.detach();
         this.logMISRAError($jp, `${errorMsgPrefix} Provided default value for type '${functionJp.type.code}' is invalid and was therefore not inserted.`);
+        this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
         return new MISRATransformationReport(MISRATransformationType.NoChange);
     }
 

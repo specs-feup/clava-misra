@@ -1,7 +1,7 @@
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { FileJp, Program, Include, Call, FunctionJp, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { isCallToImplicitFunction } from "./FunctionUtils.js";
+import { isCallToImplicitFunction } from "./CallUtils.js";
 import { hasExternalLinkage } from "./JoinpointUtils.js";
 
 /**

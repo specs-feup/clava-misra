@@ -40,7 +40,7 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
         return new Map();
     }
 
-    getFixFromConfig($jp: Joinpoint, errorMsgPrefix: string): string | undefined {
+    protected getFixFromConfig($jp: Joinpoint, errorMsgPrefix: string): string | undefined {
         return undefined;
     }
 
