@@ -9,8 +9,13 @@ import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../util
  */
 export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
     priority = 3; 
+
     constructor(context: MISRAContext) {
-        super("16.7", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "16.7";
     }
 
     /**

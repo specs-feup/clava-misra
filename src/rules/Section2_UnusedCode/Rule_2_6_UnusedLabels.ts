@@ -12,7 +12,11 @@ export default class Rule_2_6_UnusedLabels extends MISRARule {
     priority = 3; 
     
     constructor(context: MISRAContext) {
-        super("2.6", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "2.6";
     }
 
     private getUnusedLabels(func: FunctionJp): LabelStmt[] {

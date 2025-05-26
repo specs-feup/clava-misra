@@ -9,7 +9,11 @@ import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
  */
 export default class Rule_16_4_SwitchHasDefault extends MISRARule {
     constructor(context: MISRAContext) {
-        super("16.4", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "16.4";
     }
 
     /**

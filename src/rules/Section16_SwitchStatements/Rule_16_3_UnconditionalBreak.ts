@@ -13,7 +13,11 @@ export default class Rule_16_3_UnconditionalBreak extends MISRARule {
     #statementsNeedingBreakAfter: Joinpoint[] = [];
 
     constructor(context: MISRAContext) {
-        super("16.3", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "16.3";
     }
 
     match($jp: Joinpoint, logErrors: boolean = false): boolean {

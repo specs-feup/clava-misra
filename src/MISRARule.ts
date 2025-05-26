@@ -10,13 +10,10 @@ import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
  * Need to implement:
  *  - match($jp, logErrors)
  *  - apply($jp)
+ *  - name()
  */
 export default abstract class MISRARule extends VisitWithContext<MISRATransformationResults, MISRAContext> {
-    /**
-     * Unique identifier for the MISRA rule.
-     */
-    readonly ruleID: string;
-
+    
     /**
      * Priority of the rule which is low by default.
      */
@@ -27,21 +24,31 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
      * @param ruleID - Unique identifier for the MISRA-C rule
      * @param context - MISRA context for error tracking and rule transformations state
      */
-    constructor(ruleID: string, context: MISRAContext) {
+    constructor(context: MISRAContext) {
         super(context);
-        this.ruleID = ruleID;
-    }
-
-    override get name(): string {
-        return this.ruleID;
-    }
-
-    override initialValue(): MISRATransformationResults {
-        return new Map();
     }
 
     protected getFixFromConfig($jp: Joinpoint, errorMsgPrefix: string): string | undefined {
         return undefined;
+    }
+
+    /**
+     * @returns Initial value stored in the shared context
+     */
+    override initialValue(): MISRATransformationResults {
+        return new Map();
+    }
+
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
+    abstract override get name(): string;
+
+    /**
+     * Unique identifier for the MISRA rule.
+     */
+    get ruleID(): string {
+        return this.name;
     }
 
     /**

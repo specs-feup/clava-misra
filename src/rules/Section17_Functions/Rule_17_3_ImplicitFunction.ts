@@ -14,7 +14,11 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
     priority = 1;
 
     constructor(context: MISRAContext) {
-        super("17.3", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "17.3";
     }
 
     /**

@@ -14,7 +14,11 @@ explicit return statement with an expression. In a non-void function:
  */
 export default class Rule_17_4_NonVoidReturn extends MISRARule {
     constructor(context: MISRAContext) {
-        super("17.4", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "17.4";
     }
 
     /**

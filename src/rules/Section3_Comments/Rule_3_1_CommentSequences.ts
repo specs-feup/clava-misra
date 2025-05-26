@@ -8,9 +8,12 @@ import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.
  * MISRA Rule 3.1: 
  */
 export default class Rule_3_1_CommentSequences extends MISRARule {
-
     constructor(context: MISRAContext) {
-        super("3.1", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "3.1";
     }
 
     match($jp: Joinpoint, logErrors: boolean = false): boolean {

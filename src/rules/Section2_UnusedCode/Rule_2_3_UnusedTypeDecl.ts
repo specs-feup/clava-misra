@@ -12,7 +12,11 @@ export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
     priority = 3;
 
     constructor(context: MISRAContext) {
-        super("2.3", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "2.3";
     }
 
     /**

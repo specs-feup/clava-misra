@@ -1,3 +1,8 @@
+/**
+ * Key-value storage to share data between visits
+ * 
+ *  @template T Type of the stored values
+ */
 export default class Context<T> {
     private storage: Map<string, T> = new Map();
 

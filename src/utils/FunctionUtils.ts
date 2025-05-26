@@ -1,6 +1,12 @@
 import { Call, Param, Joinpoint, Varref, FunctionJp, StorageClass, FileJp } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
+/**
+ * Retrieves all variable references to a given parameter
+ * @param $param 
+ * @param $startingPoint 
+ * @returns 
+ */
 export function getParamReferences($param: Param, $startingPoint: Joinpoint): Varref[] {
     return Query.searchFrom($startingPoint, Varref, (ref) => {
                 try {

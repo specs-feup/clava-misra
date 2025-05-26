@@ -11,7 +11,11 @@ export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
     priority = 3;
 
     constructor(context: MISRAContext) {
-        super("16.6", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "16.6";
     }
 
     /**

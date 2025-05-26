@@ -12,7 +12,11 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
     priority = 3; 
     
     constructor(context: MISRAContext) {
-        super("2.4", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "2.4";
     }
 
     /**

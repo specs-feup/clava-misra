@@ -9,7 +9,11 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
     priority = 3; 
 
     constructor(context: MISRAContext) {
-        super("2.7", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "2.7";
     }
 
     private getUnusedParams(func: FunctionJp): Param[] {

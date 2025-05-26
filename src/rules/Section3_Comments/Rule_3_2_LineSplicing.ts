@@ -5,9 +5,12 @@ import { isInlineComment, getComments } from "../../utils/CommentUtils.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 export default class Rule_3_2_LineSplicing extends MISRARule {
-    
     constructor(context: MISRAContext) {
-        super("3.2", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "3.2";
     }
 
     match($jp: Joinpoint, logErrors: boolean = false): boolean {

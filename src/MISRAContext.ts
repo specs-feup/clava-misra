@@ -26,6 +26,18 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     #funcPrefix = "__misra_func_";
     #headerPrefix = "misra_hdr_";
 
+    generateVarName() {
+        return `${this.#varPrefix}${this.#varCounter++}`;
+    }
+
+    generateFuncName() {
+        return `${this.#funcPrefix}${this.#funcCounter++}`;
+    }
+
+    generateHeaderFilename() {
+        return `${this.#headerPrefix}${this.#headerCounter++}.h`;
+    }
+
     getRuleResult(ruleID: string, $jp: Joinpoint): MISRATransformationType | undefined {
         return this.get(ruleID)?.get($jp.astId);
     }
@@ -55,18 +67,6 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
             console.error(`[Clava-MISRATool] Provided configuration file was not found.`);
             process.exit(1);
         }
-    }
-
-    generateVarName() {
-        return `${this.#varPrefix}${this.#varCounter++}`;
-    }
-
-    generateFuncName() {
-        return `${this.#funcPrefix}${this.#funcCounter++}`;
-    }
-
-    generateHeaderFilename() {
-        return `${this.#headerPrefix}${this.#headerCounter++}.h`;
     }
 
     addMISRAError(ruleID: string, $jp: Joinpoint, message: string) {

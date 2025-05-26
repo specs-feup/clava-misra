@@ -10,7 +10,11 @@ used
  */
 export default class Rule_17_7_UnusedReturnValue extends MISRARule {
     constructor(context: MISRAContext) {
-        super("17.7", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "17.7";
     }
 
     /**

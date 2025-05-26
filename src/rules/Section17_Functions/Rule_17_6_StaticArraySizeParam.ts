@@ -11,8 +11,13 @@ import Clava from "@specs-feup/clava/api/clava/Clava.js";
  */
 export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
     #invalidParams: Param[] = [];
+    
     constructor(context: MISRAContext) {
-        super("17.6", context);
+        super(context);
+    }
+
+    override get name(): string {
+        return "17.6";
     }
 
     /**

@@ -55,7 +55,7 @@ export class MISRAError {
     }
 
     /**
-     * 
+     * Checks if the associated joinpoint is still present in program's AST
      */
     isActiveError(): boolean {
         return (Query.root() as Joinpoint).contains(this.$jp);

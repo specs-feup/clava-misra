@@ -9,9 +9,12 @@ import { isCommentStmt } from "../../utils/CommentUtils.js";
 a switch statement
  */
 export default class Rule_16_5_DefaultFirstOrLast extends MISRARule {
-
     constructor(context: MISRAContext) {
-        super("16.5", context);
+        super( context);
+    }
+
+    override get name(): string {
+        return "16.5";
     }
 
     /**

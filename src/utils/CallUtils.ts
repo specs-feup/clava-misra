@@ -36,6 +36,12 @@ export function isCallToImplicitFunction(callJp: Call): boolean {
     return functionExternDecls.length === 0;
 }
 
+/**
+ * Computes the index of a call in a file
+ * @param fileJp The file to search in
+ * @param callJp The call to find
+ * @returns The index of the call or -1 if not found 
+ */
 export function getCallIndex(fileJp: FileJp, callJp: Call): number {
     return Query.searchFrom(fileJp, Call, { name: callJp.name }).get().findIndex(c => c.equals(callJp));
 }
