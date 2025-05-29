@@ -1,5 +1,6 @@
 import MISRAContext from "../MISRAContext.js";
 import MISRARule from "../MISRARule.js";
+import Rule_13_6_SafeSizeOfOperand from "./Section13_SideEffects/Rule_13_6_SafeSizeOfOperand.js";
 import Rule_16_2_TopLevelSwitch from "./Section16_SwitchStatements/Rule_16_2_TopLevelSwitch.js";
 import Rule_16_3_UnconditionalBreak from "./Section16_SwitchStatements/Rule_16_3_UnconditionalBreak.js";
 import Rule_16_4_SwitchHasDefault from "./Section16_SwitchStatements/Rule_16_4_SwitchHasDefault.js";
@@ -26,6 +27,7 @@ export function sortRules(context: MISRAContext) {
         new Rule_2_7_UnusedParameters(context),
         new Rule_3_1_CommentSequences(context),
         new Rule_3_2_CommentSequences(context),
+        new Rule_13_6_SafeSizeOfOperand(context),
         new Rule_16_2_TopLevelSwitch(context),
         new Rule_16_3_UnconditionalBreak(context),
         new Rule_16_4_SwitchHasDefault(context),
