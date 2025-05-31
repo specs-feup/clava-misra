@@ -17,6 +17,7 @@ import Rule_2_6_UnusedLabels from "./Section2_UnusedCode/Rule_2_6_UnusedLabels.j
 import Rule_2_7_UnusedParameters from "./Section2_UnusedCode/Rule_2_7_UnusedParameters.js";
 import Rule_3_1_CommentSequences from "./Section3_Comments/Rule_3_1_CommentSequences.js";
 import Rule_3_2_CommentSequences from "./Section3_Comments/Rule_3_2_LineSplicing.js";
+import Rule_5_1_UniqueExternalIdentifiers from "./Section5_Identifiers/Rule_5_1_DistinctExternalIdentifiers.js";
 
 export function sortRules(context: MISRAContext) {
      
@@ -27,6 +28,7 @@ export function sortRules(context: MISRAContext) {
         new Rule_2_7_UnusedParameters(context),
         new Rule_3_1_CommentSequences(context),
         new Rule_3_2_CommentSequences(context),
+        new Rule_5_1_UniqueExternalIdentifiers(context),
         new Rule_13_6_SafeSizeOfOperand(context),
         new Rule_16_2_TopLevelSwitch(context),
         new Rule_16_3_UnconditionalBreak(context),

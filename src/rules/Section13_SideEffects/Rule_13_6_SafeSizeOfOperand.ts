@@ -26,6 +26,12 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
         return $jp.argType != undefined && $jp.argType instanceof VariableArrayType;
     }
 
+    /**
+     * 
+     * @param $jp - Joinpoint to analyze
+     * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected
+     * @returns Returns true if the joinpoint violates the rule, false otherwise
+     */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
         if (!($jp instanceof UnaryExprOrType && $jp.kind === "sizeof")) {
             return false;

@@ -41,14 +41,14 @@ export function hasExternalLinkage($class: StorageClass) {
 }
 
 /**
- * Retrieves all variables and functions that can be externed from the files, i.e., 
+ * Retrieves all variables and functions that are eligible for `extern` linkage, i.e., 
  * elements with storage classes that are not `STATIC` or `EXTERN`
- * @returns Array of functions and variables that can be externed
+ * @returns Array of functions and variables that can be declared as external
  */
 export function getExternals(): (FunctionJp | Vardecl)[] {
     let result: (FunctionJp | Vardecl)[] = [];
 
-    for (const file of  Query.search(FileJp).get()) {
+    for (const file of Query.search(FileJp).get()) {
         for(const child of file.children) {
             if((child instanceof Vardecl || child instanceof FunctionJp) && hasExternalLinkage(child.storageClass)) {
                 result.push(child);
@@ -56,4 +56,27 @@ export function getExternals(): (FunctionJp | Vardecl)[] {
         }
     }
     return result;
+}
+
+/**
+ * Retrieves all variables that are eligible for `extern` linkage, i.e., 
+ * variable declarations with storage classes that are not `STATIC` or `EXTERN`
+ * 
+ * @returns Array of variables that can be declared as external
+ */
+export function getExternalVarDecls(): Vardecl[] {
+    return Query.search(Vardecl, (varDeclJp) => {
+        return hasExternalLinkage(varDeclJp.storageClass);
+    }).get();
+}
+
+/**
+ * @returns Returns true if the identifiers are distinct within the first 31 characters. Otherwise returns false.
+ */
+export function areDistinctIdentifiers($jp1: Vardecl | FunctionJp, $jp2: Vardecl | FunctionJp): boolean {
+    try {
+        return $jp1.name.substring(0, 31) !== $jp2.name.substring(0, 31);
+    } catch (error) {
+        return false;
+    }
 }

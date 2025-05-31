@@ -19,23 +19,17 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     #config: Map<string, any> | undefined = undefined;
 
     #varCounter = 0;
-    #funcCounter = 0;
-    #headerCounter = 0;
+    #functionCounter = 0;
 
-    #varPrefix = "__misra_var_";
-    #funcPrefix = "__misra_func_";
-    #headerPrefix = "misra_hdr_";
+    #varPrefix = "_misra_var_";
+    #funcPrefix = "_misra_func_";
 
     generateVarName() {
         return `${this.#varPrefix}${this.#varCounter++}`;
     }
 
-    generateFuncName() {
-        return `${this.#funcPrefix}${this.#funcCounter++}`;
-    }
-
-    generateHeaderFilename() {
-        return `${this.#headerPrefix}${this.#headerCounter++}.h`;
+    generateFunctionName() {
+        return `${this.#funcPrefix}${this.#functionCounter++}`;
     }
 
     getRuleResult(ruleID: string, $jp: Joinpoint): MISRATransformationType | undefined {
