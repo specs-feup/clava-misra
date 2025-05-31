@@ -30,9 +30,7 @@ export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
         } 
         
         const externableVarDecls = getExternalVarDecls();
-        console.log(externableVarDecls.length);
         const nonCompliant = externableVarDecls.some((varJp) => !areDistinctIdentifiers(varJp, $jp) && varJp.astId !== $jp.astId);
-        console.log("nonCompliant:" , nonCompliant);
 
         if (nonCompliant && logErrors) {
             for (const varJp of externableVarDecls) {

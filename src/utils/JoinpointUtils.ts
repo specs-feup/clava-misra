@@ -1,4 +1,4 @@
-import { StorageClass, FunctionJp, Vardecl, FileJp, Joinpoint, Type, PointerType, ArrayType, RecordJp, EnumDecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { StorageClass, FunctionJp, Vardecl, FileJp, Joinpoint, Type, PointerType, ArrayType, RecordJp, EnumDecl, Scope, DeclStmt } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 export type TagDecl = RecordJp | EnumDecl;
@@ -79,4 +79,16 @@ export function areDistinctIdentifiers($jp1: Vardecl | FunctionJp, $jp2: Vardecl
     } catch (error) {
         return false;
     }
+}
+
+export function getVarDeclsInScope($scope: Joinpoint): Vardecl[] {
+    let result: Vardecl[] = [];
+
+    for (const child of $scope.children) {
+        if (child instanceof DeclStmt) {
+            const vardecls = child.decls.filter((jp) => jp instanceof Vardecl);
+            result.push(...vardecls);
+        }
+    }
+    return result;
 }
