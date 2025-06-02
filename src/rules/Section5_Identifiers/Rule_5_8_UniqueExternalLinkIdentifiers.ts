@@ -1,52 +1,50 @@
-import {FunctionJp, Joinpoint, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { areDistinctIdentifiers, isExternalLinkageIdentifier, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { getIdentifierName, isIdentifierDecl, isIdentifierDuplicated, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import { getExternalLinkageIdentifiers } from "../../utils/ProgramUtils.js";
 
 /**
- * Rule 5.1 External identifiers shall be distinct.
+ * Rule 5.8: Identifiers that defi ne objects or functions with external linkage shall be unique
  */
-export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
+export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
     constructor(context: MISRAContext) {
         super( context);
     }
 
     override get name(): string {
-        return "5.1";
+        return "5.8";
     }
 
     /**
-     * Checks if the given joinpoint is an external identifier distinct from other external identifiers.
      * 
      * @param $jp - Joinpoint to analyze
      * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!isExternalLinkageIdentifier($jp)) {
+        if (!isIdentifierDecl($jp)) {
             return false;
-        } 
+        }
         
-        const externableIdentifiers = getExternalLinkageIdentifiers();
-        const nonCompliant = externableIdentifiers.some((identifier) => !areDistinctIdentifiers(identifier, $jp) && identifier.astId !== $jp.astId);
+        const jpName = getIdentifierName($jp);
+        const externalLinkageIdentifiers = getExternalLinkageIdentifiers();
+        const nonCompliant = isIdentifierDuplicated($jp, externalLinkageIdentifiers);
 
         if (nonCompliant && logErrors) {
-            this.logMISRAError($jp, `Identifier ${$jp.name} is not distinct from other external identifiers within the first 31 characters.`)
+            this.logMISRAError($jp, `Identifier ${jpName} is already defined with external linkage in this or other file.`);
         }
         return nonCompliant;
     }
 
     /**
-     * Changes the name of an external identifier that is not distinct from others.
-     * External references are also updated to use the new name.
      * 
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result
      */
     apply($jp: Joinpoint): MISRATransformationReport {
-        const previousResult = ($jp instanceof FunctionJp || $jp instanceof Vardecl) ? this.context.getRuleResult(this.ruleID, $jp) : undefined;
+        const previousResult = isIdentifierDecl($jp) ? this.context.getRuleResult(this.ruleID, $jp) : undefined;
         if (previousResult === MISRATransformationType.NoChange || !this.match($jp)) {
             return new MISRATransformationReport(MISRATransformationType.NoChange);   
         }
@@ -54,7 +52,7 @@ export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
         if (renameIdentifier($jp, newName)) {
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         } else {
-            this.logMISRAError($jp, `Identifier name is not distinct from other external identifiers within the first 31 characters.`);
+            this.logMISRAError($jp, `Identifier name is already defined with external linkage in this or other file.`);
             this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }

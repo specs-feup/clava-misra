@@ -1,4 +1,4 @@
-import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import { EnumDecl, FunctionJp, Joinpoint, LabelStmt, RecordJp, TypedefDecl, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import { MISRAError, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
 import * as fs from 'fs';
 import Context from "./ast-visitor/Context.js";
@@ -20,17 +20,20 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
 
     #varCounter = 0;
     #functionCounter = 0;
+    #labelCounter = 0;
+    #typeDefCounter = 0;
+    #enumCounter = 0;
+    #structCounter = 0;
+    #unionCounter = 0;
 
     #varPrefix = "_misra_var_";
     #funcPrefix = "_misra_func_";
+    #labelPrefix = "_misra_label_";
+    #typeDefPrefix = "_misra_typedef_";
+    #enumPrefix = "_misra_enum_";
+    #structPrefix = "_misra_struct_";
+    #unionPrefix = "_misra_union_";
 
-    generateVarName() {
-        return `${this.#varPrefix}${this.#varCounter++}`;
-    }
-
-    generateFunctionName() {
-        return `${this.#funcPrefix}${this.#functionCounter++}`;
-    }
 
     getRuleResult(ruleID: string, $jp: Joinpoint): MISRATransformationType | undefined {
         return this.get(ruleID)?.get($jp.astId);
@@ -39,6 +42,24 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     addRuleResult(ruleID: string, $jp: Joinpoint, result: MISRATransformationType) {
         let transformations = this.get(ruleID);
         transformations?.set($jp.astId, result);
+    }
+
+    generateIdentifierName($jp: Joinpoint) {
+        if ($jp instanceof Vardecl) {
+            return `${this.#varPrefix}${this.#varCounter++}`;
+        } else if ($jp instanceof FunctionJp) {
+            return `${this.#funcPrefix}${this.#functionCounter++}`;
+        } else if ($jp instanceof LabelStmt) {
+            return `${this.#labelPrefix}${this.#labelCounter++}`;
+        } else if ($jp instanceof TypedefDecl) {
+            return `${this.#typeDefPrefix}${this.#typeDefCounter++}`;
+        } else if ($jp instanceof EnumDecl) {
+            return `${this.#enumPrefix}${this.#enumCounter++}`;
+        } else if ($jp instanceof RecordJp) {
+            return $jp.kind === `struct` ? 
+                `${this.#structPrefix}${this.#structCounter++}` :
+                `${this.#unionPrefix}${this.#unionCounter++}`
+        }
     }
 
     get errors(): MISRAError[] {

@@ -2,7 +2,7 @@ import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { FileJp, Program, Include, Call, FunctionJp, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isCallToImplicitFunction } from "./CallUtils.js";
-import { hasExternalLinkage } from "./JoinpointUtils.js";
+import { hasExternalLinkage } from "./IdentifierUtils.js";
 
 /**
  * Checks if a file compiles correctly after adding a statement by rebuilding it.
@@ -97,7 +97,7 @@ export function isValidFileWithExplicitCall(fileJp: FileJp, funcName: string, ca
  * 
  */
 export function addExternFunctionDecl(fileJp: FileJp, functionJp: FunctionJp): Joinpoint | undefined {
-    if (!hasExternalLinkage(functionJp.storageClass)) {
+    if (!hasExternalLinkage(functionJp)) {
         return undefined;
     }
 

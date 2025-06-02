@@ -1,9 +1,9 @@
-import {Case, Joinpoint, StorageClass, Switch, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
+import {Joinpoint, StorageClass, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { isCommentStmt } from "../../utils/CommentUtils.js";
-import { areDistinctIdentifiers, getVarDeclsInScope, hasExternalLinkage } from "../../utils/JoinpointUtils.js";
+import { getVarDeclsInScope } from "../../utils/JoinpointUtils.js";
+import { areDistinctIdentifiers, hasExternalLinkage } from "../../utils/IdentifierUtils.js";
 
 /**
  * Rule 5.2: Identifiers declared in the same scope and name space shall be distinct
@@ -25,7 +25,7 @@ export default class Rule_5_2_DistinctIdentifiersInScope extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!($jp instanceof Vardecl && !hasExternalLinkage($jp.storageClass) && $jp.storageClass !== StorageClass.EXTERN)) {
+        if (!($jp instanceof Vardecl && !hasExternalLinkage($jp) && $jp.storageClass !== StorageClass.EXTERN)) {
             return false;
         }
 
@@ -48,7 +48,7 @@ export default class Rule_5_2_DistinctIdentifiersInScope extends MISRARule {
         }
 
         const varDecl = $jp as Vardecl;
-        const newName = this.context.generateVarName();
+        const newName = this.context.generateIdentifierName($jp)!;
         varDecl.setName(newName);
 
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);
