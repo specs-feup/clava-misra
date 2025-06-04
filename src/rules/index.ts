@@ -18,7 +18,8 @@ import Rule_2_7_UnusedParameters from "./Section2_UnusedCode/Rule_2_7_UnusedPara
 import Rule_3_1_CommentSequences from "./Section3_Comments/Rule_3_1_CommentSequences.js";
 import Rule_3_2_CommentSequences from "./Section3_Comments/Rule_3_2_LineSplicing.js";
 import Rule_5_1_UniqueExternalIdentifiers from "./Section5_Identifiers/Rule_5_1_DistinctExternalIdentifiers.js";
-import Rule_5_2_DistinctIdentifiersInScope from "./Section5_Identifiers/Rule_5_2_DistinctIdentifiersInScope.js";
+import Rule_5_6_UniqueTypedefNames from "./Section5_Identifiers/Rule_5_6_UniqueTypedefNames.js";
+import Rule_5_7_UniqueTagNames from "./Section5_Identifiers/Rule_5_7_UniqueTagNames.js";
 import Rule_5_8_UniqueExternalLinkIdentifiers from "./Section5_Identifiers/Rule_5_8_UniqueExternalLinkIdentifiers.js";
 import Rule_5_9_UniqueInternalLinkIdentifiers from "./Section5_Identifiers/Rule_5_9_UniqueInternalLinkIdentifiers.js";
 
@@ -32,6 +33,8 @@ export function sortRules(context: MISRAContext) {
         new Rule_3_1_CommentSequences(context),
         new Rule_3_2_CommentSequences(context),
         new Rule_5_1_UniqueExternalIdentifiers(context),
+        new Rule_5_6_UniqueTypedefNames(context),
+        new Rule_5_7_UniqueTagNames(context),
         new Rule_5_8_UniqueExternalLinkIdentifiers(context),
         new Rule_5_9_UniqueInternalLinkIdentifiers(context),
         new Rule_13_6_SafeSizeOfOperand(context),

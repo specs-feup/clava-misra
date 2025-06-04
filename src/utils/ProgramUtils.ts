@@ -1,6 +1,6 @@
 import { Vardecl, FunctionJp, StorageClass } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { hasExternalLinkage } from "./IdentifierUtils.js";
+import { hasExternalLinkage, hasInternalLinkage } from "./IdentifierUtils.js";
 
 /**
  * Retrieves all variables and functions that are eligible for `extern` linkage, i.e., 
@@ -11,6 +11,13 @@ export function getExternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
     return [
         ...getExternalLinkageFunctions(), 
         ...getExternalLinkageVarDecls()
+    ];
+}
+
+export function getInternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
+    return [
+        ...getInternalLinkageFunctions(), 
+        ...getInternalLinkageVarsDecls()
     ];
 }
 
@@ -34,27 +41,12 @@ export function getExternalLinkageFunctions(): FunctionJp[] {
 
 export function getInternalLinkageVarsDecls(): Vardecl[] {
     return Query.search(Vardecl, (decl) => {
-        try {
-            return decl.storageClass === StorageClass.STATIC && decl.getAncestor("function") === undefined
-        } catch(error) {
-            return false;
-        }
+        return hasInternalLinkage(decl)
     }).get();
 }
 
 export function getInternalLinkageFunctions(): FunctionJp[] {
     return Query.search(FunctionJp, (decl) => {
-        try {
-            return decl.storageClass === StorageClass.STATIC && decl.getAncestor("function") === undefined
-        } catch(error) {
-            return false;
-        }
+        return hasInternalLinkage(decl)
     }).get();
-}
-
-export function getInternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
-    return [
-        ...getInternalLinkageFunctions(), 
-        ...getInternalLinkageVarsDecls()
-    ];
 }

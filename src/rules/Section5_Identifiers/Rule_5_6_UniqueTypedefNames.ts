@@ -1,21 +1,26 @@
-import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, TypedefDecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getIdentifierName, isIdentifierDecl, isIdentifierDuplicated, renameIdentifier } from "../../utils/IdentifierUtils.js";
-import { getExternalLinkageIdentifiers } from "../../utils/ProgramUtils.js";
+import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { isTagDecl } from "../../utils/JoinpointUtils.js";
 
 /**
- * Rule 5.8: Identifiers that defi ne objects or functions with external linkage shall be unique
+ * Rule 5.6: A typedef name shall be a unique identifier.
+ * 
+ * Exception: The typedef name may be the same as the structure, union  or enumeration tag name associated with the typedef.
  */
-export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
+export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
     constructor(context: MISRAContext) {
         super( context);
     }
 
     override get name(): string {
-        return "5.8";
+        return "5.6";
     }
+
 
     /**
      * 
@@ -29,11 +34,17 @@ export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
         }
         
         const jpName = getIdentifierName($jp);
-        const externalLinkageIdentifiers = getExternalLinkageIdentifiers();
-        const nonCompliant = isIdentifierDuplicated($jp, externalLinkageIdentifiers);
+        const typedefDecls = Query.search(TypedefDecl).get();
+        let nonCompliant;
+        if (isTagDecl($jp)) {
+            const typeDefWithSameName = typedefDecls.filter((decl) => jpName === decl.astId && getTypeDefDecl($jp)?.ast !== decl.ast);
+            nonCompliant = typeDefWithSameName.length > 0;
+        } else {
+            nonCompliant = isIdentifierDuplicated($jp, typedefDecls);
+        }
 
         if (nonCompliant && logErrors) {
-            this.logMISRAError($jp, `Identifier ${jpName} is already defined with external linkage in this or other file.`);
+            this.logMISRAError($jp, `Identifier ${jpName} is also the name of a typedef. Typedef identifiers must not be reused.`);
         }
         return nonCompliant;
     }
@@ -53,7 +64,7 @@ export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
         if (renameIdentifier($jp, newName)) {
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         } else {
-            this.logMISRAError($jp, `Identifier ${getIdentifierName($jp)} is already defined with external linkage in this or other file.`);
+            this.logMISRAError($jp, `Identifier ${getIdentifierName($jp)} is also the name of a typedef. Typedef identifiers must not be reused.`);
             this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }

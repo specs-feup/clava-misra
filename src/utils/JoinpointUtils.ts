@@ -1,5 +1,4 @@
-import { StorageClass, FunctionJp, Vardecl, Joinpoint, Type, PointerType, ArrayType, RecordJp, EnumDecl, DeclStmt, TypedefDecl, LabelStmt, NamedDecl } from "@specs-feup/clava/api/Joinpoints.js";
-import { getExternalVarRefs } from "./VarUtils.js";
+import { Vardecl, Joinpoint, Type, PointerType, ArrayType, RecordJp, EnumDecl, DeclStmt } from "@specs-feup/clava/api/Joinpoints.js";
 
 export type TagDecl = RecordJp | EnumDecl;
 
@@ -29,16 +28,4 @@ export function getBaseType($jp: Joinpoint): Type | undefined {
         jpType = jpType instanceof PointerType ? jpType.pointee : jpType.elementType;
     } 
     return jpType;
-}
-
-export function getVarDeclsInScope($scope: Joinpoint): Vardecl[] {
-    let result: Vardecl[] = [];
-
-    for (const child of $scope.children) {
-        if (child instanceof DeclStmt) {
-            const vardecls = child.decls.filter((jp) => jp instanceof Vardecl);
-            result.push(...vardecls);
-        }
-    }
-    return result;
 }

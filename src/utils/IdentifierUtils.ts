@@ -10,9 +10,37 @@ export function isIdentifierDecl($jp: Joinpoint): boolean {
             isTagDecl($jp);
 }
 
+/**
+ * Checks if a storage class has external linkage
+ * @param $class - The storage class to check
+ * @returns Returns true if the class has external linkage, otherwise returns false
+ */
+export function hasExternalLinkage($jp: FunctionJp | Vardecl): boolean {
+    return $jp.storageClass !== StorageClass.STATIC && $jp.storageClass !== StorageClass.EXTERN && $jp.getAncestor("function") === undefined;
+}
+
+export function hasInternalLinkage($jp: FunctionJp | Vardecl): boolean {
+    return $jp.storageClass === StorageClass.STATIC && $jp.getAncestor("function") === undefined;
+}
+
+export function isExternalLinkageIdentifier ($jp: Joinpoint):  $jp is FunctionJp | Vardecl {
+    return ($jp instanceof FunctionJp || $jp instanceof Vardecl) && hasExternalLinkage($jp);
+}
+
 export function isIdentifierDuplicated($jp: Joinpoint, $others: Joinpoint[]) {
     const jpName = getIdentifierName($jp);
     return $others.some((identifier) => identifier.astId !== $jp.astId && getIdentifierName(identifier) === jpName);
+}
+
+/**
+ * @returns Returns true if the identifiers are distinct within the first 31 characters. Otherwise returns false.
+ */
+export function areDistinctIdentifiers($jp1: Vardecl | FunctionJp, $jp2: Vardecl | FunctionJp): boolean {
+    try {
+        return $jp1.name.substring(0, 31) !== $jp2.name.substring(0, 31);
+    } catch (error) {
+        return false;
+    }
 }
 
 export function getIdentifierName($jp: Joinpoint): string | undefined {
@@ -50,32 +78,4 @@ export function renameIdentifier($jp: Joinpoint, newName: string): boolean {
         changedName = false;
     }
     return changedName;
-}
-
-export function isExternalLinkageIdentifier ($jp: Joinpoint):  $jp is FunctionJp | Vardecl {
-    return ($jp instanceof FunctionJp || $jp instanceof Vardecl) && hasExternalLinkage($jp);
-}
-
-/**
- * @returns Returns true if the identifiers are distinct within the first 31 characters. Otherwise returns false.
- */
-export function areDistinctIdentifiers($jp1: Vardecl | FunctionJp, $jp2: Vardecl | FunctionJp): boolean {
-    try {
-        return $jp1.name.substring(0, 31) !== $jp2.name.substring(0, 31);
-    } catch (error) {
-        return false;
-    }
-}
-
-/**
- * Checks if a storage class has external linkage
- * @param $class - The storage class to check
- * @returns Returns true if the class has external linkage, otherwise returns false
- */
-export function hasExternalLinkage($jp: FunctionJp | Vardecl): boolean {
-    return $jp.storageClass !== StorageClass.STATIC && $jp.storageClass !== StorageClass.EXTERN && $jp.getAncestor("function") === undefined;
-}
-
-export function hasInternalLinkage($jp: FunctionJp | Vardecl): boolean {
-    return $jp.storageClass === StorageClass.STATIC && $jp.getAncestor("function") === undefined;
 }
