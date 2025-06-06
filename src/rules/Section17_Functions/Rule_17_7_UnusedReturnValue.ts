@@ -1,12 +1,11 @@
-import { BuiltinType, Call, ExprStmt, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import { BuiltinType, Call, Cast, ExprStmt, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
- * MISRA Rule 17.7: The value returned by a function having non-void return type shall be
-used
+ * MISRA Rule 17.7: The value returned by a function having non-void return type shall be used
  */
 export default class Rule_17_7_UnusedReturnValue extends MISRARule {
     constructor(context: MISRAContext) {
@@ -47,7 +46,9 @@ export default class Rule_17_7_UnusedReturnValue extends MISRARule {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         const callJp = $jp as Call;
-        const newJp =  ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), callJp);
-        return new MISRATransformationReport(MISRATransformationType.Replacement, $jp.replaceWith(newJp));
+        const castJp =  ClavaJoinPoints.cStyleCast(ClavaJoinPoints.type("void"), callJp);
+        const newJp = $jp.replaceWith(castJp) as Cast;
+        newJp.subExpr.replaceWith($jp);
+        return new MISRATransformationReport(MISRATransformationType.Replacement, newJp);
     }
 }

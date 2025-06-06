@@ -1,6 +1,7 @@
-import { Joinpoint, Vardecl, StorageClass, FunctionJp, TypedefDecl, LabelStmt, NamedDecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, Vardecl, StorageClass, FunctionJp, TypedefDecl, LabelStmt, NamedDecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import { isTagDecl } from "./JoinpointUtils.js";
 import { getExternalVarRefs } from "./VarUtils.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 export function isIdentifierDecl($jp: Joinpoint): boolean {
     return  ($jp instanceof Vardecl && $jp.storageClass !== StorageClass.EXTERN) || 
@@ -78,4 +79,14 @@ export function renameIdentifier($jp: Joinpoint, newName: string): boolean {
         changedName = false;
     }
     return changedName;
+}
+
+export function findReferencingFunctions($jp: Vardecl): FunctionJp[] {
+    const fileJp = $jp.getAncestor("file");
+    const functionsJp = Query.searchFrom(fileJp, FunctionJp).get();
+    
+    return functionsJp
+        .filter(funcJp => 
+            Query.searchFrom(funcJp, Varref, {decl: (declJp) => declJp?.astId === $jp.astId}).get().length > 0
+        );
 }

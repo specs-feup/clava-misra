@@ -1,4 +1,4 @@
-import { Call, Param, Joinpoint, Varref, FunctionJp } from "@specs-feup/clava/api/Joinpoints.js";
+import { Call, Param, Joinpoint, Varref, FunctionJp, Vardecl, StorageClass } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 /**
@@ -25,4 +25,12 @@ export function findFunctionDef(callJp: Call, pathSuffix: string) {
                     return false;
                 }
             }).first();
+}
+
+export function findExternalFunctionDecl(functionJp: FunctionJp): FunctionJp[] {
+    return Query.search(FunctionJp, (jp) => {
+        return jp.name === functionJp.name &&
+        !jp.isImplementation &&
+        jp.storageClass === StorageClass.EXTERN
+    }).get();
 }

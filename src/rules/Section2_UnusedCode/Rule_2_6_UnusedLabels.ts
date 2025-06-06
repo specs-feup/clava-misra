@@ -32,7 +32,7 @@ export default class Rule_2_6_UnusedLabels extends MISRARule {
         const unusedLabels = this.getUnusedLabels($jp);
         if (logErrors) {
             unusedLabels.forEach(label => 
-                this.logMISRAError(label, `Label ${label.decl.name} is unused in function ${$jp.name}.`)
+                this.logMISRAError(label, `Label '${label.decl.name}' is unused in function ${$jp.name}.`)
             )
         }
         return unusedLabels.length > 0;

@@ -29,16 +29,16 @@ const passingCode = `
     } MyUnion;
 
     typedef int BasicInt2;
-    void foo(BasicInt2 x) {
+    static void foo(BasicInt2 x) {
         int a = x + 1;
     }
 
     typedef int BasicInt3;
-    BasicInt3 bar() {
+    static BasicInt3 bar() {
         return (BasicInt3)10;
     }
 
-    int main() {
+    static int main() {
         AliasInt a = 1;
         BasicInt x = 10;
         MyInt4 y = 11;
@@ -82,7 +82,7 @@ const failingCode2 = `
         int id;
         char name[10];
     } Person;
-    struct PersonStruct personInstance = {1, "Alice"};
+    static struct PersonStruct personInstance = {1, "Alice"};
 `;
 
 // 4 errors, one is from the other class
@@ -105,7 +105,7 @@ const failingCode3 = `
         float floatValue;
     } Number;
 
-    union NumberUnion unionInst = {.intValue = 10};
+    static union NumberUnion unionInst = {.intValue = 10};
 `;
 
 // 4 errors, one is from the other class
@@ -130,7 +130,7 @@ const failingCode4 = `
         GREEN,
         BLUE
     } Color;
-    enum ColorEnum colorInstance = GREEN;  
+    static enum ColorEnum colorInstance = GREEN;  
 `;
 
 const files: TestFile[] = [

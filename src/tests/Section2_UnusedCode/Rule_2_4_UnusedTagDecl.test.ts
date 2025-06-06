@@ -32,27 +32,27 @@ const failingCodeEnum1 = `
         RED7, GREEN7, BLUE7
     };
 
-    void enumAsParam(enum MyEnum color) {
+    static void enumAsParam(enum MyEnum color) {
         int i;
         if (color == RED) {
             i = 1;
         }
     }
 
-    enum EnumForCast1 enumAsReturn() {
+    static enum EnumForCast1 enumAsReturn() {
         return (enum EnumForCast1) RED2;
     };
 
-    enum EnumForCast2 enumAsReturn2() {
+    static enum EnumForCast2 enumAsReturn2() {
         int id = 2;
         return (enum EnumForCast2) id;
     };
 
-    enum MyEnum2 color_enum = RED4;
+    static enum MyEnum2 color_enum = RED4;
 
-    enum EnumForPtr *colorPtr;
+    static enum EnumForPtr *colorPtr;
 
-    enum EnumForArray colorArray[3];
+    static enum EnumForArray colorArray[3];
 `;
 
 const failingCodeEnum2 = `
@@ -61,15 +61,15 @@ const failingCodeEnum2 = `
         B1,
         C1
     } ColorEnum2;
-    ColorEnum2 colorEnum2 = A1;
+    static ColorEnum2 colorEnum2 = A1;
 
     typedef enum MyColors {
         A2,
         B3,
         C4
     } ColorOption;
-    enum MyColors my_color = A2;
-    ColorOption color_option = B3;
+    static enum MyColors my_color = A2;
+    static ColorOption color_option = B3;
 
     // MyColors2 tag should be removed
     typedef enum MyColors2 {
@@ -77,7 +77,7 @@ const failingCodeEnum2 = `
         B6,
         C7
     } ColorOption2;
-    ColorOption2 color2 = B6;
+    static ColorOption2 color2 = B6;
 `;
 
 const failingCodeStruct1 = `
@@ -112,17 +112,17 @@ const failingCodeStruct1 = `
         float y;
     };
 
-    void structAsParam(struct MyStruct s) {
+    static void structAsParam(struct MyStruct s) {
         int xField = s.x;
     }
 
-    struct StructForReturn1 structAsReturn() {
+    static struct StructForReturn1 structAsReturn() {
         return (struct StructForReturn1){1, 1.5f};
     }
 
-    struct MyStruct2 myStruct = {10, 20.5f};
-    struct StructForPtr *structPtr;
-    struct StructForArray structArray[3];
+    static struct MyStruct2 myStruct = {10, 20.5f};
+    static struct StructForPtr *structPtr;
+    static struct StructForArray structArray[3];
 `;
 
 const failingCodeStruct2 = `
@@ -130,21 +130,21 @@ const failingCodeStruct2 = `
         int x;
         float y;
     } ColorStruct;
-    ColorStruct colorStruct = {1, 2.5};
+    static ColorStruct colorStruct = {1, 2.5};
 
     typedef struct MyStruct5 {
         int x;
         float y;
     } ColorStruct2;
-    struct MyStruct5 struct5 = {2, 4.5};
-    ColorStruct2 colorStruct2 = {1, 2.5};
+    static struct MyStruct5 struct5 = {2, 4.5};
+    static ColorStruct2 colorStruct2 = {1, 2.5};
 
     // Violation: MyStruct3 tag will be removed
     typedef struct MyStruct3 { 
         int x;
         float y;
     } ColorStruct3;
-    ColorStruct3 colorStruct3 = {10, 5.5};
+    static ColorStruct3 colorStruct3 = {10, 5.5};
 `;
 
 const failingCodeUnion1 = `
@@ -179,17 +179,17 @@ const failingCodeUnion1 = `
         float y;
     };
 
-    void unionAsParam(union MyUnion u) {
+    static void unionAsParam(union MyUnion u) {
         int xField = u.x;
     }
 
-    union UnionForReturn1 unionAsReturn() {
+    static union UnionForReturn1 unionAsReturn() {
         return (union UnionForReturn1){.x = 1};
     }
 
-    union MyUnion2 myUnion = {.y = 20.5f};
-    union UnionForPtr *unionPtr;
-    union UnionForArray unionArray[3];
+    static union MyUnion2 myUnion = {.y = 20.5f};
+    static union UnionForPtr *unionPtr;
+    static union UnionForArray unionArray[3];
 `;
 
 const files: TestFile[] = [

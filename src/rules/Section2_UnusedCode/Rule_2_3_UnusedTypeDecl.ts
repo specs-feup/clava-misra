@@ -31,7 +31,7 @@ export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
 
         const isUnused = !isTypeDeclUsed(typeDecl);
         if (logErrors && isUnused) {
-            this.logMISRAError($jp, `Type declaration ${typeDecl.name} is declared but not used.`)
+            this.logMISRAError($jp, `Type declaration '${typeDecl.name}' is declared but not used.`)
         }
         return isUnused;
     }
