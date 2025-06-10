@@ -4,16 +4,21 @@ import { fileURLToPath } from "url";
 
 const passingCode = `
 #include <stdio.h>
+
+// Missing static keyword as it is does not have external declaration
+// It will have external decl after correction
 int func() {
     return 0;
 }
 
+// Missing static keyword
+// It will NOT have external decl after correction
 void test_17_3_1() {
     printf("Result: %.2f ", func());
 }`;
 
 const failingCode = `
-void test_17_3_2() {
+static void test_17_3_2() {
     double a = 2.0, b = 3.0;
 
     // Implicit call to pow(): math.h is missing
@@ -41,7 +46,7 @@ void test_17_3_2() {
 const failingCode2 = `
 #include <math.h>
 
-int func2() {
+static int func2() {
     double a = 2.0, b = 3.0;
 
     double pow_result = pow(a, b); 
@@ -55,7 +60,7 @@ int func2() {
 }`;
 
 const failingCode3 = `
-int test_17_3_3() {
+static int test_17_3_3() {
     int x = func(); // Implicit call to func() in good.c
 
     // Implicit call to func2() in bad2.c; Provided file in config does not include definition
@@ -85,10 +90,10 @@ describe("Rule 17.4", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(16);
+        expect(countMISRAErrors()).toBe(18);  
     });
 
     it("should correct errors", () => {
-        expect(countErrorsAfterCorrection()).toBe(5);
+        expect(countErrorsAfterCorrection()).toBe(6);
     });
 });

@@ -3,7 +3,7 @@ import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestF
 import { FileJp } from "@specs-feup/clava/api/Joinpoints.js";
 
 const passingCode = `
-    int test1() {
+    static int test1() {
         int x = 0;
         goto label1;
 
@@ -14,7 +14,7 @@ const passingCode = `
     }`;
 
 const failingCode = `
-    int test2() {
+    static int test2() {
         int x = 0;
         label1: 
             x = 1;

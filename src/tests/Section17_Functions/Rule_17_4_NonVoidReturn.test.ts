@@ -5,17 +5,17 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const passingCode = `
-unsigned int test_17_4_1() {
+static unsigned int test_17_4_1() {
     return 0;  
 }`;
 
 const failingCode = `
-unsigned int test_17_4_2() {
+static unsigned int test_17_4_2() {
 
 }`;
 
 const failingCode2 = `
-float test_17_4_3() {
+static float test_17_4_3() {
 
 }`;
 
@@ -38,17 +38,17 @@ const failingCode3 = `
     typedef unsigned int my_int_type;
 
     // Non-compliant
-    enum Status test_17_4_3() {
+    static enum Status test_17_4_3() {
 
     }
 
     // Non-compliant
-    Color test_17_4_4() {
+    static Color test_17_4_4() {
 
     }
 
     // Non-compliant
-    my_int_type test_17_4_5() {
+    static my_int_type test_17_4_5() {
     
     }
 
@@ -56,7 +56,7 @@ const failingCode3 = `
         Non-compliant after correction:
         Config file specifies an invalid default value for 'Size' type (e.g: MEDIUM)
     */
-    Size test_17_4_6() {
+    static Size test_17_4_6() {
 
     }
 
@@ -64,7 +64,8 @@ const failingCode3 = `
         Non-compliant after correction: 
         Config file do not specify the default value for 'double' type
     */
-    double test_17_4_7() { 
+    static double test_17_4_7() { 
+    
     }
 `;
 

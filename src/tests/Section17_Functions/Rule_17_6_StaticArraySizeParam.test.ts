@@ -3,12 +3,12 @@ import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestF
 import { FileJp } from "@specs-feup/clava/api/Joinpoints.js"; 
 
 const passingCode = `
-int test_17_6_1(int my_array[]) {
+static int test_17_6_1(int my_array[]) {
     return my_array[0];  
 }`;
 
 const failingCode = `
-int test_17_6_2(int my_array[static 10]) {
+static int test_17_6_2(int my_array[static 10]) {
     return my_array[0];  
 }`;
 

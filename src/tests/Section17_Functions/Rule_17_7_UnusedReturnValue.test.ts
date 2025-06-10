@@ -3,15 +3,15 @@ import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestF
 import { FileJp } from "@specs-feup/clava/api/Joinpoints.js"; 
 
 const programCode = `
-    void my_void_func() {
+    static void my_void_func() {
         // Void function 
     }
 
-    unsigned int foo() {
+    static unsigned int foo() {
         return 0;
     }
 
-    unsigned int bar(unsigned int n) {
+    static unsigned int bar(unsigned int n) {
         return n*n;
     }
 

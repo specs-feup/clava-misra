@@ -3,7 +3,7 @@ import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestF
 import { FileJp, FunctionJp, If, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 
 const passingCode = 
-`void foo16_6_1( void )
+`static void foo16_6_1( void )
 {
     int x, a, b;
 
@@ -28,7 +28,7 @@ const passingCode =
 }`;
 
 const failingCode1 = 
-`int foo16_6_2( void )
+`static int foo16_6_2( void )
 {
     int x = 1;
     switch ( x )
@@ -47,7 +47,7 @@ const failingCode1 =
 }`;
 
 const failingCode2 = 
-`int foo16_6_3( void )
+`static int foo16_6_3( void )
 {
     int x = 10, a, b;
 
@@ -65,7 +65,7 @@ const failingCode2 =
 
 // 2 erros: one is related to not having a default case
 const failingCode3 = 
-`int foo16_6_4( void )
+`static int foo16_6_4( void )
 {
     int x = 10, a, b;
 
@@ -81,7 +81,7 @@ const failingCode3 =
 }`;
 
 const failingCode4 = 
-`int foo16_6_5( void )
+`static int foo16_6_5( void )
 {
     int x = 10, a, b;
 

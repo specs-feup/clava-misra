@@ -3,7 +3,7 @@ import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestF
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 const passingCode = 
-`void foo16_4_1( void )
+`static void foo16_4_1( void )
 {
     int x;
     switch ( x )
@@ -32,7 +32,7 @@ const passingCode =
 }`;
 
 const failingCode1 = 
-`void foo16_4_3( void )
+`static void foo16_4_3( void )
 {
     int x;
     switch ( x )
@@ -49,7 +49,7 @@ const failingCode1 =
 
 // 4 erros: two of them are related to having boolean switch condition
 const failingCode2 = 
-`void foo16_4_4( void )
+`static void foo16_4_4( void )
 {
     int x, a = 14;
     switch ( x == 4) /* Default will not be introduced, as it will be converted by the other rule */
@@ -77,7 +77,7 @@ const failingCode2 =
 
 // 4 errors: two of them are related to having less than two clauses
 const failingCode3 = 
-`void foo16_4_5( void )
+`static void foo16_4_5( void )
 {
     int x, a = 14;
     switch (x) { /* Default will not be introduced, as it will be converted by the other rule*/

@@ -22,15 +22,15 @@ const failingCode = `
 const passingCode = `
     extern int foo(int x, int y, int z);
 
-    int my_func(int x, int y, int z) {
+    static int my_func(int x, int y, int z) {
         return x + y + z;
     }
         
-    int my_func2() {
+    static int my_func2() {
         return 0;
     }
 
-    int bar() { 
+    static int bar() { 
         return my_func(1, 2, 3) + foo(50, 51, 52);
     }`;
 

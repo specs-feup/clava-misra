@@ -3,7 +3,7 @@ import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestF
 import { FileJp } from "@specs-feup/clava/api/Joinpoints.js";
 
 const passingCode1 = 
-`void foo16_5_1( void )
+`static void foo16_5_1( void )
 {
     int x;
     switch ( x ) {
@@ -30,7 +30,7 @@ const passingCode1 =
 }`;
 
 const failingCode1 = 
-`void foo16_5_3( void )
+`static void foo16_5_3( void )
 {
     int x;
     switch ( x ) {
@@ -46,7 +46,7 @@ const failingCode1 =
 }`;
 
 const failingCode2 = 
-`void foo16_5_4( void )
+`static void foo16_5_4( void )
 {
     int x;
     switch ( x ) {
@@ -66,7 +66,7 @@ const failingCode2 =
 }`;
 
 const failingCode3 = 
-`void foo16_5_5( void )
+`static void foo16_5_5( void )
 {
     int x;
     switch ( x ) {
@@ -88,7 +88,7 @@ const failingCode3 =
 }`;
 
 const failingCode4 = 
-`void foo16_5_6( void )
+`static void foo16_5_6( void )
 {
     int x;
     switch ( x ) {

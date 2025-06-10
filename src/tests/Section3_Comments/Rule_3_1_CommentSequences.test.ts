@@ -8,7 +8,7 @@ const passingCode = `int main() {
     return 0;
 }`;
 
-const failingCode = `int test() {
+const failingCode = `static int test() {
     int x, y, z; // bad inl/*ine comment
 
     /* bad /* block comment */

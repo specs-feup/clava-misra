@@ -1,10 +1,11 @@
-import { FunctionJp, Joinpoint, StorageClass, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { FunctionJp, Joinpoint, Program, StorageClass, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { hasExternalLinkage, isExternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
 import { getExternalVarRefs } from "../../utils/VarUtils.js";
 import { findExternalFunctionDecl } from "../../utils/FunctionUtils.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 /**
  * Rule 8.7: Functions and objects should not be defined with external linkage if they are referenced in only one translation unit
@@ -26,9 +27,13 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!isExternalLinkageIdentifier($jp) || ($jp instanceof FunctionJp && !$jp.isImplementation)) {
+        if (!isExternalLinkageIdentifier($jp)) {
             return false;
         }  
+        
+        if ($jp instanceof FunctionJp && (!$jp.isImplementation || $jp.ast === (Query.root() as Program).main?.ast)) {
+            return false;
+        }
 
         const nonCompliant = $jp instanceof Vardecl ? getExternalVarRefs($jp).length === 0 : findExternalFunctionDecl($jp).length === 0;
         if (nonCompliant && logErrors) {
