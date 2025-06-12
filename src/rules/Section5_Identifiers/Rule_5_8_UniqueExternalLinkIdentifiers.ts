@@ -33,7 +33,7 @@ export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
         const nonCompliant = isIdentifierDuplicated($jp, externalLinkageIdentifiers);
 
         if (nonCompliant && logErrors) {
-            this.logMISRAError($jp, `Identifier ${jpName} is already defined with external linkage in this or other file.`);
+            this.logMISRAError($jp, `Identifier '${jpName}' is already defined with external linkage in this or other file.`);
         }
         return nonCompliant;
     }
@@ -53,7 +53,7 @@ export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
         if (renameIdentifier($jp, newName)) {
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         } else {
-            this.logMISRAError($jp, `Identifier ${getIdentifierName($jp)} is already defined with external linkage in this or other file.`);
+            this.logMISRAError($jp, `Identifier '${getIdentifierName($jp)}' is already defined with external linkage in this or other file.`);
             this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }

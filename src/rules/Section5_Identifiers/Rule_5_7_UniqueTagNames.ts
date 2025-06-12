@@ -38,7 +38,7 @@ export default class Rule_5_7_UniqueTagNames extends MISRARule {
         const tagDecls = Query.search(Joinpoint, (jp => {return isTagDecl(jp)})).get();
         let nonCompliant;
         if ($jp instanceof TypedefDecl) {
-            const tagsWithSameName = tagDecls.filter((tag) => jpName === tag.astId && getTypeDefDecl(tag)?.ast !== $jp.ast);
+            const tagsWithSameName = tagDecls.filter((tag) => jpName === getIdentifierName(tag) && getTypeDefDecl(tag)?.ast !== $jp.ast);
             nonCompliant = tagsWithSameName.length > 0;
         } else {
             nonCompliant = isIdentifierDuplicated($jp, tagDecls);

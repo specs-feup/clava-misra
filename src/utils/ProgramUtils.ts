@@ -2,23 +2,42 @@ import { Vardecl, FunctionJp, StorageClass } from "@specs-feup/clava/api/Joinpoi
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { hasExternalLinkage, hasInternalLinkage } from "./IdentifierUtils.js";
 
+
+let cachedInternalLinkageIdentifiers: (FunctionJp | Vardecl)[] | null = null;
+let cachedExternalLinkageIdentifiers: (FunctionJp | Vardecl)[] | null = null;
+
+export function resetCaches() {
+    cachedInternalLinkageIdentifiers = null;
+    cachedExternalLinkageIdentifiers = null;
+}
+
 /**
  * Retrieves all variables and functions that are eligible for `extern` linkage, i.e., 
  * elements with storage classes that are not `STATIC` or `EXTERN`
  * @returns Array of functions and variables that can be declared as external
  */
 export function getExternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
-    return [
+    if (cachedExternalLinkageIdentifiers !== null) {
+        return cachedExternalLinkageIdentifiers;
+    }
+
+    cachedExternalLinkageIdentifiers = [
         ...getExternalLinkageFunctions(), 
         ...getExternalLinkageVarDecls()
     ];
+    return cachedExternalLinkageIdentifiers;
 }
 
 export function getInternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
-    return [
+    if (cachedInternalLinkageIdentifiers !== null) {
+        return cachedInternalLinkageIdentifiers;
+    }
+
+    cachedInternalLinkageIdentifiers = [
         ...getInternalLinkageFunctions(), 
         ...getInternalLinkageVarsDecls()
     ];
+    return cachedInternalLinkageIdentifiers;
 }
 
 /**

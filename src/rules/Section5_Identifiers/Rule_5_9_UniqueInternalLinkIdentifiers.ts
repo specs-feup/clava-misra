@@ -32,7 +32,7 @@ export default class Rule_5_9_UniqueInternalLinkIdentifiers extends MISRARule {
         const internalLinkageIdentifiers = getInternalLinkageIdentifiers();
         const nonCompliant = isIdentifierDuplicated($jp, internalLinkageIdentifiers);
         if (nonCompliant && logErrors) {
-            this.logMISRAError($jp, `Identifier ${jpName} is already defined with internal linkage in this or other file.`);
+            this.logMISRAError($jp, `Identifier '${jpName}' is already defined with internal linkage in this or other file.`);
         }
         return nonCompliant;
     }

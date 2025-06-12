@@ -4,6 +4,8 @@ import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { countSwitchClauses } from "./utils/SwitchUtils.js";
 
+type NodeID = string;
+
 export enum MISRATransformationType {
     NoChange,
     DescendantChange,
@@ -11,7 +13,6 @@ export enum MISRATransformationType {
     Removal
 }
 
-type NodeID = string;
 export type MISRATransformationResults = Map<NodeID, MISRATransformationType>;
 
 /**

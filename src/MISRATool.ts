@@ -35,8 +35,8 @@ export default class MISRATool {
                 rule.match(node, true);
             }
         }
-        if (this.#context.errors.length > 0) {
-            console.log(`[Clava-MISRATool] Detected ${this.getErrorCount()} violation${this.getErrorCount() === 1 ? '' : 's'}:\n`);
+        if (this.getErrorCount() > 0) {
+            console.log(`[Clava-MISRATool] Detected ${this.getErrorCount()} MISRA-C violation${this.getErrorCount() === 1 ? '' : 's'}:\n`);
             this.#context.printAllErrors();
         } else {
             console.log("[Clava-MISRATool] No MISRA-C violations detected.");
@@ -58,10 +58,10 @@ export default class MISRATool {
             modified = this.transformAST(Query.root() as Program);
         }
 
-        if (this.#context.errors.length === 0) {
-            console.log("[Clava-MISRATool] All detected violations were corrected.");
+        if (this.getActiveErrorCount() === 0) {
+            console.log("[Clava-MISRATool] All detected violations were corrected.\n");
         } else {
-            console.log("\n[Clava-MISRATool] Remaining MISRA-C violations:");
+            console.log(`\n[Clava-MISRATool] ${this.getActiveErrorCount()} MISRA-C violation${this.getActiveErrorCount() === 1 ? '' : 's'} remain after transformation:\n`);
             this.#context.printActiveErrors();
         }
     }
@@ -94,5 +94,9 @@ export default class MISRATool {
 
     public static getActiveErrorCount(): number {
         return this.#context.activeErrors.length;
+    }
+
+    public static get context() {
+        return this.#context;
     }
 }

@@ -93,7 +93,7 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     }
 
     private printError(error: MISRAError): void {
-        console.log(`MISRA-C Rule ${error.ruleID} violation at ${error.$jp.filepath}@${error.$jp.line}:${error.$jp.column}: ${error.message}\n`);
+        console.log(`- [Rule ${error.ruleID}] at ${error.$jp.filepath}@${error.$jp.line}:${error.$jp.column}: ${error.message}\n`);
     }
     
     printAllErrors(): void {

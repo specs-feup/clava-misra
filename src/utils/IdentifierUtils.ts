@@ -17,11 +17,19 @@ export function isIdentifierDecl($jp: Joinpoint): boolean {
  * @returns Returns true if the class has external linkage, otherwise returns false
  */
 export function hasExternalLinkage($jp: FunctionJp | Vardecl): boolean {
-    return $jp.storageClass !== StorageClass.STATIC && $jp.storageClass !== StorageClass.EXTERN && $jp.getAncestor("function") === undefined;
+    let result = $jp.storageClass !== StorageClass.STATIC && $jp.storageClass !== StorageClass.EXTERN && $jp.getAncestor("function") === undefined;
+    if ($jp instanceof FunctionJp) {
+        result = result && $jp.isImplementation;
+    }
+    return result;
 }
 
 export function hasInternalLinkage($jp: FunctionJp | Vardecl): boolean {
-    return $jp.storageClass === StorageClass.STATIC && $jp.getAncestor("function") === undefined;
+    let result = $jp.storageClass === StorageClass.STATIC && $jp.getAncestor("function") === undefined;
+    if ($jp instanceof FunctionJp) {
+        result = result && $jp.isImplementation;
+    }
+    return result;
 }
 
 export function isExternalLinkageIdentifier ($jp: Joinpoint):  $jp is FunctionJp | Vardecl {

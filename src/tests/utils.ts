@@ -4,16 +4,38 @@ import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { FileJp, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import * as os from 'os';
-import { argv } from "process";
+import { resetCaches } from "../utils/ProgramUtils.js";
 
-export function countMISRAErrors(startingPoint: FileJp | Program = Query.root() as Program): number {
+export function countMISRAErrors(): number;
+export function countMISRAErrors(ruleID: string): number;
+export function countMISRAErrors(startingPoint: FileJp | Program): number;
+export function countMISRAErrors(startingPoint: FileJp | Program, ruleID: string): number;
+
+export function countMISRAErrors(arg1?: FileJp | Program | string, arg2?: string): number {
+  let startingPoint: FileJp | Program;
+  let ruleID: string | undefined;
+
+  if (typeof arg1 === "string") {
+    ruleID = arg1;
+    startingPoint = Query.root() as Program;
+  } else {
+    startingPoint = arg1 ?? (Query.root() as Program);
+    ruleID = arg2;
+  }
+
   MISRATool.checkCompliance(startingPoint);
-  return MISRATool.getErrorCount();
+  
+  return ruleID ? 
+    MISRATool.context.errors.filter(error => error.ruleID === ruleID).length :
+    MISRATool.getErrorCount();
 }
 
-export function countErrorsAfterCorrection(): number {
+export function countErrorsAfterCorrection(ruleID?: string): number {
   MISRATool.applyCorrections();
-  return MISRATool.getActiveErrorCount();
+
+  return ruleID ? 
+    MISRATool.context.activeErrors.filter(error => error.ruleID === ruleID).length :
+    MISRATool.getActiveErrorCount();
 }
 
 export interface TestFile {
@@ -24,6 +46,8 @@ export interface TestFile {
 
 export function registerSourceCode(files: TestFile[], configPath?: string): void {
     beforeEach(() => {
+      resetCaches();
+
       const dataStore = Clava.getData();
       dataStore.setStandard(process.env.STD_VERSION!);
       dataStore.put("argv", configPath ?? undefined);
