@@ -94,6 +94,6 @@ describe("Rule 17.4", () => {
     });
 
     it("should correct errors", () => {
-        expect(countErrorsAfterCorrection()).toBe(6);
+        expect(countErrorsAfterCorrection()).toBe(5);
     });
 });

@@ -19,7 +19,6 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
         return "8.7";
     }
 
-
     /**
      * 
      * @param $jp - Joinpoint to analyze
@@ -27,13 +26,10 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!isExternalLinkageIdentifier($jp)) {
+        if (!isExternalLinkageIdentifier($jp) || 
+            ($jp instanceof FunctionJp && $jp.ast === (Query.root() as Program).main?.ast)) {
             return false;
-        }  
-        
-        if ($jp instanceof FunctionJp && (!$jp.isImplementation || $jp.ast === (Query.root() as Program).main?.ast)) {
-            return false;
-        }
+        } 
 
         const nonCompliant = $jp instanceof Vardecl ? getExternalVarRefs($jp).length === 0 : findExternalFunctionDecl($jp).length === 0;
         if (nonCompliant && logErrors) {
@@ -58,11 +54,8 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
         if ($jp instanceof Vardecl) {
             $jp.setStorageClass(StorageClass.STATIC);
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
-        } else if ($jp instanceof FunctionJp) {
-            this.logMISRAError(
-                $jp, 
-                `Function '${$jp.name}' has external linkage but is only referenced within a single translation unit. Consider using the 'static' keyword to give it internal linkage.`
-            );
+        } else if ($jp instanceof FunctionJp && $jp.setStorageClass(StorageClass.STATIC)) {
+            return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         }
         return new MISRATransformationReport(MISRATransformationType.NoChange);
     }

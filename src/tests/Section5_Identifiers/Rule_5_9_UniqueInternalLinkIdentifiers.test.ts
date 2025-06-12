@@ -8,7 +8,7 @@ const failingCode1 = `
 static int32_t count; /* "count" has internal linkage */
 
 static void foo ( void ) { 
-    int16_t count; // Non-compliant: clashes with function "foo"
+    int16_t count; // Non-compliant: clashes with internal linkage variable "count"
     int16_t index; 
 }
 
@@ -75,6 +75,6 @@ describe("Rule 5.9", () => {
     });
 
     it("should correct errors in bad.c", () => {
-        expect(countErrorsAfterCorrection()).toBe(4);
+        expect(countErrorsAfterCorrection()).toBe(2);
     });
 });

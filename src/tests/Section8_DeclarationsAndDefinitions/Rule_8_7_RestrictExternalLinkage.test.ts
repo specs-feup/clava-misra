@@ -20,7 +20,7 @@ int bad_extern_function() {
     return bad_extern_obj + good_extern_obj + good_extern_function();
 }
 
-static test_8_7_1() {
+static int test_8_7_1() {
     return bad_extern_obj;
 }
 `;
@@ -41,6 +41,6 @@ describe("Rule 8.7", () => {
     });
 
     it("should correct errors in bad.c", () => {
-        expect(countErrorsAfterCorrection()).toBe(1);
+        expect(countErrorsAfterCorrection()).toBe(0);
     });
 });
