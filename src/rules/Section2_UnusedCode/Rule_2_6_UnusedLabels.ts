@@ -9,7 +9,6 @@ import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.
  *  Checks for labels within a function that are not used.
  */
 export default class Rule_2_6_UnusedLabels extends MISRARule {
-    priority = 3; 
     
     constructor(context: MISRAContext) {
         super(context);

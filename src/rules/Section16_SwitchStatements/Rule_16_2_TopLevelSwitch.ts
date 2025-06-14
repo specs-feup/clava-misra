@@ -9,7 +9,7 @@ import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.
 compound statement is the body of a switch statement
  */
 export default class Rule_16_2_TopLevelSwitch extends MISRARule {    
-    priority = 2; 
+    priority = 3; 
     #misplacedCases: Case[] = [];
 
     constructor(context: MISRAContext) {

@@ -17,6 +17,7 @@ void test_17_3_1() {
     printf("Result: %.2f ", func());
 }`;
 
+
 const failingCode = `
 static void test_17_3_2() {
     double a = 2.0, b = 3.0;
@@ -50,7 +51,7 @@ static int func2() {
     double a = 2.0, b = 3.0;
 
     double pow_result = pow(a, b); 
-    double sum = half(b) + pow_result;  // Implicit call: provided math.h does not solve
+    double sum = half(b) + pow_result;  // Implicit call to 'half': provided math.h does not solve
 
     // Implicit call: provided stdio.h does not solve the issue
     // Return value is not being used

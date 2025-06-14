@@ -1,6 +1,7 @@
 import { Call, FileJp, FunctionJp, StorageClass } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { getIncludesOfFile } from "./FileUtils.js";
+import { findExternalFunctionDecl } from "./FunctionUtils.js";
 
 /**
  * Check if the given joinpoint represents a call to an implicit function.
@@ -12,28 +13,21 @@ export function isCallToImplicitFunction(callJp: Call): boolean {
         return !callJp.function.isInSystemHeader;
     } 
     
+    const definitionJp = callJp.directCallee.definitionJp;
     const defLocation = callJp.function.definitionJp.getAncestor("file") as FileJp;
     const callLocation = callJp.getAncestor("file") as FileJp;
+    const fileIncludes = getIncludesOfFile(callLocation);
 
     if (defLocation.ast === callLocation.ast) { // calling the definition
         return false;
-    } 
+    }
 
-    const functionExternDecls = Query.search(FunctionJp, (func) => {
-        const declLocation = func.getAncestor("file") as FileJp;
-        const fileIncludes = getIncludesOfFile(callLocation);
-
-        return func.name === callJp.name && 
-               !func.isImplementation && 
-                func.storageClass === StorageClass.EXTERN &&
-                (
-                    declLocation?.ast === callLocation.ast || 
-                    (declLocation.isHeader && fileIncludes.includes(declLocation.name))
-                )
-
-    }).get();
-
-    return functionExternDecls.length === 0;
+    return !findExternalFunctionDecl(definitionJp)
+            .some((declJp) => {
+                const declLocation = declJp.getAncestor("file") as FileJp;
+                return declLocation?.ast === callLocation.ast || 
+                        (declLocation.isHeader && fileIncludes.includes(declLocation.name))
+            });
 }
 
 /**

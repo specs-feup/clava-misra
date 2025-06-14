@@ -28,9 +28,6 @@ export function findFunctionDef(callJp: Call, pathSuffix: string) {
 }
 
 export function findExternalFunctionDecl(functionJp: FunctionJp): FunctionJp[] {
-    return Query.search(FunctionJp, (jp) => {
-        return jp.name === functionJp.name &&
-        !jp.isImplementation &&
-        jp.storageClass === StorageClass.EXTERN
-    }).get();
+    return functionJp.declarationJps
+            .filter((declJp) => declJp.storageClass === StorageClass.EXTERN);
 }

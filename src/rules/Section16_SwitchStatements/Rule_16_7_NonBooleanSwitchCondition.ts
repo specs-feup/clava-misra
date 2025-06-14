@@ -8,7 +8,7 @@ import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../util
  * MISRA Rule 16.7: A switch-expression shall not have essentially Boolean type.
  */
 export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
-    priority = 3; 
+    priority = 4; 
 
     constructor(context: MISRAContext) {
         super(context);

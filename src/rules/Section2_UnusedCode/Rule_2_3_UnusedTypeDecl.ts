@@ -9,7 +9,6 @@ import { isTagDecl } from "../../utils/JoinpointUtils.js";
  * MISRA-C Rule 2.3: A project should not contain unused type declarations.
  */
 export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
-    priority = 3;
 
     constructor(context: MISRAContext) {
         super(context);

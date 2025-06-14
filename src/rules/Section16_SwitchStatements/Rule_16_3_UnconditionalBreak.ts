@@ -9,7 +9,7 @@ import { getLastStmtOfCase } from "../../utils/SwitchUtils.js";
  * MISRA Rule 16.3: An unconditional break statement shall terminate every switch-clause
  */
 export default class Rule_16_3_UnconditionalBreak extends MISRARule {
-    priority = 2; 
+    priority = 3; 
     #statementsNeedingBreakAfter: Joinpoint[] = [];
 
     constructor(context: MISRAContext) {

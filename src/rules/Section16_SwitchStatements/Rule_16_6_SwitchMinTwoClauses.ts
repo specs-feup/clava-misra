@@ -8,7 +8,7 @@ import { countSwitchClauses, switchHasConditionalBreak } from "../../utils/Switc
  * MISRA Rule 16.6:  Every switch statement shall have at least two switch-clauses.
  */
 export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
-    priority = 3;
+    priority = 4;
 
     constructor(context: MISRAContext) {
         super(context);

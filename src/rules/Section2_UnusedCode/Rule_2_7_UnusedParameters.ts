@@ -1,4 +1,4 @@
-import { FunctionJp, Joinpoint, Param, Varref, Call } from "@specs-feup/clava/api/Joinpoints.js";
+import { FunctionJp, Joinpoint, Param, Varref, Call, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
@@ -6,7 +6,7 @@ import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.
 import { getParamReferences } from "../../utils/FunctionUtils.js";
 
 export default class Rule_2_7_UnusedParameters extends MISRARule {
-    priority = 3; 
+    priority = 2; 
 
     constructor(context: MISRAContext) {
         super(context);
@@ -14,6 +14,51 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
 
     override get name(): string {
         return "2.7";
+    }
+
+    match($jp: Joinpoint, logErrors: boolean = false): boolean {
+        if (!($jp instanceof Program)) return false;
+
+        const functions = Query.search(FunctionJp, {isImplementation: true}).get();
+        const nonCompliant = functions.some((funcJp) => funcJp.params.some((param) => getParamReferences(param, funcJp).length === 0));
+
+        if (logErrors && nonCompliant) {
+            for (const funcJp of functions) {
+                const unusedParams = this.getUnusedParams(funcJp);
+
+                unusedParams.forEach(param => 
+                    this.logMISRAError(param, `Parameter '${param.name}' is unused in function ${funcJp.name}.`)
+                )
+            }
+        } 
+        return nonCompliant;
+    }
+
+    apply($jp: Joinpoint): MISRATransformationReport {
+        if (!this.match($jp)) 
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
+
+        const functions = Query.search(FunctionJp, {isImplementation: true}).get();
+        for (const funcJp of functions) {
+
+            const usedParams = this.getUsedParams(funcJp);
+            if (usedParams.length === funcJp.params.length) { // All parameters are used
+                continue;
+            } 
+
+            const usedParamsPositions = this.getUsedParamsPositions(funcJp);
+            const calls = Query.search(Call, {function: jp => jp.astId === funcJp.astId}).get();
+            
+            funcJp.setParams(usedParams);
+
+            for (const call of calls) {
+                const newArgs = usedParamsPositions.map(i => call.args[i]);
+                const newCall = funcJp.newCall(newArgs);
+                call.replaceWith(newCall);
+            }
+        }
+        ($jp as Program).rebuild();
+        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 
     private getUnusedParams(func: FunctionJp): Param[] {
@@ -33,36 +78,5 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
             }
         }
         return result;
-    }   
-
-    match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!($jp instanceof FunctionJp && $jp.isImplementation)) return false;
-
-        const unusedParams = this.getUnusedParams($jp);
-        if (logErrors) {
-            unusedParams.forEach(param => 
-                this.logMISRAError(param, `Parameter '${param.name}' is unused in function ${$jp.name}.`)
-            )
-        }
-        return unusedParams.length > 0;
-    }
-    
-    apply($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) 
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
-
-        const functionJp = $jp as FunctionJp;
-        const usedParams = this.getUsedParams(functionJp);
-        const usedParamsPositions = this.getUsedParamsPositions(functionJp);
-        const calls = Query.search(Call, {function: jp => jp.astId === $jp.astId}).get();
-        
-        functionJp.setParams(usedParams);
-
-        for (const call of calls) {
-            const newArgs = usedParamsPositions.map(i => call.args[i]);
-            const newCall = functionJp.newCall(newArgs);
-            call.replaceWith(newCall);
-        }
-        return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }
 }
