@@ -2,7 +2,7 @@ import {FunctionJp, Joinpoint, Program, Vardecl } from "@specs-feup/clava/api/Jo
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { areDistinctIdentifiers, isExternalLinkageIdentifier, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { areDistinctIdentifiers, getIdentifierName, isExternalLinkageIdentifier, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import { getExternalLinkageIdentifiers, rebuildProgram } from "../../utils/ProgramUtils.js";
 import { getFileLocation } from "../../utils/JoinpointUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
@@ -43,7 +43,7 @@ export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
 
         if (nonCompliant && logErrors) {
             this.invalidIdentifiers.forEach(identifierJp => {
-                this.logMISRAError(identifierJp, `Identifier ${identifierJp.name} is not distinct from other external identifier within the first 31 characters.`)
+                this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' is not distinct from other external identifier within the first 31 characters.`)
             });
         }
         return nonCompliant;
