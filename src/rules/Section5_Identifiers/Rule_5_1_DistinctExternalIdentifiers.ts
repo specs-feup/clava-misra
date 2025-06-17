@@ -1,14 +1,18 @@
-import {FunctionJp, Joinpoint, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
+import {FunctionJp, Joinpoint, Program, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { areDistinctIdentifiers, isExternalLinkageIdentifier, renameIdentifier } from "../../utils/IdentifierUtils.js";
-import { getExternalLinkageIdentifiers } from "../../utils/ProgramUtils.js";
+import { getExternalLinkageIdentifiers, rebuildProgram } from "../../utils/ProgramUtils.js";
+import { getFileLocation } from "../../utils/JoinpointUtils.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 /**
  * Rule 5.1 External identifiers shall be distinct.
  */
 export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
+    private invalidIdentifiers: (Vardecl | FunctionJp)[] = [];
+
     constructor(context: MISRAContext) {
         super( context);
     }
@@ -25,15 +29,22 @@ export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!isExternalLinkageIdentifier($jp)) {
-            return false;
-        } 
-        
-        const externableIdentifiers = getExternalLinkageIdentifiers();
-        const nonCompliant = externableIdentifiers.some((identifier) => !areDistinctIdentifiers(identifier, $jp) && identifier.astId !== $jp.astId);
+        if (!($jp instanceof Program)) return false;       
+         
+        const externalIdentifiers = getExternalLinkageIdentifiers();
+        this.invalidIdentifiers = 
+            externalIdentifiers.filter(identifier1 =>
+                externalIdentifiers.some(identifier2 =>
+                    !areDistinctIdentifiers(identifier1, identifier2) &&
+                    getFileLocation(identifier2).localeCompare(getFileLocation(identifier1)) < 0
+                )
+            );
+        const nonCompliant = this.invalidIdentifiers.length > 0;
 
         if (nonCompliant && logErrors) {
-            this.logMISRAError($jp, `Identifier ${$jp.name} is not distinct from other external identifiers within the first 31 characters.`)
+            this.invalidIdentifiers.forEach(identifierJp => {
+                this.logMISRAError(identifierJp, `Identifier ${identifierJp.name} is not distinct from other external identifier within the first 31 characters.`)
+            });
         }
         return nonCompliant;
     }
@@ -46,17 +57,15 @@ export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
      * @returns Report detailing the transformation result
      */
     apply($jp: Joinpoint): MISRATransformationReport {
-        const previousResult = ($jp instanceof FunctionJp || $jp instanceof Vardecl) ? this.context.getRuleResult(this.ruleID, $jp) : undefined;
-        if (previousResult === MISRATransformationType.NoChange || !this.match($jp)) {
+        if (!this.match($jp)) {
             return new MISRATransformationReport(MISRATransformationType.NoChange);   
         }
-        const newName = this.context.generateIdentifierName($jp)!;
-        if (renameIdentifier($jp, newName)) {
-            return new MISRATransformationReport(MISRATransformationType.DescendantChange);
-        } else {
-            this.logMISRAError($jp, `Identifier name is not distinct from other external identifiers within the first 31 characters.`);
-            this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
+
+        for (const identifierJp of this.invalidIdentifiers) {
+            const newName = this.context.generateIdentifierName(identifierJp)!;
+            renameIdentifier(identifierJp, newName);
         }
+        rebuildProgram();
+        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }

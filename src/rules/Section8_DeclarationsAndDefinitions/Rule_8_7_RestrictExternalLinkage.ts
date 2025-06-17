@@ -2,8 +2,8 @@ import { FunctionJp, Joinpoint, Program, StorageClass, Vardecl } from "@specs-fe
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { hasExternalLinkage, isExternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
-import { getExternalVarRefs } from "../../utils/VarUtils.js";
+import { isExternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
+import { findExternalVarRefs } from "../../utils/VarUtils.js";
 import { findExternalFunctionDecl } from "../../utils/FunctionUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
@@ -31,7 +31,7 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
             return false;
         } 
 
-        const nonCompliant = $jp instanceof Vardecl ? getExternalVarRefs($jp).length === 0 : findExternalFunctionDecl($jp).length === 0;
+        const nonCompliant = $jp instanceof Vardecl ? findExternalVarRefs($jp).length === 0 : findExternalFunctionDecl($jp).length === 0;
         if (nonCompliant && logErrors) {
             this.logMISRAError(
                 $jp, 

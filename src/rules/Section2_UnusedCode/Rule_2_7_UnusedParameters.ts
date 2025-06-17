@@ -4,6 +4,7 @@ import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getParamReferences } from "../../utils/FunctionUtils.js";
+import { rebuildProgram } from "../../utils/ProgramUtils.js";
 
 export default class Rule_2_7_UnusedParameters extends MISRARule {
     priority = 2; 
@@ -57,7 +58,7 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
                 call.replaceWith(newCall);
             }
         }
-        ($jp as Program).rebuild();
+        rebuildProgram();
         return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 

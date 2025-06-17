@@ -1,4 +1,4 @@
-import { Joinpoint, TypedefDecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, Program, TypedefDecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
@@ -6,6 +6,7 @@ import { getIdentifierName, isIdentifierDecl, isIdentifierDuplicated, renameIden
 import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
+import { getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js";
 
 /**
  * Rule 5.6: A tag name shall be a unique identifier.
@@ -13,6 +14,8 @@ import { isTagDecl } from "../../utils/JoinpointUtils.js";
  * Exception: The tag name may be the same as the typedef name with which it is  associated.
  */
 export default class Rule_5_7_UniqueTagNames extends MISRARule {
+    private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
+
     constructor(context: MISRAContext) {
         super( context);
     }
@@ -30,22 +33,24 @@ export default class Rule_5_7_UniqueTagNames extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!isIdentifierDecl($jp)) {
-            return false;
-        }
-        
-        const jpName = getIdentifierName($jp);
-        const tagDecls = Query.search(Joinpoint, (jp => {return isTagDecl(jp)})).get();
-        let nonCompliant;
-        if ($jp instanceof TypedefDecl) {
-            const tagsWithSameName = tagDecls.filter((tag) => jpName === getIdentifierName(tag) && getTypeDefDecl(tag)?.ast !== $jp.ast);
-            nonCompliant = tagsWithSameName.length > 0;
-        } else {
-            nonCompliant = isIdentifierDuplicated($jp, tagDecls);
-        }
+        if (!($jp instanceof Program)) return false;
 
-        if (nonCompliant && logErrors) {
-            this.logMISRAError($jp, `Identifier ${jpName} is also the name of a tag. Tag identifiers must not be reused.`);
+        const tagDecls = Query.search(Joinpoint, (jp => {return isTagDecl(jp)})).get();
+        this.invalidIdentifiers = getIdentifierDecls().filter((identifierJp) => 
+        {
+            identifierJp instanceof TypedefDecl ?
+                tagDecls.filter((tag) =>
+                    getIdentifierName(identifierJp) === getIdentifierName(tag) &&
+                    getTypeDefDecl(tag)?.ast !== identifierJp.ast
+                ).length > 0
+                : isIdentifierDuplicated(identifierJp, tagDecls);
+        });
+        const nonCompliant = this.invalidIdentifiers.length > 0;
+
+        if (nonCompliant && logErrors) { 
+            this.invalidIdentifiers.forEach(identifierJp => {
+                this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' is also the name of a tag. Tag identifiers must not be reused.`);
+            })
         }
         return nonCompliant;
     }
@@ -57,18 +62,15 @@ export default class Rule_5_7_UniqueTagNames extends MISRARule {
      * @returns Report detailing the transformation result
      */
     apply($jp: Joinpoint): MISRATransformationReport {
-        const previousResult = isIdentifierDecl($jp) ? this.context.getRuleResult(this.ruleID, $jp) : undefined;
-        if (previousResult === MISRATransformationType.NoChange || !this.match($jp)) {
+        if (!this.match($jp)) {
             return new MISRATransformationReport(MISRATransformationType.NoChange);   
         }
 
-        const newName = this.context.generateIdentifierName($jp)!;
-        if (renameIdentifier($jp, newName)) {
-            return new MISRATransformationReport(MISRATransformationType.DescendantChange);
-        } else {
-            this.logMISRAError($jp, `Identifier ${getIdentifierName($jp)} is also the name of a tag. Tag identifiers must not be reused.`);
-            this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
+        for (const identifierJp of this.invalidIdentifiers) {
+            const newName = this.context.generateIdentifierName(identifierJp)!;
+            renameIdentifier(identifierJp, newName);
         }
+        rebuildProgram();
+        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }

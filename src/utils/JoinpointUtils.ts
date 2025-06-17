@@ -29,3 +29,7 @@ export function getBaseType($jp: Joinpoint): Type | undefined {
     } 
     return jpType;
 }
+
+export function getFileLocation($jp: Joinpoint) {
+    return `${$jp.filepath}@${$jp.line}:${$jp.column}`;
+}

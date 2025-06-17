@@ -1,4 +1,4 @@
-import { Joinpoint, TypedefDecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, Program, TypedefDecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
@@ -6,6 +6,7 @@ import { getIdentifierName, isIdentifierDecl, isIdentifierDuplicated, renameIden
 import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
+import { getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js";
 
 /**
  * Rule 5.6: A typedef name shall be a unique identifier.
@@ -13,6 +14,8 @@ import { isTagDecl } from "../../utils/JoinpointUtils.js";
  * Exception: The typedef name may be the same as the structure, union  or enumeration tag name associated with the typedef.
  */
 export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
+    private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
+
     constructor(context: MISRAContext) {
         super( context);
     }
@@ -21,7 +24,6 @@ export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
         return "5.6";
     }
 
-
     /**
      * 
      * @param $jp - Joinpoint to analyze
@@ -29,22 +31,24 @@ export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!isIdentifierDecl($jp)) {
-            return false;
-        }
+        if (!($jp instanceof Program)) return false;
         
-        const jpName = getIdentifierName($jp);
         const typedefDecls = Query.search(TypedefDecl).get();
-        let nonCompliant;
-        if (isTagDecl($jp)) {
-            const typeDefWithSameName = typedefDecls.filter((decl) => jpName === decl.astId && getTypeDefDecl($jp)?.ast !== decl.ast);
-            nonCompliant = typeDefWithSameName.length > 0;
-        } else {
-            nonCompliant = isIdentifierDuplicated($jp, typedefDecls);
-        }
+        this.invalidIdentifiers = getIdentifierDecls().filter((identifierJp) => 
+        {
+            isTagDecl(identifierJp) ?
+                typedefDecls.filter((decl) =>
+                    getIdentifierName(identifierJp) === getIdentifierName(decl) &&
+                    getTypeDefDecl(identifierJp)?.ast !== decl.ast
+                ).length > 0
+                : isIdentifierDuplicated(identifierJp, typedefDecls);
+        });
+        const nonCompliant = this.invalidIdentifiers.length > 0;
 
-        if (nonCompliant && logErrors) {
-            this.logMISRAError($jp, `Identifier ${jpName} is also the name of a typedef. Typedef identifiers must not be reused.`);
+        if (nonCompliant && logErrors) { 
+            this.invalidIdentifiers.forEach(identifierJp => {
+                this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' is also the name of a typedef. Typedef identifiers must not be reused.`);
+            })
         }
         return nonCompliant;
     }
@@ -55,18 +59,15 @@ export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
      * @returns Report detailing the transformation result
      */
     apply($jp: Joinpoint): MISRATransformationReport {
-        const previousResult = isIdentifierDecl($jp) ? this.context.getRuleResult(this.ruleID, $jp) : undefined;
-        if (previousResult === MISRATransformationType.NoChange || !this.match($jp)) {
+        if (!this.match($jp)) {
             return new MISRATransformationReport(MISRATransformationType.NoChange);   
         }
 
-        const newName = this.context.generateIdentifierName($jp)!;
-        if (renameIdentifier($jp, newName)) {
-            return new MISRATransformationReport(MISRATransformationType.DescendantChange);
-        } else {
-            this.logMISRAError($jp, `Identifier ${getIdentifierName($jp)} is also the name of a typedef. Typedef identifiers must not be reused.`);
-            this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
+        for (const identifierJp of this.invalidIdentifiers) {
+            const newName = this.context.generateIdentifierName(identifierJp)!;
+            renameIdentifier(identifierJp, newName);
         }
+        rebuildProgram();
+        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }

@@ -1,14 +1,18 @@
-import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getIdentifierName, isIdentifierDecl, isIdentifierDuplicated, renameIdentifier } from "../../utils/IdentifierUtils.js";
-import { getExternalLinkageIdentifiers } from "../../utils/ProgramUtils.js";
+import { areIdentifierNamesEqual, getIdentifierName, isExternalLinkageIdentifier, isIdentifierDecl, isIdentifierDuplicated, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { getExternalLinkageIdentifiers, getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { getFileLocation } from "../../utils/JoinpointUtils.js";
 
 /**
  * Rule 5.8: Identifiers that defi ne objects or functions with external linkage shall be unique
  */
 export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
+    private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
+
     constructor(context: MISRAContext) {
         super( context);
     }
@@ -24,16 +28,15 @@ export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!isIdentifierDecl($jp)) {
-            return false;
-        }
+        if (!($jp instanceof Program)) return false;
         
-        const jpName = getIdentifierName($jp);
-        const externalLinkageIdentifiers = getExternalLinkageIdentifiers();
-        const nonCompliant = isIdentifierDuplicated($jp, externalLinkageIdentifiers);
+        this.invalidIdentifiers = getIdentifierDecls().filter((identifierJp) => this.hasExternalLinkageConflict(identifierJp));
+        const nonCompliant = this.invalidIdentifiers.length > 0;
 
-        if (nonCompliant && logErrors) {
-            this.logMISRAError($jp, `Identifier '${jpName}' is already defined with external linkage in this or other file.`);
+        if (nonCompliant && logErrors) { 
+            this.invalidIdentifiers.forEach(identifierJp => {
+                this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' is already defined with external linkage in this or other file.`);
+            })
         }
         return nonCompliant;
     }
@@ -44,18 +47,28 @@ export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
      * @returns Report detailing the transformation result
      */
     apply($jp: Joinpoint): MISRATransformationReport {
-        const previousResult = isIdentifierDecl($jp) ? this.context.getRuleResult(this.ruleID, $jp) : undefined;
-        if (previousResult === MISRATransformationType.NoChange || !this.match($jp)) {
+        if (!this.match($jp)) {
             return new MISRATransformationReport(MISRATransformationType.NoChange);   
         }
 
-        const newName = this.context.generateIdentifierName($jp)!;
-        if (renameIdentifier($jp, newName)) {
-            return new MISRATransformationReport(MISRATransformationType.DescendantChange);
-        } else {
-            this.logMISRAError($jp, `Identifier '${getIdentifierName($jp)}' is already defined with external linkage in this or other file.`);
-            this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
+        for (const identifierJp of this.invalidIdentifiers) {
+            const newName = this.context.generateIdentifierName(identifierJp)!;
+            renameIdentifier(identifierJp, newName);
         }
+        rebuildProgram();
+        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
+    }
+
+    private hasExternalLinkageConflict($jp: Joinpoint): boolean {
+        if (!isIdentifierDecl($jp)) {
+            return false;
+        } 
+
+        const externalLinkageIdentifiers = getExternalLinkageIdentifiers();
+        if (isExternalLinkageIdentifier($jp)) {
+            return externalLinkageIdentifiers
+                .some((identifier) => getFileLocation(identifier).localeCompare(getFileLocation($jp)) < 0 && areIdentifierNamesEqual(identifier, $jp));
+        } 
+        return isIdentifierDuplicated($jp, externalLinkageIdentifiers);
     }
 }

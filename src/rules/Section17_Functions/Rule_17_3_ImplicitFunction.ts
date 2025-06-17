@@ -6,6 +6,7 @@ import { findFunctionDef } from "../../utils/FunctionUtils.js";
 import { getCallIndex, isCallToImplicitFunction } from "../../utils/CallUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { addExternFunctionDecl, getFilesWithCallToImplicitFunction, getIncludesOfFile, isValidFileWithExplicitCall, removeIncludeFromFile } from "../../utils/FileUtils.js";
+import { rebuildProgram } from "../../utils/ProgramUtils.js";
 
 /**
  * MISRA Rule 17.3: A function shall not be declared implicitly
@@ -55,8 +56,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        const programJp = $jp as Program;
-        const filesWithImplicitCall = getFilesWithCallToImplicitFunction(programJp);
+        const filesWithImplicitCall = getFilesWithCallToImplicitFunction($jp as Program);
         let changedDescendant = false;
 
         for (const fileJp of filesWithImplicitCall) {
@@ -66,7 +66,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         }
 
         if (changedDescendant) {
-            programJp.rebuild();
+            rebuildProgram();
             return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
         } else {
             return new MISRATransformationReport(MISRATransformationType.NoChange);

@@ -2,6 +2,7 @@ import { EnumDecl, FunctionJp, Joinpoint, LabelStmt, RecordJp, TypedefDecl, Vard
 import { MISRAError, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
 import * as fs from 'fs';
 import Context from "./ast-visitor/Context.js";
+import { getFileLocation } from "./utils/JoinpointUtils.js";
 
 /**
  * Tracks MISRA errors and warnings during the analysis and/or transformation of the code.
@@ -93,7 +94,7 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     }
 
     private printError(error: MISRAError): void {
-        console.log(`- [Rule ${error.ruleID}] at ${error.$jp.filepath}@${error.$jp.line}:${error.$jp.column}: ${error.message}\n`);
+        console.log(`- [Rule ${error.ruleID}] at ${getFileLocation(error.$jp)}: ${error.message}\n`);
     }
     
     printAllErrors(): void {
