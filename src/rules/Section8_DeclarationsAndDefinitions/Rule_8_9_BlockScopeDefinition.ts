@@ -1,10 +1,10 @@
-import {DeclStmt, Joinpoint, Vardecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
+import {DeclStmt, Joinpoint, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { hasInternalLinkage } from "../../utils/IdentifierUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { findReferencingFunctions } from "../../utils/VarUtils.js";
+import { isInternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
 
 /**
  * Rule 8.9: An object should be defined at block scope if its identifier only appears in a single function
@@ -31,7 +31,7 @@ export default class Rule_8_9_BlockScopeDefinition extends MISRARule {
         }
 
         const varDecls = Query.searchFrom($jp, Vardecl).get();
-        if (!(varDecls.length === 1 && hasInternalLinkage(varDecls[0]))) {
+        if (!(varDecls.length === 1 && isInternalLinkageIdentifier(varDecls[0]))) {
             return false;
         }
         const varDecl = varDecls[0];

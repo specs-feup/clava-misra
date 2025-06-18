@@ -1,8 +1,6 @@
-import { Vardecl, FunctionJp, StorageClass, Program, Joinpoint, TypedefDecl, RecordJp, EnumDecl, LabelStmt, NamedDecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { Vardecl, FunctionJp, Program, LabelStmt, NamedDecl } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { hasExternalLinkage, hasInternalLinkage, isIdentifierDecl } from "./IdentifierUtils.js";
-import JoinPoints from "@specs-feup/lara/api/weaver/JoinPoints.js";
-import { getFileLocation } from "./JoinpointUtils.js";
+import { isExternalLinkageIdentifier, isIdentifierDecl, isInternalLinkageIdentifier } from "./IdentifierUtils.js";
 
 
 let cachedInternalLinkageIdentifiers: (FunctionJp | Vardecl)[] | null = null;
@@ -30,8 +28,8 @@ export function getExternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
         return cachedExternalLinkageIdentifiers;
     }
 
-    const externalLinkageVarDecls = Query.search(Vardecl, (varDeclJp) => hasExternalLinkage(varDeclJp)).get();
-    const externalLinkageFunctions = Query.search(FunctionJp, (varDeclJp) => hasExternalLinkage(varDeclJp)).get();
+    const externalLinkageVarDecls = Query.search(Vardecl, (varDeclJp) => isExternalLinkageIdentifier(varDeclJp)).get();
+    const externalLinkageFunctions = Query.search(FunctionJp, (varDeclJp) => isExternalLinkageIdentifier(varDeclJp)).get();
 
     cachedExternalLinkageIdentifiers = [
         ...externalLinkageFunctions, 
@@ -45,8 +43,8 @@ export function getInternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
         return cachedInternalLinkageIdentifiers;
     }
 
-    const internalLinkageVarsDecls = Query.search(Vardecl, (decl) => hasInternalLinkage(decl)).get();
-    const internalLinkageFunctions =  Query.search(FunctionJp, (decl) => hasInternalLinkage(decl)).get();
+    const internalLinkageVarsDecls = Query.search(Vardecl, (decl) => isInternalLinkageIdentifier(decl)).get();
+    const internalLinkageFunctions =  Query.search(FunctionJp, (decl) => isInternalLinkageIdentifier(decl)).get();
     cachedInternalLinkageIdentifiers = [
         ...internalLinkageFunctions, 
         ...internalLinkageVarsDecls

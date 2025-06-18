@@ -1,5 +1,6 @@
 import { FunctionJp, Joinpoint, QualType, StorageClass, Vardecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { isExternalLinkageIdentifier, isSameVarDecl } from "./IdentifierUtils.js";
 
 /**
  * Retrieves all variable references qualified as "volatile" starting from the given joinpoint
@@ -35,4 +36,8 @@ export function findReferencingFunctions($jp: Vardecl): FunctionJp[] {
         .filter(funcJp => 
             Query.searchFrom(funcJp, Varref, {decl: (declJp) => declJp?.astId === $jp.astId}).get().length > 0
         );
+}
+
+export function findDuplicateVarDefinition($jp: Vardecl): Vardecl[] {
+    return Query.search(Vardecl, (varDeclJp) => varDeclJp.ast !== $jp.ast && isSameVarDecl(varDeclJp, $jp)).get();   
 }

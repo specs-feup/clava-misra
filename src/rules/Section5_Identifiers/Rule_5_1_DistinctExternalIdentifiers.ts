@@ -2,7 +2,7 @@ import {FunctionJp, Joinpoint, Program, Vardecl } from "@specs-feup/clava/api/Jo
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { areDistinctIdentifiers, getIdentifierName, isExternalLinkageIdentifier, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { areDistinctIdentifiers, getIdentifierName, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import { getExternalLinkageIdentifiers, rebuildProgram } from "../../utils/ProgramUtils.js";
 import { getFileLocation } from "../../utils/JoinpointUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";

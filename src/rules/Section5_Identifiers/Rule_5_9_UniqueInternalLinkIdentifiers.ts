@@ -3,9 +3,8 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getIdentifierDecls, getInternalLinkageIdentifiers, rebuildProgram } from "../../utils/ProgramUtils.js";
-import { areIdentifierNamesEqual, getIdentifierName, isExternalLinkageIdentifier, isIdentifierDecl, isIdentifierDuplicated, isInternalLinkageIdentifier, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore, isInternalLinkageIdentifier, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { getFileLocation } from "../../utils/JoinpointUtils.js";
 
 /**
  * Rule 5.9: Identifiers that define objects or functions with internal linkage should be unique
@@ -30,9 +29,14 @@ export default class Rule_5_9_UniqueInternalLinkIdentifiers extends MISRARule {
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
         if (!($jp instanceof Program)) return false;
 
-        this.invalidIdentifiers = getIdentifierDecls().filter((identifierJp) => this.hasInternalLinkageConflict(identifierJp));
-        const nonCompliant = this.invalidIdentifiers.length > 0;
+        const internalLinkageIdentifiers = getInternalLinkageIdentifiers();
+        this.invalidIdentifiers = getIdentifierDecls().filter((identifierJp) => 
+            isInternalLinkageIdentifier(identifierJp) ? 
+                isIdentifierNameDeclaredBefore(identifierJp, internalLinkageIdentifiers) :
+                isIdentifierDuplicated(identifierJp, internalLinkageIdentifiers)
+        );
         
+        const nonCompliant = this.invalidIdentifiers.length > 0;
         if (nonCompliant && logErrors) {
             this.invalidIdentifiers.forEach(identifierJp => {
                 this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' is already defined with internal linkage in this or other file.`);
@@ -57,18 +61,5 @@ export default class Rule_5_9_UniqueInternalLinkIdentifiers extends MISRARule {
         }
         rebuildProgram();
         return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
-    }
-
-    private hasInternalLinkageConflict($jp: Joinpoint): boolean {
-        if (!isIdentifierDecl($jp)) {
-            return false;
-        } 
-
-        const internalLinkageIdentifiers = getInternalLinkageIdentifiers();
-        if (isInternalLinkageIdentifier($jp)) {
-            return internalLinkageIdentifiers
-                .some((identifier) => getFileLocation(identifier).localeCompare(getFileLocation($jp)) < 0 && areIdentifierNamesEqual(identifier, $jp));
-        } 
-        return isIdentifierDuplicated($jp, internalLinkageIdentifiers);
     }
 }

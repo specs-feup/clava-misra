@@ -2,7 +2,7 @@ import { Joinpoint, Program, TypedefDecl } from "@specs-feup/clava/api/Joinpoint
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getIdentifierName, isIdentifierDecl, isIdentifierDuplicated, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { getIdentifierName, isIdentifierDuplicated, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
