@@ -6,11 +6,13 @@ import { areDistinctIdentifiers, getIdentifierName, renameIdentifier } from "../
 import { getExternalLinkageIdentifiers, rebuildProgram } from "../../utils/ProgramUtils.js";
 import { getFileLocation } from "../../utils/JoinpointUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { isSameVarDecl } from "../../utils/VarUtils.js";
 
 /**
  * Rule 5.1 External identifiers shall be distinct.
  */
 export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
+    priority = 2; 
     private invalidIdentifiers: (Vardecl | FunctionJp)[] = [];
 
     constructor(context: MISRAContext) {
@@ -35,12 +37,12 @@ export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
         this.invalidIdentifiers = 
             externalIdentifiers.filter(identifier1 =>
                 externalIdentifiers.some(identifier2 =>
+                    !isSameVarDecl(identifier1, identifier2) &&
                     !areDistinctIdentifiers(identifier1, identifier2) &&
                     getFileLocation(identifier2).localeCompare(getFileLocation(identifier1)) < 0
                 )
             );
         const nonCompliant = this.invalidIdentifiers.length > 0;
-
         if (nonCompliant && logErrors) {
             this.invalidIdentifiers.forEach(identifierJp => {
                 this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' is not distinct from other external identifier within the first 31 characters.`)

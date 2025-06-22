@@ -10,6 +10,7 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
  * Rule 5.8: Identifiers that defi ne objects or functions with external linkage shall be unique
  */
 export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
+    priority = 2;
     private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
 
     constructor(context: MISRAContext) {

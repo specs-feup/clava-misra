@@ -1,6 +1,6 @@
-import { Joinpoint, Vardecl, StorageClass, FunctionJp, TypedefDecl, LabelStmt, NamedDecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, Vardecl, StorageClass, FunctionJp, TypedefDecl, LabelStmt, NamedDecl } from "@specs-feup/clava/api/Joinpoints.js";
 import { getFileLocation, isTagDecl } from "./JoinpointUtils.js";
-import { findDuplicateVarDefinition, findExternalVarRefs } from "./VarUtils.js";
+import { findDuplicateVarDefinition, findExternalVarRefs, isSameVarDecl } from "./VarUtils.js";
 
 export function isIdentifierDecl($jp: Joinpoint): boolean {
     return  ($jp instanceof Vardecl && $jp.storageClass !== StorageClass.EXTERN) || 
@@ -73,11 +73,11 @@ export function isInternalLinkageIdentifier($jp: Joinpoint): boolean {
 }
 
 export function isIdentifierDuplicated($jp: Joinpoint, $others: Joinpoint[]) {
-    return $others.some((identifier) => !isSameVarDecl($jp, identifier) && areIdentifierNamesEqual($jp, identifier));
+    return $others.some((identifier) => identifier.astId !== $jp.astId && !isSameVarDecl($jp, identifier) && areIdentifierNamesEqual($jp, identifier));
 }
 
 export function isIdentifierNameDeclaredBefore($jp: Joinpoint, $others: Joinpoint[]) {
-    return $others.some((identifier) => !isSameVarDecl($jp, identifier) && getFileLocation(identifier).localeCompare(getFileLocation($jp)) < 0 && areIdentifierNamesEqual(identifier, $jp));
+    return $others.some((identifier) => identifier.astId !== $jp.astId && !isSameVarDecl($jp, identifier) && getFileLocation(identifier).localeCompare(getFileLocation($jp)) < 0 && areIdentifierNamesEqual(identifier, $jp));
 }
 
 /**
@@ -85,15 +85,8 @@ export function isIdentifierNameDeclaredBefore($jp: Joinpoint, $others: Joinpoin
  */
 export function areDistinctIdentifiers($jp1: Vardecl | FunctionJp, $jp2: Vardecl | FunctionJp): boolean {
     try {
-        return !isSameVarDecl($jp1, $jp2) && $jp1.ast !== $jp2.ast && $jp1.name.substring(0, 31) !== $jp2.name.substring(0, 31);
+        return $jp1.astId !== $jp2.ast && $jp1.name.substring(0, 31) !== $jp2.name.substring(0, 31);
     } catch (error) {
         return false;
     }
-}
-
-export function isSameVarDecl($jp1: Joinpoint, $jp2: Joinpoint): boolean {
-    return $jp1 instanceof Vardecl && $jp2 instanceof Vardecl &&
-            isExternalLinkageIdentifier($jp1) && isExternalLinkageIdentifier($jp2) &&
-            getIdentifierName($jp1) === getIdentifierName($jp2) &&
-		    $jp1.type.code === $jp2.type.code
 }

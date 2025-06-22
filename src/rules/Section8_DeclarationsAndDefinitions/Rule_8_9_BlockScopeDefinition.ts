@@ -5,6 +5,7 @@ import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { findReferencingFunctions } from "../../utils/VarUtils.js";
 import { isInternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
+import { resetCaches } from "../../utils/ProgramUtils.js";
 
 /**
  * Rule 8.9: An object should be defined at block scope if its identifier only appears in a single function
@@ -59,6 +60,8 @@ export default class Rule_8_9_BlockScopeDefinition extends MISRARule {
             const functionJp = findReferencingFunctions(varDecl)[0];
             $jp.detach();
             functionJp.body.firstChild.insertBefore($jp);
+            resetCaches();
+            
             return new MISRATransformationReport(MISRATransformationType.Removal);
         } catch(error) {
             return new MISRATransformationReport(MISRATransformationType.NoChange);

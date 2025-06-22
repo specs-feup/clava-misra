@@ -14,6 +14,7 @@ import { getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js"
  * Exception: The tag name may be the same as the typedef name with which it is  associated.
  */
 export default class Rule_5_7_UniqueTagNames extends MISRARule {
+    priority = 2;
     private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
 
     constructor(context: MISRAContext) {

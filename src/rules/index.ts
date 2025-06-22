@@ -22,6 +22,7 @@ import Rule_5_6_UniqueTypedefNames from "./Section5_Identifiers/Rule_5_6_UniqueT
 import Rule_5_7_UniqueTagNames from "./Section5_Identifiers/Rule_5_7_UniqueTagNames.js";
 import Rule_5_8_UniqueExternalLinkIdentifiers from "./Section5_Identifiers/Rule_5_8_UniqueExternalLinkIdentifiers.js";
 import Rule_5_9_UniqueInternalLinkIdentifiers from "./Section5_Identifiers/Rule_5_9_UniqueInternalLinkIdentifiers.js";
+import Rule_8_6_SingleExternalDefinition from "./Section8_DeclarationsAndDefinitions/Rule_8_6_SingleExternalDefinition.js";
 import Rule_8_7_RestrictExternalLinkage from "./Section8_DeclarationsAndDefinitions/Rule_8_7_RestrictExternalLinkage.js";
 import Rule_8_9_BlockScopeDefinition from "./Section8_DeclarationsAndDefinitions/Rule_8_9_BlockScopeDefinition.js";
 
@@ -37,6 +38,7 @@ export function sortRules(context: MISRAContext) {
         new Rule_5_1_UniqueExternalIdentifiers(context),
         new Rule_5_8_UniqueExternalLinkIdentifiers(context),
         new Rule_5_9_UniqueInternalLinkIdentifiers(context),
+        new Rule_8_6_SingleExternalDefinition(context),
         new Rule_8_7_RestrictExternalLinkage(context),
         new Rule_8_9_BlockScopeDefinition(context),
         new Rule_13_6_SafeSizeOfOperand(context),

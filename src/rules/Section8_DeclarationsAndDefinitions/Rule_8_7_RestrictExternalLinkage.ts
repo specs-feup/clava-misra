@@ -3,9 +3,10 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getIdentifierName, isExternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
-import { findExternalVarRefs } from "../../utils/VarUtils.js";
+import { findExternalVarRefs, hasMultipleExternalLinkDeclarations } from "../../utils/VarUtils.js";
 import { findExternalFunctionDecl } from "../../utils/FunctionUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { resetCaches } from "../../utils/ProgramUtils.js";
 
 /**
  * Rule 8.7: Functions and objects should not be defined with external linkage if they are referenced in only one translation unit
@@ -49,13 +50,16 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
         if (!this.match($jp)) {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         } 
-        
-        if ($jp instanceof Vardecl) {
-            $jp.setStorageClass(StorageClass.STATIC);
-            return new MISRATransformationReport(MISRATransformationType.DescendantChange);
-        } else if ($jp instanceof FunctionJp && $jp.setStorageClass(StorageClass.STATIC)) {
-            return new MISRATransformationReport(MISRATransformationType.DescendantChange);
+
+        if ($jp instanceof Vardecl && hasMultipleExternalLinkDeclarations($jp)) {
+            this.logMISRAError(
+                $jp, 
+                `${$jp instanceof FunctionJp ? "Function" : "Object"} '${getIdentifierName($jp)}' has external linkage but is only referenced within a single translation unit. Couldn't give it internal linkage as it is defined in multiple files.`)
+            return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
-        return new MISRATransformationReport(MISRATransformationType.NoChange);
+        
+        ($jp as Vardecl | FunctionJp).setStorageClass(StorageClass.STATIC);
+        resetCaches();
+        return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }
 }

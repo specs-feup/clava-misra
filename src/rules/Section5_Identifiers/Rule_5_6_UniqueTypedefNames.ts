@@ -14,6 +14,7 @@ import { getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js"
  * Exception: The typedef name may be the same as the structure, union  or enumeration tag name associated with the typedef.
  */
 export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
+    priority = 2; 
     private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
 
     constructor(context: MISRAContext) {
