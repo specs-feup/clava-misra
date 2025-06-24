@@ -51,10 +51,7 @@ export function isSameVarDecl($jp1: Joinpoint, $jp2: Joinpoint): boolean {
 }
 
 export function hasMultipleExternalLinkDeclarations($jp: Vardecl): boolean {
-    for (const identifier of getExternalLinkageIdentifiers()) {
-        if (isSameVarDecl(identifier, $jp) && identifier.getAncestor("file").ast !== $jp.getAncestor("file").ast) {
-            return true;
-        }
-    }
-    return false;
+    return getExternalLinkageIdentifiers().some(identifier => 
+        isSameVarDecl(identifier, $jp) && identifier.getAncestor("file").ast !== $jp.getAncestor("file").ast
+    );
 }

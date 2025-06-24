@@ -1,25 +1,17 @@
 import { Joinpoint, Program, TypedefDecl } from "@specs-feup/clava/api/Joinpoints.js";
-import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore } from "../../utils/IdentifierUtils.js";
 import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
-import { getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js";
+import { getIdentifierDecls } from "../../utils/ProgramUtils.js";
+import IdentifierRenameRule from "./IdentifierRenameRule.js";
 
 /**
  * Rule 5.6: A typedef name shall be a unique identifier.
  * 
  * Exception: The typedef name may be the same as the structure, union  or enumeration tag name associated with the typedef.
  */
-export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
-    priority = 2; 
-    private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
-
-    constructor(context: MISRAContext) {
-        super( context);
-    }
+export default class Rule_5_6_UniqueTypedefNames extends IdentifierRenameRule {
 
     override get name(): string {
         return "5.6";
@@ -58,23 +50,5 @@ export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
             })
         }
         return nonCompliant;
-    }
-
-    /**
-     * 
-     * @param $jp - Joinpoint to transform
-     * @returns Report detailing the transformation result
-     */
-    apply($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) {
-            return new MISRATransformationReport(MISRATransformationType.NoChange);   
-        }
-
-        for (const identifierJp of this.invalidIdentifiers) {
-            const newName = this.context.generateIdentifierName(identifierJp)!;
-            renameIdentifier(identifierJp, newName);
-        }
-        rebuildProgram();
-        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }

@@ -1,23 +1,14 @@
-import {FunctionJp, Joinpoint, Program, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
-import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { areDistinctIdentifiers, getIdentifierName, renameIdentifier } from "../../utils/IdentifierUtils.js";
-import { getExternalLinkageIdentifiers, rebuildProgram } from "../../utils/ProgramUtils.js";
-import { compareLocation, getFileLocation } from "../../utils/JoinpointUtils.js";
-import Query from "@specs-feup/lara/api/weaver/Query.js";
+import {Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { areDistinctIdentifiers, getIdentifierName } from "../../utils/IdentifierUtils.js";
+import { getExternalLinkageIdentifiers } from "../../utils/ProgramUtils.js";
+import { compareLocation } from "../../utils/JoinpointUtils.js";
 import { isSameVarDecl } from "../../utils/VarUtils.js";
+import IdentifierRenameRule from "./IdentifierRenameRule.js";
 
 /**
  * Rule 5.1 External identifiers shall be distinct.
  */
-export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
-    priority = 2; 
-    private invalidIdentifiers: (Vardecl | FunctionJp)[] = [];
-
-    constructor(context: MISRAContext) {
-        super( context);
-    }
+export default class Rule_5_1_DistinctExternalIdentifiers extends IdentifierRenameRule {
 
     override get name(): string {
         return "5.1";
@@ -49,25 +40,5 @@ export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
             });
         }
         return nonCompliant;
-    }
-
-    /**
-     * Changes the name of an external identifier that is not distinct from others.
-     * External references are also updated to use the new name.
-     * 
-     * @param $jp - Joinpoint to transform
-     * @returns Report detailing the transformation result
-     */
-    apply($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) {
-            return new MISRATransformationReport(MISRATransformationType.NoChange);   
-        }
-
-        for (const identifierJp of this.invalidIdentifiers) {
-            const newName = this.context.generateIdentifierName(identifierJp)!;
-            renameIdentifier(identifierJp, newName);
-        }
-        rebuildProgram();
-        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }

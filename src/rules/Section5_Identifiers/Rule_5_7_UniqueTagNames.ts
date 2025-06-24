@@ -7,19 +7,14 @@ import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
 import { getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js";
+import IdentifierRenameRule from "./IdentifierRenameRule.js";
 
 /**
- * Rule 5.6: A tag name shall be a unique identifier.
+ * Rule 5.7: A tag name shall be a unique identifier.
  * 
  * Exception: The tag name may be the same as the typedef name with which it is  associated.
  */
-export default class Rule_5_7_UniqueTagNames extends MISRARule {
-    priority = 2;
-    private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
-
-    constructor(context: MISRAContext) {
-        super( context);
-    }
+export default class Rule_5_7_UniqueTagNames extends IdentifierRenameRule {
 
     override get name(): string {
         return "5.7";
@@ -57,24 +52,5 @@ export default class Rule_5_7_UniqueTagNames extends MISRARule {
             })
         }
         return nonCompliant;
-    }
-
-    /**
-     * Renames the provided joinpoint if it represents an identifier that conflits with a tag name (i.e., enum, union or struct)
-     * 
-     * @param $jp - Joinpoint to transform
-     * @returns Report detailing the transformation result
-     */
-    apply($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) {
-            return new MISRATransformationReport(MISRATransformationType.NoChange);   
-        }
-
-        for (const identifierJp of this.invalidIdentifiers) {
-            const newName = this.context.generateIdentifierName(identifierJp)!;
-            renameIdentifier(identifierJp, newName);
-        }
-        rebuildProgram();
-        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }

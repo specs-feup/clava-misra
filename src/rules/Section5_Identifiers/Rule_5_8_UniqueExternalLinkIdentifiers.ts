@@ -5,17 +5,12 @@ import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.
 import { getIdentifierName, isExternalLinkageIdentifier, isIdentifierDuplicated, isIdentifierNameDeclaredBefore, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import { getExternalLinkageIdentifiers, getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
+import IdentifierRenameRule from "./IdentifierRenameRule.js";
 
 /**
- * Rule 5.8: Identifiers that defi ne objects or functions with external linkage shall be unique
+ * Rule 5.8: Identifiers that define objects or functions with external linkage shall be unique
  */
-export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
-    priority = 2;
-    private invalidIdentifiers: any[] = []; // TODO: use IdentifierJp
-
-    constructor(context: MISRAContext) {
-        super( context);
-    }
+export default class Rule_5_8_UniqueExternalLinkIdentifiers extends IdentifierRenameRule {
 
     override get name(): string {
         return "5.8";
@@ -44,23 +39,5 @@ export default class Rule_5_8_UniqueExternalLinkIdentifiers extends MISRARule {
             })
         }
         return nonCompliant;
-    }
-
-    /**
-     * 
-     * @param $jp - Joinpoint to transform
-     * @returns Report detailing the transformation result
-     */
-    apply($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) {
-            return new MISRATransformationReport(MISRATransformationType.NoChange);   
-        }
-
-        for (const identifierJp of this.invalidIdentifiers) {
-            const newName = this.context.generateIdentifierName(identifierJp)!;
-            renameIdentifier(identifierJp, newName);
-        }
-        rebuildProgram();
-        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }
