@@ -66,6 +66,10 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
         const uniqueDecls = this.invalidDecls.reduce((acc: Vardecl[], decl1) => acc.some(decl2 => isSameVarDecl(decl1, decl2)) ? acc : [...acc, decl1], []);
 
         for (const decl of uniqueDecls) {
+            if (this.context.getRuleResult(this.ruleID, decl) === MISRATransformationType.NoChange) {
+                continue;
+            }
+
             const filesWithInitialization = Query.search(FileJp, (fileJp) => {
               return fileJp.descendants.some((jp) => 
                 isSameVarDecl(jp, decl) && (jp as Vardecl).init !== undefined
@@ -73,8 +77,12 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
             }).get();
 
             if (filesWithInitialization.length > 1) {
+                
                 const other = this.invalidDecls.filter(identifier => isSameVarDecl(identifier, decl));
-                other.forEach(varDecl => this.logMISRAError(varDecl, `Identifier '${getIdentifierName(varDecl)}' with external linkage is defined in multiple files`));
+                for (const varDecl of other) {
+                    this.logMISRAError(varDecl, `Identifier '${getIdentifierName(varDecl)}' with external linkage is defined in multiple files`);
+                    this.context.addRuleResult(this.ruleID, varDecl, MISRATransformationType.NoChange);
+                }
             } 
             else if (filesWithInitialization.length === 0) {
                 const other = this.invalidDecls.filter(identifier => isSameVarDecl(decl, identifier));

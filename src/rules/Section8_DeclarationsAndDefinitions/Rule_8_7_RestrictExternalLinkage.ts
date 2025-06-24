@@ -47,7 +47,8 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
      * @returns Report detailing the transformation result
      */
     apply($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) {
+        const previousResult =  this.context.getRuleResult(this.ruleID, $jp);
+        if (previousResult === MISRATransformationType.NoChange || !this.match($jp)) {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         } 
 
@@ -55,6 +56,7 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
             this.logMISRAError(
                 $jp, 
                 `${$jp instanceof FunctionJp ? "Function" : "Object"} '${getIdentifierName($jp)}' has external linkage but is only referenced within a single translation unit. Couldn't give it internal linkage as it is defined in multiple files.`)
+            this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
         
