@@ -5,6 +5,7 @@ import sortRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRATransformationType } from "./MISRA.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
+import { resetCaches } from "./utils/ProgramUtils.js";
 
 export default class MISRATool {
     static #misraRules: MISRARule[];
@@ -13,6 +14,7 @@ export default class MISRATool {
     private static init() {
         this.validateStdVersion();
         this.#context = new MISRAContext();
+        resetCaches();
         this.#misraRules = sortRules(this.#context);
     }
 

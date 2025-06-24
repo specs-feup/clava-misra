@@ -4,7 +4,7 @@ import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getIdentifierName } from "../../utils/IdentifierUtils.js";
 import { getExternalLinkageIdentifiers, resetCaches } from "../../utils/ProgramUtils.js";
-import { getFileLocation } from "../../utils/JoinpointUtils.js";
+import { compareLocation } from "../../utils/JoinpointUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isSameVarDecl } from "../../utils/VarUtils.js";
 
@@ -39,7 +39,7 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
           externalLinkageVars.some((decl2) =>
                 isSameVarDecl(decl1, decl2) &&
                 decl1.getAncestor("file").ast !== decl2.getAncestor("file").ast &&
-                getFileLocation(decl2).localeCompare(getFileLocation(decl1)) < 0
+                compareLocation(decl2, decl1) < 0
             )
         );
 

@@ -1,5 +1,5 @@
 import { Joinpoint, Vardecl, StorageClass, FunctionJp, TypedefDecl, LabelStmt, NamedDecl } from "@specs-feup/clava/api/Joinpoints.js";
-import { getFileLocation, isTagDecl } from "./JoinpointUtils.js";
+import { compareLocation, getFileLocation, isTagDecl } from "./JoinpointUtils.js";
 import { findDuplicateVarDefinition, findExternalVarRefs, isSameVarDecl } from "./VarUtils.js";
 
 export function isIdentifierDecl($jp: Joinpoint): boolean {
@@ -77,7 +77,9 @@ export function isIdentifierDuplicated($jp: Joinpoint, $others: Joinpoint[]) {
 }
 
 export function isIdentifierNameDeclaredBefore($jp: Joinpoint, $others: Joinpoint[]) {
-    return $others.some((identifier) => identifier.astId !== $jp.astId && !isSameVarDecl($jp, identifier) && getFileLocation(identifier).localeCompare(getFileLocation($jp)) < 0 && areIdentifierNamesEqual(identifier, $jp));
+    return $others.some((identifier) =>  {
+        return identifier.astId !== $jp.astId && !isSameVarDecl($jp, identifier) && compareLocation(identifier, $jp) < 0 && areIdentifierNamesEqual(identifier, $jp)
+    });
 }
 
 /**

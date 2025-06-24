@@ -15,7 +15,8 @@ export default class Rule_3_2_LineSplicing extends MISRARule {
 
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
         const invalidComments = getComments($jp).filter(comment => 
-            (isInlineComment(comment) && /\/\n/g.test(comment.text)));
+            (isInlineComment(comment) && /\/\n/g.test(comment.text))
+        );
 
         if (logErrors) {
             invalidComments.forEach(comment =>

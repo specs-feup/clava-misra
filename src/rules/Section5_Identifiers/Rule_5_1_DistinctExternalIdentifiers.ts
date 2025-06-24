@@ -4,7 +4,7 @@ import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { areDistinctIdentifiers, getIdentifierName, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import { getExternalLinkageIdentifiers, rebuildProgram } from "../../utils/ProgramUtils.js";
-import { getFileLocation } from "../../utils/JoinpointUtils.js";
+import { compareLocation, getFileLocation } from "../../utils/JoinpointUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isSameVarDecl } from "../../utils/VarUtils.js";
 
@@ -39,7 +39,7 @@ export default class Rule_5_1_DistinctExternalIdentifiers extends MISRARule {
                 externalIdentifiers.some(identifier2 =>
                     !isSameVarDecl(identifier1, identifier2) &&
                     !areDistinctIdentifiers(identifier1, identifier2) &&
-                    getFileLocation(identifier2).localeCompare(getFileLocation(identifier1)) < 0
+                    compareLocation(identifier2, identifier1) < 0
                 )
             );
         const nonCompliant = this.invalidIdentifiers.length > 0;

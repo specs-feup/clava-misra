@@ -36,6 +36,8 @@ export function sortRules(context: MISRAContext) {
         new Rule_3_1_CommentSequences(context),
         new Rule_3_2_CommentSequences(context),
         new Rule_5_1_UniqueExternalIdentifiers(context),
+        new Rule_5_6_UniqueTypedefNames(context),
+        new Rule_5_7_UniqueTagNames(context),
         new Rule_5_8_UniqueExternalLinkIdentifiers(context),
         new Rule_5_9_UniqueInternalLinkIdentifiers(context),
         new Rule_8_6_SingleExternalDefinition(context),

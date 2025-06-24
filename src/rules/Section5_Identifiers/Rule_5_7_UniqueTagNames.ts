@@ -2,7 +2,7 @@ import { Joinpoint, Program, TypedefDecl } from "@specs-feup/clava/api/Joinpoint
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getIdentifierName, isIdentifierDuplicated, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
@@ -25,7 +25,6 @@ export default class Rule_5_7_UniqueTagNames extends MISRARule {
         return "5.7";
     }
 
-
     /**
      * Checks whether the given joinpoint represents an identifier that has the same name as any tag (i.e., enum, union or struct)
      * 
@@ -39,12 +38,16 @@ export default class Rule_5_7_UniqueTagNames extends MISRARule {
         const tagDecls = Query.search(Joinpoint, (jp => {return isTagDecl(jp)})).get();
         this.invalidIdentifiers = getIdentifierDecls().filter((identifierJp) => 
         {
-            identifierJp instanceof TypedefDecl ?
-                tagDecls.filter((tag) =>
+            if (identifierJp instanceof TypedefDecl) {
+                return tagDecls.filter((tag) =>
                     getIdentifierName(identifierJp) === getIdentifierName(tag) &&
                     getTypeDefDecl(tag)?.ast !== identifierJp.ast
-                ).length > 0
-                : isIdentifierDuplicated(identifierJp, tagDecls);
+                ).length > 0;
+            }
+            else if (isTagDecl(identifierJp)) {
+                return isIdentifierNameDeclaredBefore(identifierJp, tagDecls);
+            }
+            return isIdentifierDuplicated(identifierJp, tagDecls);
         });
         const nonCompliant = this.invalidIdentifiers.length > 0;
 

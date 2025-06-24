@@ -1,9 +1,10 @@
-import { Joinpoint, RecordJp, EnumDecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, RecordJp, EnumDecl, DeclStmt, Decl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { hasTypeDefDecl, isTypeDeclUsed } from "../../utils/TypeDeclUtils.js";
-import { isTagDecl } from "../../utils/JoinpointUtils.js";
+import { isTagDecl, TagDecl } from "../../utils/JoinpointUtils.js";
+import { getIdentifierName } from "../../utils/IdentifierUtils.js";
 
 /**
  * MISRA-C Rule 2.4: A project should not contain unused tag declarations.
@@ -27,18 +28,25 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!isTagDecl($jp)) return false;
-
-        const containsTypeDecl = hasTypeDefDecl($jp);
-        const jpName = $jp.name;
-        if (containsTypeDecl && jpName === undefined || jpName === null || (jpName as string).trim().length === 0) {
+        if (!(isTagDecl($jp) || ($jp instanceof DeclStmt && $jp.decls.length === 1))) {
+            return false;
+        } 
+        
+        if ($jp instanceof DeclStmt && !isTagDecl($jp.decls[0])) {
             return false;
         }
 
-        const isUnused = !isTypeDeclUsed($jp);
+        const tagJp: TagDecl = $jp instanceof DeclStmt ? $jp.decls[0] as TagDecl : $jp;
+        const containsTypeDecl = hasTypeDefDecl(tagJp);
+        const jpName = tagJp.name;
+        if (containsTypeDecl && (jpName === undefined || jpName === null || (jpName as string).trim().length === 0)) {
+            return false;
+        }
+
+        const isUnused = !isTypeDeclUsed(tagJp);
         if (isUnused && logErrors) {
-            this.logMISRAError($jp, 
-                containsTypeDecl ? `The tag '${$jp.name}' is declared but only used in a typedef.` : `The tag '${$jp.name}' is declared but not used.`);
+            this.logMISRAError(tagJp, 
+                containsTypeDecl ? `The tag '${tagJp.name}' is declared but only used in a typedef.` : `The tag '${tagJp.name}' is declared but not used.`);
         }
         return isUnused;
     }
@@ -55,8 +63,9 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         
-        if (hasTypeDefDecl($jp)) {
-            ($jp as RecordJp | EnumDecl).setName('');
+        const tagJp: TagDecl = $jp instanceof DeclStmt ? $jp.decls[0] as TagDecl : $jp as TagDecl;
+        if (hasTypeDefDecl(tagJp)) {
+            (tagJp).setName('');
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         }
         $jp.detach();

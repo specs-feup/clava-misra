@@ -2,7 +2,7 @@ import { Joinpoint, Program, TypedefDecl } from "@specs-feup/clava/api/Joinpoint
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getIdentifierName, isIdentifierDuplicated, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore, renameIdentifier } from "../../utils/IdentifierUtils.js";
 import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
@@ -35,15 +35,21 @@ export default class Rule_5_6_UniqueTypedefNames extends MISRARule {
         if (!($jp instanceof Program)) return false;
         
         const typedefDecls = Query.search(TypedefDecl).get();
+
         this.invalidIdentifiers = getIdentifierDecls().filter((identifierJp) => 
         {
-            isTagDecl(identifierJp) ?
-                typedefDecls.filter((decl) =>
+            if (isTagDecl(identifierJp)) {
+                return typedefDecls.filter((decl) =>
                     getIdentifierName(identifierJp) === getIdentifierName(decl) &&
-                    getTypeDefDecl(identifierJp)?.ast !== decl.ast
+                    getTypeDefDecl(identifierJp)?.astId !== decl.astId
                 ).length > 0
-                : isIdentifierDuplicated(identifierJp, typedefDecls);
+            } 
+            else if (identifierJp instanceof TypedefDecl) {
+                return isIdentifierNameDeclaredBefore(identifierJp, typedefDecls);
+            } 
+            return isIdentifierDuplicated(identifierJp, typedefDecls);
         });
+
         const nonCompliant = this.invalidIdentifiers.length > 0;
 
         if (nonCompliant && logErrors) { 

@@ -33,3 +33,10 @@ export function getBaseType($jp: Joinpoint): Type | undefined {
 export function getFileLocation($jp: Joinpoint) {
     return `${$jp.filepath}@${$jp.line}:${$jp.column}`;
 }
+
+export function compareLocation($jp1: Joinpoint, $jp2: Joinpoint): number {
+    if ($jp1.filepath !== $jp2.filepath) {
+        return getFileLocation($jp1).localeCompare(getFileLocation($jp2));
+    }
+    return $jp1.line !== $jp2.line ? $jp1.line - $jp2.line : $jp1.column - $jp2.column;
+}
