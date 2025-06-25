@@ -1,6 +1,4 @@
-import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
-import { FileJp } from "@specs-feup/clava/api/Joinpoints.js"; 
 
 const programCode = `
     static void my_void_func() {

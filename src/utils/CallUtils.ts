@@ -1,4 +1,4 @@
-import { Call, FileJp, FunctionJp, StorageClass } from "@specs-feup/clava/api/Joinpoints.js";
+import { Call, FileJp } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { getIncludesOfFile } from "./FileUtils.js";
 import { findExternalFunctionDecl } from "./FunctionUtils.js";

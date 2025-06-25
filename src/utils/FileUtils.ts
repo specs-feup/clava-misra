@@ -1,5 +1,5 @@
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { FileJp, Program, Include, Call, FunctionJp, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import { FileJp, Program, Include, Call, FunctionJp, Joinpoint, StorageClass } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isCallToImplicitFunction } from "./CallUtils.js";
 import { isExternalLinkageIdentifier } from "./IdentifierUtils.js";
@@ -111,4 +111,8 @@ export function addExternFunctionDecl(fileJp: FileJp, functionJp: FunctionJp): J
     const externStmt = ClavaJoinPoints.stmtLiteral(externStr);
     const newExternStmt = childAfterExtern.insertBefore(externStmt);
     return newExternStmt;
+}
+
+export function getExternFunctionDecls(fileJp: FileJp) {
+    return Query.searchFrom(fileJp, FunctionJp, {storageClass: StorageClass.EXTERN}).get();
 }

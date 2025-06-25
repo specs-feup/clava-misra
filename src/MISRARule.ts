@@ -28,7 +28,7 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
         super(context);
     }
 
-    protected getFixFromConfig($jp: Joinpoint, errorMsgPrefix: string): string | undefined {
+    protected getFixFromConfig($jp: Joinpoint, errorMsgPrefix: string): any {
         return undefined;
     }
 

@@ -194,7 +194,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
 
     private solveWithExtern(fileJp: FileJp, callJp: Call, functionLocation: string, callIndex: number): boolean {
         const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
-        const functionDef = findFunctionDef(callJp, functionLocation);
+        const functionDef = findFunctionDef(callJp.name, functionLocation);
         let success = false;
 
         if (!functionDef) {
