@@ -9,6 +9,10 @@ import { findExternalFunctionDecl } from "./FunctionUtils.js";
  * @param callJp The call join point to analyze
  */
 export function isCallToImplicitFunction(callJp: Call): boolean {
+    if (callJp.function.isInSystemHeader) {
+        return false;
+    }
+
     if (callJp.function.definitionJp === undefined) {
         return !callJp.function.isInSystemHeader;
     } 

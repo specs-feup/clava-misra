@@ -11,7 +11,10 @@ import Rule_17_3_ImplicitFunction from "./Section17_Functions/Rule_17_3_Implicit
 import Rule_17_4_NonVoidReturn from "./Section17_Functions/Rule_17_4_NonVoidReturn.js";
 import Rule_17_6_StaticArraySizeParam from "./Section17_Functions/Rule_17_6_StaticArraySizeParam.js";
 import Rule_17_7_UnusedReturnValue from "./Section17_Functions/Rule_17_7_UnusedReturnValue.js";
+import Rule_21_10_NoTimeDateFunctions from "./Section21-StandardLibraries/Rule_21_10_NoTimeDateFunctions.js";
+import Rule_21_11_NoTgmathFunctions from "./Section21-StandardLibraries/Rule_21_11_NoTgmathFunctions.js";
 import Rule_21_3_NoDynamicMemory from "./Section21-StandardLibraries/Rule_21_3_NoDynamicMemory.js";
+import Rule_21_6_NoStdIOFunctions from "./Section21-StandardLibraries/Rule_21_6_NoStdIOFunctions.js";
 import Rule_21_7_NoNumericStringConversions from "./Section21-StandardLibraries/Rule_21_7_NoNumericStringConversions.js";
 import Rule_21_8_NoProcessControlFunctions from "./Section21-StandardLibraries/Rule_21_8_NoProcessControlFunctions.js";
 import Rule_21_9_NoGenericSearchOrSort from "./Section21-StandardLibraries/Rule_21_9_NoGenericSearchOrSort.js";
@@ -59,9 +62,12 @@ export function sortRules(context: MISRAContext) {
         new Rule_17_6_StaticArraySizeParam(context),
         new Rule_17_7_UnusedReturnValue(context),
         new Rule_21_3_NoDynamicMemory(context),
+        new Rule_21_6_NoStdIOFunctions(context),
         new Rule_21_7_NoNumericStringConversions(context),
         new Rule_21_8_NoProcessControlFunctions(context),
-        new Rule_21_9_NoGenericSearchOrSort(context)
+        new Rule_21_9_NoGenericSearchOrSort(context),
+        new Rule_21_10_NoTimeDateFunctions(context),
+        new Rule_21_11_NoTgmathFunctions(context)
     ];
 
     return rules.sort((ruleA, ruleB) => ruleA.priority - ruleB.priority);

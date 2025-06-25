@@ -3,7 +3,7 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { addExternFunctionDecl, getExternFunctionDecls, getIncludesOfFile, isValidFile } from "../../utils/FileUtils.js";
+import { addExternFunctionDecl, getCallsToLibrary, getExternFunctionDecls, getIncludesOfFile, isValidFile } from "../../utils/FileUtils.js";
 import { rebuildProgram } from "../../utils/ProgramUtils.js";
 import { findFunctionDef } from "../../utils/FunctionUtils.js";
 
@@ -41,7 +41,7 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
         let nonCompliant = false;
 
         for (const fileJp of this.invalidFiles) {
-            const invalidCalls = Query.searchFrom(fileJp, Call, (callJp) => {return this.invalidFunctions.includes(callJp.name) && callJp.function.isInSystemHeader}).get();
+            const invalidCalls = getCallsToLibrary(fileJp, this.standardLibrary, this.invalidFunctions);
             if (invalidCalls.length > 0) {
                 nonCompliant = true; 
                 if (logErrors) {
@@ -118,7 +118,7 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
     }
 
     private solveDisallowedFunctions(fileJp: FileJp): boolean {
-        const invalidCalls = Query.searchFrom(fileJp, Call, (callJp) => {return this.invalidFunctions.includes(callJp.name) && callJp.function.isInSystemHeader}).get();
+        const invalidCalls = getCallsToLibrary(fileJp, this.standardLibrary, this.invalidFunctions);
         let externFunctions = getExternFunctionDecls(fileJp).map(funcJp => funcJp.definitionJp.astId);
         let changedFile = false;
 

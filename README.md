@@ -37,8 +37,8 @@ After the transformation, any violations that could not be fixed will be display
 
 You can provide an **optional** JSON config file to assist in correcting specific rules, such as implicit function calls, disallowed functions, and missing return statements. For instance, you can:
 -  Define default values for certain types to address functions with missing return statements.
-- Provide custom implementations for disallowed functions.
 - Specify the path or library for implicit function calls.
+- Provide custom implementations for disallowed functions.
 
 The config file should follow this structure:
 ```json
@@ -53,10 +53,22 @@ The config file should follow this structure:
   "implicitCalls": {
     "printf": "stdio.h",
     "foo": "CxxSources/utils/functions.c"
+  },
+  "disallowedFunctions": {
+    "stdlib.h": {
+      "malloc": {
+        "replacement": "custom_malloc",
+        "location": "utils/custom_stdlib.c"
+      },
+      "exit": {
+        "replacement": "custom_exit",
+        "location": "utils/custom_stdlib.c"
+      }
+    }
   }
 }
 ```
-**Note:** Not all fields are required and if the config file is not provided or lacks the necessary information to fix a violation, the violation will remain and be displayed as unresolved. 
+**Note:** Not all fields (`defaultValues`, `implicitCalls`, `disallowedFunctions`) are required and if the config file is not provided or lacks the necessary information to fix a violation, the violation will remain and be displayed as unresolved. 
 
 
 ## Execution

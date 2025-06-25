@@ -19,6 +19,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Files generated during tests
+__clava_woven_for_file_rebuild/
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
