@@ -6,6 +6,7 @@ import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
 export default class Rule_21_11_NoTgmathFunctions extends DisallowedStdLibFunctionRule {
     protected standardLibrary = "tgmath.h";
     protected invalidFunctions = [];
+    protected override cStandards = ["c99", "c11"];
 
     override get name(): string {
         return "21.11";

@@ -1,0 +1,88 @@
+{
+  "disallowedFunctions": {
+    "stdlib.h": {
+      "malloc": {
+        "replacement": "my_malloc",
+        "location": "custom_stdlib.c"
+      },
+      "calloc": {
+        "replacement": "my_calloc",
+        "location": "custom_stdlib.c"
+      },
+      "realloc": {
+        "replacement": "my_realloc",
+        "location": "custom_stdlib.c"
+      },
+      "free": {
+        "replacement": "my_free",
+        "location": "custom_stdlib.c"
+      },
+      "atof": {
+        "replacement": "my_atof",
+        "location": "custom_stdlib.c"
+      },
+      "atoi": {
+        "replacement": "my_atoi",
+        "location": "custom_stdlib.c"
+      },
+      "atol": {
+        "replacement": "my_atol",
+        "location": "custom_stdlib.c"
+      },
+      "atoll": {
+        "replacement": "my_atoll",
+        "location": "custom_stdlib.c"
+      },
+      "abort": {
+        "replacement": "my_abort",
+        "location": "custom_stdlib.c"
+      },
+      "exit": {
+        "replacement": "my_exit",
+        "location": "custom_stdlib.c"
+      },
+      "getenv": {
+        "replacement": "my_getenv",
+        "location": "custom_stdlib.c"
+      },
+      "system": {
+        "replacement": "my_system",
+        "location": "custom_stdlib.c"
+      },
+      "qsort": {
+        "replacement": "my_qsort",
+        "location": "custom_stdlib.c"
+      },
+      "bsearch": {
+        "replacement": "my_bsearch",
+        "location": "custom_stdlib.c"
+      }
+    },
+    "stdio.h": {
+      "printf": {
+        "replacement": "my_printf",
+        "location": "custom_stdio.c"
+      },
+      "fgets": {
+        "replacement": "my_fgets",
+        "location": "custom_stdio.c"
+      }
+    },
+    "time.h": {
+      "time": {
+        "replacement": "my_time",
+        "location": "custom_time.c"
+      },
+      "clock": {
+        "replacement": "my_clock",
+        "location": "custom_time.c"
+      }
+    },
+    "tgmath.h": {
+      "__tg_sqrt": {
+        "replacement": "my_sqrt",
+        "location": "custom_math.c"
+      }
+    }
+  }
+}

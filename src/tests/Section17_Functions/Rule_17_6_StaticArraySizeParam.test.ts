@@ -1,6 +1,7 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 import { FileJp } from "@specs-feup/clava/api/Joinpoints.js"; 
+import Clava from "@specs-feup/clava/api/clava/Clava.js";
 
 const passingCode = `
 static int test_17_6_1(int my_array[]) {
@@ -18,7 +19,7 @@ const files: TestFile[] = [
 ];
 
 describe("Rule 17.6", () => { 
-    if (process.env.STD_VERSION === "c90")  {
+    if (Clava.getStandard() === "c90")  {
         it("should skip tests for c90", () => {});
     } else {
         registerSourceCode(files);

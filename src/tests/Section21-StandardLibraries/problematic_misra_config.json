@@ -1,0 +1,19 @@
+{
+  "disallowedFunctions": {
+    "stdlib.h": {
+      "malloc": {
+        "replacement": "my_malloc",
+        "location": "custom_stdlib.c"
+      },
+      "calloc": {
+        "replacement": "my_calloc",
+        "location": "custom_stdlib.c"
+      },
+      "realloc": {
+        "replacement": "my_realloc",
+        "location": "custom_stdlib.c"
+      },
+      "free": {}
+    }
+  }
+}

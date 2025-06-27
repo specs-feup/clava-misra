@@ -6,6 +6,7 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { addExternFunctionDecl, getCallsToLibrary, getExternFunctionDecls, getIncludesOfFile, isValidFile } from "../../utils/FileUtils.js";
 import { rebuildProgram } from "../../utils/ProgramUtils.js";
 import { findFunctionDef } from "../../utils/FunctionUtils.js";
+import Clava from "@specs-feup/clava/api/clava/Clava.js";
 
 /**
  * 
@@ -18,9 +19,10 @@ import { findFunctionDef } from "../../utils/FunctionUtils.js";
  */
 export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
     priority = 1;
-    protected invalidFiles: FileJp[] = [];
+    protected invalidFiles = new Map<FileJp, Call[]>();
     protected abstract standardLibrary: string;
     protected abstract invalidFunctions: string[];
+    protected cStandards = ["c90", "c99", "c11"];
 
     constructor(context: MISRAContext) {
         super(context);
@@ -35,15 +37,18 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-       if (!($jp instanceof Program)) return false;
+        if (!($jp instanceof Program && this.cStandards.includes(Clava.getStandard()))) return false;
 
-        this.invalidFiles = Query.search(FileJp, (fileJp) => {return getIncludesOfFile(fileJp).includes(this.standardLibrary)}).get();
+        this.invalidFiles = new Map<FileJp, Call[]>();
+        const filesJps = Query.search(FileJp, (fileJp) => {return getIncludesOfFile(fileJp).includes(this.standardLibrary)}).get();
         let nonCompliant = false;
 
-        for (const fileJp of this.invalidFiles) {
+        for (const fileJp of filesJps) {
             const invalidCalls = getCallsToLibrary(fileJp, this.standardLibrary, this.invalidFunctions);
             if (invalidCalls.length > 0) {
+                this.invalidFiles.set(fileJp, invalidCalls);
                 nonCompliant = true; 
+
                 if (logErrors) {
                     invalidCalls.forEach(callJp => this.logMISRAError(callJp, this.getErrorMsgPrefix(callJp)));
                 } 
@@ -63,8 +68,8 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
     
         let changedDescendant = false;
 
-        for (const fileJp of this.invalidFiles) {
-            if (this.solveDisallowedFunctions(fileJp)) {
+        for (const [fileJp, invalidCalls] of this.invalidFiles) {
+            if (this.solveDisallowedFunctions(fileJp, invalidCalls)) {
                 changedDescendant = true;
             }
         }
@@ -117,8 +122,7 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
 
     }
 
-    private solveDisallowedFunctions(fileJp: FileJp): boolean {
-        const invalidCalls = getCallsToLibrary(fileJp, this.standardLibrary, this.invalidFunctions);
+    private solveDisallowedFunctions(fileJp: FileJp, invalidCalls: Call[]): boolean {
         let externFunctions = getExternFunctionDecls(fileJp).map(funcJp => funcJp.definitionJp.astId);
         let changedFile = false;
 

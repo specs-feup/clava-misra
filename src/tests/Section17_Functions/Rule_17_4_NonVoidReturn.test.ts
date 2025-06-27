@@ -78,10 +78,10 @@ const files: TestFile[] = [
 
 describe("Rule 17.4", () => {
     const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
+    const __dirname = path.dirname(__filename);
 
-        const configFilename = "misra_config.json";
-        const configFilePath = path.join(__dirname, configFilename);
+    const configFilename = "misra_config.json";
+    const configFilePath = path.join(__dirname, configFilename);
 
     registerSourceCode(files, configFilePath);
 

@@ -9,12 +9,11 @@
     "my_int_type": 0
   },
   "implicitCalls": {
-    "printf": "stdio.h",
-    "print": "stdio.h",
+    "toupper": "ctype.h",
+    "toupper_transformation": "ctype.h",
     "sin": "math.h",
     "pow": "math.h",
     "half": "math.h",
-    "println": "stdio.h",
     "func": "good.c",
     "func2": "good.c",
     "test_17_3_1": "good.c"

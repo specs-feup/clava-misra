@@ -5,7 +5,7 @@ import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
  */
 export default class Rule_21_3_NoDynamicMemory extends DisallowedStdLibFunctionRule {
     protected standardLibrary = "stdlib.h";
-    protected invalidFunctions = ["calloc", "malloc", "realloc", "free"];
+    protected invalidFunctions = ["calloc", "malloc", "aligned_alloc", "realloc", "free"];
 
     override get name(): string {
         return "21.3";
