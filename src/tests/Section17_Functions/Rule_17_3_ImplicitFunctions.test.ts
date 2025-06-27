@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 
 const passingCode = `
 #include <math.h>
+extern double test_17_3_4();
 
 // Missing "static" keyword; Will have external decl after correction
 unsigned int func() {
@@ -11,11 +12,16 @@ unsigned int func() {
 }
 
 // Missing "static" keyword; Will have external decl after correction
-void test_17_3_1() {
-    double result = sqrt(func());
+double test_17_3_1() {
+    return sqrt(func()) + test_17_3_4();
 }
 `;
 
+const passingCode2 = `
+double test_17_3_4() {
+    return 0.0;
+}
+`;
 
 const failingCode = `
 static void test_17_3_2() {
@@ -70,6 +76,7 @@ const files: TestFile[] = [
     { name: "bad2.c", code: failingCode2 },
     { name: "bad3.c", code: failingCode3 },
     { name: "good.c", code: passingCode },
+    { name: "good2.c", code:passingCode2 }
 ];
 
 describe("Rule 17.3", () => {

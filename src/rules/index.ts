@@ -41,7 +41,6 @@ export function sortRules(context: MISRAContext) {
         new Rule_2_6_UnusedLabels(context),
         new Rule_2_7_UnusedParameters(context),
         new Rule_3_1_CommentSequences(context),
-        new Rule_3_1_CommentSequences(context),
         new Rule_5_1_DistinctExternalIdentifiers(context),
         new Rule_5_6_UniqueTypedefNames(context),
         new Rule_5_7_UniqueTagNames(context),
