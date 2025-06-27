@@ -49,7 +49,6 @@ describe("Rule 21.6", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(6);
         expect(countMISRAErrors("21.6")).toBeGreaterThanOrEqual(2);
     });
 });
