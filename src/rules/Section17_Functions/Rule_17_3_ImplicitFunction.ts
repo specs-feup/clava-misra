@@ -13,6 +13,7 @@ import { rebuildProgram } from "../../utils/ProgramUtils.js";
  */
 export default class Rule_17_3_ImplicitFunction extends MISRARule {
     priority = 1;
+    protected override readonly appliesTo = ["c90"];
 
     constructor(context: MISRAContext) {
         super(context);
@@ -30,7 +31,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!($jp instanceof Program)) return false;
+        if (!($jp instanceof Program && this.appliesToCurrentStandard())) return false;
         
         const implicitCalls = Query.searchFrom($jp, Call, (callJp) => isCallToImplicitFunction(callJp)). get();
         if (logErrors) {

@@ -15,17 +15,28 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
  */
 export default abstract class IdentifierRenameRule extends MISRARule {
     priority = 2;
+    /**
+     * Identifiers with invalid names that require renaming.
+     */
     protected invalidIdentifiers: any[] = []; 
-    
-    constructor(context: MISRAContext) {
-        super( context);
-    }
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     abstract override get name(): string;
 
+    /**
+     * Checks if the joinpoint violates the rule
+     * 
+     * @param $jp - Joinpoint to analyze
+     * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected
+     * @returns Returns true if the joinpoint violates the rule, false otherwise
+     */
     abstract match($jp: Joinpoint, logErrors: boolean): boolean;
 
     /**
+     * Renames all invalid identifiers found in the program.
+     * After renaming, the program is rebuilt to ensure proper linking of functions, variables, and their external declarations.
      * 
      * @param $jp - Joinpoint to transform
      * @returns Report detailing the transformation result

@@ -1,3 +1,4 @@
+import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -80,20 +81,24 @@ const files: TestFile[] = [
 ];
 
 describe("Rule 17.3", () => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
+    if (Clava.getStandard() !== "c90")  {
+            it("should skip tests for c99 and c11", () => {});
+    } else { 
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
 
-    const configFilename = "misra_config.json";
-    const configFilePath = path.join(__dirname, configFilename);
+        const configFilename = "misra_config.json";
+        const configFilePath = path.join(__dirname, configFilename);
 
-    registerSourceCode(files, configFilePath);
+        registerSourceCode(files, configFilePath);
 
-    it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(10);  
-        expect(countMISRAErrors("17.3")).toBe(8); 
-    });
+        it("should detect errors", () => {
+            expect(countMISRAErrors()).toBe(10);  
+            expect(countMISRAErrors("17.3")).toBe(8); 
+        });
 
-    it("should correct errors", () => {
-        expect(countErrorsAfterCorrection()).toBe(0);
-    });
+        it("should correct errors", () => {
+            expect(countErrorsAfterCorrection()).toBe(0);
+        });
+    }
 });

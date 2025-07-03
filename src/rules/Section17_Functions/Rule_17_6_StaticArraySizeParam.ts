@@ -4,12 +4,12 @@ import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getParamReferences } from "../../utils/FunctionUtils.js";
-import Clava from "@specs-feup/clava/api/clava/Clava.js";
 
 /**
  * MISRA Rule 17.6: The declaration of an array parameter shall not contain the static keyword between the [ ]
  */
 export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
+    protected override readonly appliesTo = ["c99", "c11"];
     #invalidParams: Param[] = [];
     
     constructor(context: MISRAContext) {
@@ -28,7 +28,7 @@ export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!($jp instanceof FunctionJp) || Clava.getStandard() === "c90") return false;
+        if (!($jp instanceof FunctionJp && this.appliesToCurrentStandard())) return false;
 
         this.#invalidParams = $jp.params.filter(paramJp => paramJp.type instanceof AdjustedType &&
             paramJp.type.originalType instanceof ArrayType &&

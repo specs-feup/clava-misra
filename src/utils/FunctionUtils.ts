@@ -1,4 +1,4 @@
-import { Param, Joinpoint, Varref, FunctionJp, StorageClass } from "@specs-feup/clava/api/Joinpoints.js";
+import { Param, Joinpoint, Varref, FunctionJp, StorageClass, GotoStmt, LabelStmt } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 /**
@@ -15,6 +15,12 @@ export function getParamReferences($param: Param, $startingPoint: Joinpoint): Va
                     return false;
                 }
             }).get();
+}
+
+export function getUnusedLabels(func: FunctionJp): LabelStmt[] {
+    return Query.searchFrom(func, LabelStmt).get().filter(label => 
+        Query.searchFrom(func, GotoStmt, { label: jp => jp.astId === label.decl.astId }).get().length === 0
+    );
 }
 
 export function findFunctionDef(functionName: string, pathSuffix: string) {

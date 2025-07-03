@@ -3,6 +3,7 @@ import MISRAContext from "./MISRAContext.js";
 import { MISRATransformationReport, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
 import VisitWithContext from "./ast-visitor/VisitWithContext.js";
 import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
+import Clava from "@specs-feup/clava/api/clava/Clava.js";
 
 /**
  * Represents a MISRA Rule that detects and corrects violations in the code according to MISRA standards.
@@ -13,15 +14,18 @@ import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
  *  - name()
  */
 export default abstract class MISRARule extends VisitWithContext<MISRATransformationResults, MISRAContext> {
-    
     /**
      * Priority of the rule which is low by default.
      */
     readonly priority: number = Number.MAX_VALUE;
 
     /**
+     * Standards to which this rule applies to
+     */
+    protected readonly appliesTo: string[] = ["c90", "c99", "c11"];
+
+    /**
      * 
-     * @param ruleID - Unique identifier for the MISRA-C rule
      * @param context - MISRA context for error tracking and rule transformations state
      */
     constructor(context: MISRAContext) {
@@ -59,6 +63,10 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
      */
     protected logMISRAError($jp: Joinpoint, msg:string): void {
         this.context.addMISRAError(this.ruleID, $jp, msg); 
+    }
+
+    protected appliesToCurrentStandard(): boolean {
+        return this.appliesTo.includes(Clava.getStandard());
     }
 
     /**

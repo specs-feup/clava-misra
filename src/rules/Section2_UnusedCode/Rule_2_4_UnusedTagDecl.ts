@@ -10,10 +10,6 @@ import { getIdentifierName } from "../../utils/IdentifierUtils.js";
  * MISRA-C Rule 2.4: A project should not contain unused tag declarations.
  */
 export default class Rule_2_4_UnusedTagDecl extends MISRARule {
-    
-    constructor(context: MISRAContext) {
-        super(context);
-    }
 
     override get name(): string {
         return "2.4";
@@ -21,7 +17,7 @@ export default class Rule_2_4_UnusedTagDecl extends MISRARule {
 
     /**
      * Checks if the given joinpoint is an unused tag declaration
-     * A tag is considered to be unused if it has no references in the code or is only used within a typedef
+     * A tag is considered unused if it has no references in the code or if it's only used within a typedef
      * 
      * @param $jp - Joinpoint to analyze
      * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected

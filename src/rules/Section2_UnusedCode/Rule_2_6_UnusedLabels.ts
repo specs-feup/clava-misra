@@ -3,32 +3,31 @@ import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { getUnusedLabels } from "../../utils/FunctionUtils.js";
 
 /**
- * Rule 2.6: Unused Labels. 
- *  Checks for labels within a function that are not used.
+ * MISRA-C Rule 2.6: A function should not contain unused label declarations.
+ *  
  */
 export default class Rule_2_6_UnusedLabels extends MISRARule {
-    
-    constructor(context: MISRAContext) {
-        super(context);
-    }
 
     override get name(): string {
         return "2.6";
     }
 
-    private getUnusedLabels(func: FunctionJp): LabelStmt[] {
-        return Query.searchFrom(func, LabelStmt).get().filter(label => 
-            Query.searchFrom(func, GotoStmt, { label: jp => jp.astId === label.decl.astId }).get().length === 0
-        );
-    }
-
+    /**
+     * Checks if the given joinpoint represents a function with unused labels.
+     * A tag is considered unused if it is declared but not referenced by any goto statement.
+     * 
+     * @param $jp - Joinpoint to analyze
+     * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected
+     * @returns Returns true if the joinpoint violates the rule, false otherwise
+     */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
         if (!($jp instanceof FunctionJp)) 
             return false;
 
-        const unusedLabels = this.getUnusedLabels($jp);
+        const unusedLabels = getUnusedLabels($jp);
         if (logErrors) {
             unusedLabels.forEach(label => 
                 this.logMISRAError(label, `Label '${label.decl.name}' is unused in function ${$jp.name}.`)
@@ -37,11 +36,17 @@ export default class Rule_2_6_UnusedLabels extends MISRARule {
         return unusedLabels.length > 0;
     }
     
+    /**
+     * Removes all unused labels if the provided joinpoint represents a function
+     * 
+     * @param $jp - Joinpoint to transform
+     * @returns Report detailing the transformation result
+     */
     apply($jp: Joinpoint): MISRATransformationReport {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        const unusedLabels = this.getUnusedLabels($jp as FunctionJp);
+        const unusedLabels = getUnusedLabels($jp as FunctionJp);
         for (const label of unusedLabels) {
             label.detach();
         }

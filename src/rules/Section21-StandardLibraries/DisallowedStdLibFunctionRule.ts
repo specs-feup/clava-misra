@@ -22,7 +22,6 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
     protected invalidFiles = new Map<FileJp, Call[]>();
     protected abstract standardLibrary: string;
     protected abstract invalidFunctions: string[];
-    protected cStandards = ["c90", "c99", "c11"];
 
     constructor(context: MISRAContext) {
         super(context);
@@ -37,7 +36,7 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!($jp instanceof Program && this.cStandards.includes(Clava.getStandard()))) return false;
+        if (!($jp instanceof Program && this.appliesToCurrentStandard())) return false;
 
         this.invalidFiles = new Map<FileJp, Call[]>();
         const filesJps = Query.search(FileJp, (fileJp) => {return getIncludesOfFile(fileJp).includes(this.standardLibrary)}).get();

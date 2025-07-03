@@ -1,3 +1,4 @@
+import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -34,18 +35,22 @@ const files: TestFile[] = [
 ];
 
 describe("Rule 21.8", () => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const configFilePath = path.join(__dirname, "misra_config.json");
+    if (Clava.getStandard() === "c11")  {
+        it("should skip tests for c11", () => {});
+    } else {
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const configFilePath = path.join(__dirname, "misra_config.json");
 
-    registerSourceCode(files, configFilePath);
+        registerSourceCode(files, configFilePath);
 
-    it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(4); 
-        expect(countMISRAErrors("21.8")).toBe(2); 
-    });
+        it("should detect errors", () => {
+            expect(countMISRAErrors()).toBe(4); 
+            expect(countMISRAErrors("21.8")).toBe(2); 
+        });
 
-    it("should correct errors", () => {
-        expect(countErrorsAfterCorrection()).toBe(0);
-    });
+        it("should correct errors", () => {
+            expect(countErrorsAfterCorrection()).toBe(0);
+        });
+    }
 });
