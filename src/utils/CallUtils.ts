@@ -30,7 +30,7 @@ export function isCallToImplicitFunction(callJp: Call): boolean {
             .some((declJp) => {
                 const declLocation = declJp.getAncestor("file") as FileJp;
                 return declLocation?.ast === callLocation.ast || 
-                        (declLocation.isHeader && fileIncludes.includes(declLocation.name))
+                       (declLocation.isHeader && fileIncludes.includes(declLocation.name))
             });
 }
 

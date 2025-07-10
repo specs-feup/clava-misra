@@ -10,8 +10,7 @@ import { rebuildProgram } from "../../utils/ProgramUtils.js";
  * MISRA-C Rule 2.7: There should be no unused parameters in functions.
  */
 export default class Rule_2_7_UnusedParameters extends MISRARule {
-    priority = 2; 
-
+    private unusedParams: Param[] = [];
     override get name(): string {
         return "2.7";
     }
@@ -25,20 +24,14 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!($jp instanceof Program)) return false;
-
-        const functions = Query.search(FunctionJp, {isImplementation: true}).get();
-        const nonCompliant = functions.some((funcJp) => funcJp.params.some((param) => getParamReferences(param, funcJp).length === 0));
-
+        if (!($jp instanceof FunctionJp && $jp.isImplementation))
+            return false;
+        
+        const nonCompliant = $jp.params.some((param) => getParamReferences(param, $jp).length === 0);
         if (logErrors && nonCompliant) {
-            for (const funcJp of functions) {
-                const unusedParams = this.getUnusedParams(funcJp);
-
-                unusedParams.forEach(param => 
-                    this.logMISRAError(param, `Parameter '${param.name}' is unused in function ${funcJp.name}.`)
-                )
-            }
-        } 
+            this.unusedParams = this.getUnusedParams($jp);
+            this.unusedParams.forEach(param => this.logMISRAError(param, `Parameter '${param.name}' is unused in function ${$jp.name}.`));
+        }
         return nonCompliant;
     }
 
@@ -52,27 +45,18 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        const functions = Query.search(FunctionJp, {isImplementation: true}).get();
-        for (const funcJp of functions) {
+        const funcJp = $jp as FunctionJp;
+        const usedParams = this.getUsedParams(funcJp);
+        const unusedParamsPosition = this.getUnusedParamsPositions(funcJp);
+        const calls = Query.search(Call, {function: jp => jp.astId === funcJp.astId}).get();
+        
+        funcJp.setParams(usedParams);
 
-            const usedParams = this.getUsedParams(funcJp);
-            if (usedParams.length === funcJp.params.length) { // All parameters are used
-                continue;
-            } 
-
-            const usedParamsPositions = this.getUsedParamsPositions(funcJp);
-            const calls = Query.search(Call, {function: jp => jp.astId === funcJp.astId}).get();
-            
-            funcJp.setParams(usedParams);
-
-            for (const call of calls) {
-                const newArgs = usedParamsPositions.map(i => call.args[i]);
-                const newCall = funcJp.newCall(newArgs);
-                call.replaceWith(newCall);
-            }
+        for (const call of calls) {
+            const unusedArgs = unusedParamsPosition.map(i => call.args[i]);
+            unusedArgs.forEach(arg => arg.detach());
         }
-        rebuildProgram();
-        return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
+        return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }
 
     /**
@@ -101,12 +85,12 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
      * @param func - Function joinpoint to analyze
      * @returns returns a list of numbers representing the indexes of used parameters.
      */
-    private getUsedParamsPositions(func: FunctionJp): number[] {
+    private getUnusedParamsPositions(func: FunctionJp): number[] {
         let result = [];
         for (let i = 0; i < func.params.length; i++) {
             const param = func.params[i];
             const varRefs = Query.searchFrom(func, Varref, { decl: jp => jp?.astId === param.astId }).get();
-            if (varRefs.length > 0) {
+            if (varRefs.length === 0) {
                 result.push(i);
             }
         }
