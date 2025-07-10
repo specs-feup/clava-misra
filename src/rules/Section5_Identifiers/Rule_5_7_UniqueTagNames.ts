@@ -1,13 +1,11 @@
 import { Joinpoint, Program, TypedefDecl } from "@specs-feup/clava/api/Joinpoints.js";
-import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore } from "../../utils/IdentifierUtils.js";
 import { getTypeDefDecl } from "../../utils/TypeDeclUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
-import { getIdentifierDecls, rebuildProgram } from "../../utils/ProgramUtils.js";
+import { getIdentifierDecls } from "../../utils/ProgramUtils.js";
 import IdentifierRenameRule from "./IdentifierRenameRule.js";
+import { AnalysisType } from "../../MISRA.js";
 
 /**
  * Rule 5.7: A tag name shall be a unique identifier.
@@ -15,6 +13,8 @@ import IdentifierRenameRule from "./IdentifierRenameRule.js";
  * Exception: The tag name may be the same as the typedef name with which it is  associated.
  */
 export default class Rule_5_7_UniqueTagNames extends IdentifierRenameRule {
+
+    readonly analysisType = AnalysisType.SYSTEM;
 
     override get name(): string {
         return "5.7";

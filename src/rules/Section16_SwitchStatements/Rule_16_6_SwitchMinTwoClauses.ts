@@ -1,7 +1,6 @@
-import {Break, Case, Joinpoint, Statement, Expression, Switch } from "@specs-feup/clava/api/Joinpoints.js";
+import {Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { countSwitchClauses, switchHasConditionalBreak } from "../../utils/SwitchUtils.js";
 
 /**
@@ -10,9 +9,7 @@ import { countSwitchClauses, switchHasConditionalBreak } from "../../utils/Switc
 export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
     priority = 4;
 
-    constructor(context: MISRAContext) {
-        super(context);
-    }
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "16.6";

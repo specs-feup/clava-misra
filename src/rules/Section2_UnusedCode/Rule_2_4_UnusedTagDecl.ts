@@ -1,15 +1,15 @@
-import { Joinpoint, RecordJp, EnumDecl, DeclStmt, Decl } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, DeclStmt } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { hasTypeDefDecl, isTypeDeclUsed } from "../../utils/TypeDeclUtils.js";
 import { isTagDecl, TagDecl } from "../../utils/JoinpointUtils.js";
-import { getIdentifierName } from "../../utils/IdentifierUtils.js";
 
 /**
  * MISRA-C Rule 2.4: A project should not contain unused tag declarations.
  */
 export default class Rule_2_4_UnusedTagDecl extends MISRARule {
+
+    readonly analysisType = AnalysisType.SYSTEM;
 
     override get name(): string {
         return "2.4";

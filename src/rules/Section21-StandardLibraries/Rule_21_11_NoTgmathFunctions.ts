@@ -1,3 +1,4 @@
+import { AnalysisType } from "../../MISRA.js";
 import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
 
 /**
@@ -7,6 +8,7 @@ export default class Rule_21_11_NoTgmathFunctions extends DisallowedStdLibFuncti
     protected standardLibrary = "tgmath.h";
     protected invalidFunctions = [];
     protected override readonly appliesTo = ["c99", "c11"];
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "21.11";

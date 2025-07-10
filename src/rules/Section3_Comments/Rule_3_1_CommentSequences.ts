@@ -1,13 +1,15 @@
-import { Comment, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
 import { isInlineComment, getComments } from "../../utils/CommentUtils.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
  * MISRA Rule 3.1: The character sequences /* an d // shall not be used within a comment.
  */
 export default class Rule_3_1_CommentSequences extends MISRARule {
+    
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
+
     override get name(): string {
         return "3.1";
     }

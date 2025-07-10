@@ -1,7 +1,6 @@
 import { FileJp, Joinpoint, Program, StorageClass, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getIdentifierName } from "../../utils/IdentifierUtils.js";
 import { getExternalLinkageIdentifiers, resetCaches } from "../../utils/ProgramUtils.js";
 import { compareLocation } from "../../utils/JoinpointUtils.js";
@@ -14,10 +13,7 @@ import { isSameVarDecl } from "../../utils/VarUtils.js";
 export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
     priority = 2; 
     private invalidDecls: Vardecl[] = [];
-
-    constructor(context: MISRAContext) {
-        super( context);
-    }
+    readonly analysisType = AnalysisType.SYSTEM;
 
     override get name(): string {
         return "8.6";

@@ -1,8 +1,6 @@
-import { GotoStmt, FunctionJp, Joinpoint, LabelStmt } from "@specs-feup/clava/api/Joinpoints.js";
+import { FunctionJp, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getUnusedLabels } from "../../utils/FunctionUtils.js";
 
 /**
@@ -10,6 +8,8 @@ import { getUnusedLabels } from "../../utils/FunctionUtils.js";
  *  
  */
 export default class Rule_2_6_UnusedLabels extends MISRARule {
+
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "2.6";

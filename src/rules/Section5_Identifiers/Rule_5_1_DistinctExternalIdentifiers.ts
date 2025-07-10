@@ -4,11 +4,14 @@ import { getExternalLinkageIdentifiers } from "../../utils/ProgramUtils.js";
 import { compareLocation } from "../../utils/JoinpointUtils.js";
 import { isSameVarDecl } from "../../utils/VarUtils.js";
 import IdentifierRenameRule from "./IdentifierRenameRule.js";
+import { AnalysisType } from "../../MISRA.js";
 
 /**
  * Rule 5.1 External identifiers shall be distinct.
  */
 export default class Rule_5_1_DistinctExternalIdentifiers extends IdentifierRenameRule {
+
+    readonly analysisType = AnalysisType.SYSTEM;
 
     override get name(): string {
         return "5.1";

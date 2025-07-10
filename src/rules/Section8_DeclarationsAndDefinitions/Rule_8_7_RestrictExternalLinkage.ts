@@ -1,7 +1,6 @@
 import { FunctionJp, Joinpoint, Program, StorageClass, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getIdentifierName, isExternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
 import { findExternalVarRefs, hasMultipleExternalLinkDeclarations } from "../../utils/VarUtils.js";
 import { findExternalFunctionDecl } from "../../utils/FunctionUtils.js";
@@ -12,9 +11,8 @@ import { resetCaches } from "../../utils/ProgramUtils.js";
  * Rule 8.7: Functions and objects should not be defined with external linkage if they are referenced in only one translation unit
  */
 export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
-    constructor(context: MISRAContext) {
-        super( context);
-    }
+    
+    readonly analysisType = AnalysisType.SYSTEM;
 
     override get name(): string {
         return "8.7";

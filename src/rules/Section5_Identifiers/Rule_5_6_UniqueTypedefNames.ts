@@ -5,6 +5,7 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
 import { getIdentifierDecls } from "../../utils/ProgramUtils.js";
 import IdentifierRenameRule from "./IdentifierRenameRule.js";
+import { AnalysisType } from "../../MISRA.js";
 
 /**
  * Rule 5.6: A typedef name shall be a unique identifier.
@@ -12,7 +13,8 @@ import IdentifierRenameRule from "./IdentifierRenameRule.js";
  * Exception: The typedef name may be the same as the structure, union  or enumeration tag name associated with the typedef.
  */
 export default class Rule_5_6_UniqueTypedefNames extends IdentifierRenameRule {
-
+    readonly analysisType = AnalysisType.SYSTEM;
+    
     override get name(): string {
         return "5.6";
     }

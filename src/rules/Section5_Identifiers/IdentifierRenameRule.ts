@@ -1,29 +1,34 @@
 import {Joinpoint, Program} from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getIdentifierDecls, getInternalLinkageIdentifiers, rebuildProgram } from "../../utils/ProgramUtils.js";
-import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore, isInternalLinkageIdentifier, renameIdentifier } from "../../utils/IdentifierUtils.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { renameIdentifier } from "../../utils/IdentifierUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 
 /**
  * Abstract base class for MISRA-C rules that enforce constraints on identifier uniqueness where renaming may be required.
  * 
  * Need to implement:
- *  - match($jp, logErrors)
+ *  - analysisType
  *  - name()
+ *  - match($jp, logErrors)
  */
 export default abstract class IdentifierRenameRule extends MISRARule {
     priority = 2;
-    /**
-     * Identifiers with invalid names that require renaming.
-     */
-    protected invalidIdentifiers: any[] = []; 
 
+    /**
+     * Specifies the scope of analysis: single unit or entire system.
+     */
+    abstract readonly analysisType: AnalysisType;
+    
     /**
      * @returns Rule identifier according to MISRA-C:2012
      */
     abstract override get name(): string;
+
+    /**
+     * Identifiers with invalid names that require renaming.
+     */
+    protected invalidIdentifiers: any[] = []; 
 
     /**
      * Checks if the joinpoint violates the rule
@@ -50,7 +55,7 @@ export default abstract class IdentifierRenameRule extends MISRARule {
             const newName = this.context.generateIdentifierName(identifierJp)!;
             renameIdentifier(identifierJp, newName);
         }
-        rebuildProgram();
+        this.rebuildProgram();
         return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }

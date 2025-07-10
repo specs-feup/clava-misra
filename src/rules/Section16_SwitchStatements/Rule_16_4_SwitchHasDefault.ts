@@ -1,16 +1,13 @@
 import { Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 /**
  * MISRA Rule 16.4: Every switch statement shall have a default label
  */
 export default class Rule_16_4_SwitchHasDefault extends MISRARule {
-    constructor(context: MISRAContext) {
-        super(context);
-    }
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "16.4";

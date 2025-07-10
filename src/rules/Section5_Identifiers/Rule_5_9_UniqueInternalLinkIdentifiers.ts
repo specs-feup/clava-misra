@@ -2,11 +2,14 @@ import {Joinpoint, Program} from "@specs-feup/clava/api/Joinpoints.js";
 import { getIdentifierDecls, getInternalLinkageIdentifiers } from "../../utils/ProgramUtils.js";
 import { getIdentifierName, isIdentifierDuplicated, isIdentifierNameDeclaredBefore, isInternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
 import IdentifierRenameRule from "./IdentifierRenameRule.js";
+import { AnalysisType } from "../../MISRA.js";
 
 /**
  * Rule 5.9: Identifiers that define objects or functions with internal linkage should be unique
  */
 export default class Rule_5_9_UniqueInternalLinkIdentifiers extends IdentifierRenameRule {
+
+    readonly analysisType = AnalysisType.SYSTEM;
 
     override get name(): string {
         return "5.9";

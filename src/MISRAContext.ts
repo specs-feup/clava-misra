@@ -1,4 +1,4 @@
-import { EnumDecl, FunctionJp, Joinpoint, LabelStmt, RecordJp, TypedefDecl, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
+import { EnumDecl, FunctionJp, Joinpoint, LabelStmt, Program, RecordJp, TypedefDecl, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import { MISRAError, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
 import * as fs from 'fs';
 import Context from "./ast-visitor/Context.js";
@@ -42,7 +42,18 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
 
     addRuleResult(ruleID: string, $jp: Joinpoint, result: MISRATransformationType) {
         let transformations = this.get(ruleID);
-        transformations?.set($jp.astId, result);
+
+        if (transformations === undefined) {
+            transformations = new Map();
+            this.put(ruleID, transformations);
+        }
+        transformations.set($jp.astId, result);
+    }
+
+    resetStorage() {
+        [...this.storage.keys()].forEach(key => {
+            this.storage.set(key,  new Map())
+        });
     }
 
     generateIdentifierName($jp: Joinpoint) {
@@ -106,5 +117,4 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
             .filter(error => error.isActiveError())
             .forEach(error => this.printError(error));
     }
-    
 }

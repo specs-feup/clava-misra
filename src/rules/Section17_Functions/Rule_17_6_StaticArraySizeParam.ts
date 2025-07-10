@@ -2,19 +2,16 @@ import { AdjustedType, ArrayType, FunctionJp, Joinpoint, Param } from "@specs-fe
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getParamReferences } from "../../utils/FunctionUtils.js";
 
 /**
  * MISRA Rule 17.6: The declaration of an array parameter shall not contain the static keyword between the [ ]
  */
 export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
     protected override readonly appliesTo = ["c99", "c11"];
     #invalidParams: Param[] = [];
-    
-    constructor(context: MISRAContext) {
-        super(context);
-    }
 
     override get name(): string {
         return "17.6";

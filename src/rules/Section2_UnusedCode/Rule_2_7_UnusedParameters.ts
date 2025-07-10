@@ -2,15 +2,16 @@ import { FunctionJp, Joinpoint, Param, Varref, Call, Program } from "@specs-feup
 import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getParamReferences } from "../../utils/FunctionUtils.js";
-import { rebuildProgram } from "../../utils/ProgramUtils.js";
 
 /**
  * MISRA-C Rule 2.7: There should be no unused parameters in functions.
  */
 export default class Rule_2_7_UnusedParameters extends MISRARule {
     private unusedParams: Param[] = [];
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
+
     override get name(): string {
         return "2.7";
     }

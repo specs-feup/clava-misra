@@ -1,9 +1,7 @@
 import { BinaryOp, Call, Joinpoint, UnaryExprOrType, UnaryOp, VariableArrayType, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import { getVolatileVarRefs } from "../../utils/VarUtils.js";
 
 /**
@@ -13,10 +11,7 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
     private modifyingExpressions: (UnaryOp | BinaryOp)[] = [];
     private functionCalls: Call[] = [];
     private volatileRefs: Varref[] = [];
-
-    constructor(context: MISRAContext) {
-        super(context);
-    }
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "13.6";

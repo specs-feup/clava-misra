@@ -1,8 +1,7 @@
 import { Case, Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
  * MISRA Rule 16.2: A switch label shall only be used when the most closely-enclosing
@@ -11,10 +10,7 @@ compound statement is the body of a switch statement
 export default class Rule_16_2_TopLevelSwitch extends MISRARule {    
     priority = 3; 
     #misplacedCases: Case[] = [];
-
-    constructor(context: MISRAContext) {
-        super(context);
-    }
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "16.2";

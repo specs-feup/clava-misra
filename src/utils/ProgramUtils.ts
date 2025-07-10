@@ -13,11 +13,6 @@ export function resetCaches() {
     cachedIdentifierDecls = null;
 }
 
-export function rebuildProgram() {
-    (Query.root() as Program).rebuild();
-    resetCaches();
-}
-
 /**
  * Retrieves all variables and functions that are eligible for `extern` linkage, i.e., 
  * elements with storage classes that are not `STATIC` or `EXTERN`

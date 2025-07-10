@@ -1,7 +1,6 @@
-import { BuiltinType, Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils/SwitchUtils.js";
 
 /**
@@ -9,10 +8,8 @@ import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../util
  */
 export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
     priority = 4; 
-
-    constructor(context: MISRAContext) {
-        super(context);
-    }
+    
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "16.7";

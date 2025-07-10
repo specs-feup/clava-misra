@@ -1,7 +1,6 @@
-import { Break, Joinpoint, Statement, Switch, Case } from "@specs-feup/clava/api/Joinpoints.js";
+import { Break, Joinpoint, Switch, Case } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { getLastStmtOfCase } from "../../utils/SwitchUtils.js";
 
@@ -11,11 +10,8 @@ import { getLastStmtOfCase } from "../../utils/SwitchUtils.js";
 export default class Rule_16_3_UnconditionalBreak extends MISRARule {
     priority = 3; 
     #statementsNeedingBreakAfter: Joinpoint[] = [];
-
-    constructor(context: MISRAContext) {
-        super(context);
-    }
-
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
+    
     override get name(): string {
         return "16.3";
     }

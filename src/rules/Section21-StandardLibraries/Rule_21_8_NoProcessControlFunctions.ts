@@ -1,3 +1,4 @@
+import { AnalysisType } from "../../MISRA.js";
 import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
 
 /**
@@ -9,6 +10,7 @@ export default class Rule_21_8_NoProcessControlFunctions extends DisallowedStdLi
     protected override readonly appliesTo = ["c90", "c99"];
     protected standardLibrary = "stdlib.h";
     protected invalidFunctions = ["abort", "exit", "_Exit", "quick_exit"];
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "21.8";

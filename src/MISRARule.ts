@@ -1,23 +1,31 @@
-import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAContext from "./MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
 import VisitWithContext from "./ast-visitor/VisitWithContext.js";
 import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { resetCaches } from "./utils/ProgramUtils.js";
 
 /**
  * Represents a MISRA Rule that detects and corrects violations in the code according to MISRA standards.
  * 
- * Need to implement:
+ * Need to implement/define:
+ *  - analysisType
+ *  - name()
  *  - match($jp, logErrors)
  *  - apply($jp)
- *  - name()
  */
 export default abstract class MISRARule extends VisitWithContext<MISRATransformationResults, MISRAContext> {
     /**
      * Priority of the rule which is low by default.
      */
     readonly priority: number = Number.MAX_VALUE;
+
+    /**
+     * Specifies the scope of analysis: single unit or entire system.
+     */
+    abstract readonly analysisType: AnalysisType;
 
     /**
      * Standards to which this rule applies to
@@ -30,10 +38,6 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
      */
     constructor(context: MISRAContext) {
         super(context);
-    }
-
-    protected getFixFromConfig($jp: Joinpoint, errorMsgPrefix: string): any {
-        return undefined;
     }
 
     /**
@@ -67,6 +71,11 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
 
     protected appliesToCurrentStandard(): boolean {
         return this.appliesTo.includes(Clava.getStandard());
+    }
+
+    protected rebuildProgram() {
+        (Query.root() as Program).rebuild();
+        resetCaches();
     }
 
     /**

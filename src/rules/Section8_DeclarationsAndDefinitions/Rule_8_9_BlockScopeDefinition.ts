@@ -1,7 +1,6 @@
 import {DeclStmt, Joinpoint, Vardecl } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { findReferencingFunctions } from "../../utils/VarUtils.js";
 import { isInternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
@@ -11,9 +10,7 @@ import { resetCaches } from "../../utils/ProgramUtils.js";
  * Rule 8.9: An object should be defined at block scope if its identifier only appears in a single function
  */
 export default class Rule_8_9_BlockScopeDefinition extends MISRARule {
-    constructor(context: MISRAContext) {
-        super( context);
-    }
+    readonly analysisType = AnalysisType.SYSTEM;
 
     override get name(): string {
         return "8.9";

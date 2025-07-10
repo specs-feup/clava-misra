@@ -1,16 +1,13 @@
 import { BuiltinType, Call, Cast, ExprStmt, Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
  * MISRA Rule 17.7: The value returned by a function having non-void return type shall be used
  */
 export default class Rule_17_7_UnusedReturnValue extends MISRARule {
-    constructor(context: MISRAContext) {
-        super(context);
-    }
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "17.7";

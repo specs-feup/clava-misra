@@ -4,7 +4,7 @@
  *  @template T Type of the stored values
  */
 export default class Context<T> {
-    private storage: Map<string, T> = new Map();
+    protected storage: Map<string, T> = new Map();
 
     put(key: string, value: T) {
         this.storage.set(key, value);

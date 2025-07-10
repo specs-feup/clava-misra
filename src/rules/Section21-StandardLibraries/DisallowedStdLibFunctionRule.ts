@@ -1,33 +1,72 @@
 import { Call, Joinpoint, Program, FileJp } from "@specs-feup/clava/api/Joinpoints.js";
-import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { addExternFunctionDecl, getCallsToLibrary, getExternFunctionDecls, getIncludesOfFile, isValidFile } from "../../utils/FileUtils.js";
-import { rebuildProgram } from "../../utils/ProgramUtils.js";
 import { findFunctionDef } from "../../utils/FunctionUtils.js";
-import Clava from "@specs-feup/clava/api/clava/Clava.js";
-
+import UserConfigurableRule from "../UserConfigurableRule.js";
 /**
  * 
  * Abstract base class for MISRA-C rules that prohibit the use of specific standard library functions.
  *
  * Need to implement/define:
+ *  - analysisType
  *  - standardLibrary
  *  - invalidFunctions
  *  - name() 
  */
-export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
+export default abstract class DisallowedStdLibFunctionRule extends UserConfigurableRule {
     priority = 1;
     protected invalidFiles = new Map<FileJp, Call[]>();
     protected abstract standardLibrary: string;
     protected abstract invalidFunctions: string[];
 
-    constructor(context: MISRAContext) {
-        super(context);
-    }
+    /**
+     * Specifies the scope of analysis: single unit or entire system.
+     */
+    abstract readonly analysisType: AnalysisType;
 
     abstract override get name(): string;
+
+    protected getErrorMsgPrefix(callJp: Call): string {
+        return `Function '${callJp.name}' of <${this.standardLibrary}> shall not be used.`
+    }
+
+    protected getFixFromConfig(callJp: Call): Map<string, string> | undefined {
+        const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
+
+        if (!this.context.config) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Extern not added due to missing config file.`);
+            return undefined;
+        }
+
+        let configFix = this.context.config.get("disallowedFunctions");
+        if (!configFix) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Extern was not added as \'disallowedFunctions\' is not defined in the configuration file.`);
+            return undefined;
+        } 
+
+        if (!configFix[this.standardLibrary]) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Couldn't add extern due to missing configuration for standard library <${this.standardLibrary}>.`);
+            return undefined;
+        }
+
+        if (!configFix[this.standardLibrary][callJp.name]) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Couldn't add extern due to missing configuration for function \'${callJp.name}\' of standard library <${this.standardLibrary}>.`);
+            return undefined;
+        }
+
+        const location = configFix[this.standardLibrary][callJp.name]["location"];
+        const replacement_func = configFix[this.standardLibrary][callJp.name]["replacement"];
+
+        if (location === undefined || replacement_func === undefined) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Couldn't add extern due to incomplete configuration for function \'${callJp.name}\' of standard library <${this.standardLibrary}>.`);
+            return undefined;
+        }
+        return new Map([
+            ["function", replacement_func],
+            ["location", location]
+        ]);
+    }
 
     /**
      * 
@@ -74,51 +113,11 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
         }
 
         if (changedDescendant) {
-            rebuildProgram();
+            this.rebuildProgram();
             return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
         } else {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
-    }
-
-    protected getErrorMsgPrefix(callJp: Call): string {
-        return `Function '${callJp.name}' of <${this.standardLibrary}> shall not be used.`
-    }
-
-    protected override getFixFromConfig(callJp: Call, errorMsgPrefix: string): Map<string, string> | undefined {
-        if (!this.context.config) {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Extern not added due to missing config file.`);
-            return undefined;
-        }
-
-        let configFix = this.context.config.get("disallowedFunctions");
-        if (!configFix) {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Extern was not added as \'disallowedFunctions\' is not defined in the configuration file.`);
-            return undefined;
-        } 
-
-        if (!configFix[this.standardLibrary]) {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Couldn't add extern due to missing configuration for standard library <${this.standardLibrary}>.`);
-            return undefined;
-        }
-
-        if (!configFix[this.standardLibrary][callJp.name]) {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Couldn't add extern due to missing configuration for function \'${callJp.name}\' of standard library <${this.standardLibrary}>.`);
-            return undefined;
-        }
-
-        const location = configFix[this.standardLibrary][callJp.name]["location"];
-        const replacement_func = configFix[this.standardLibrary][callJp.name]["replacement"];
-
-        if (!location || !replacement_func) {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Couldn't add extern due to incomplete configuration for function \'${callJp.name}\' of standard library <${this.standardLibrary}>.`);
-            return undefined;
-        }
-        return new Map([
-            ["function", replacement_func],
-            ["location", location]
-        ]);
-
     }
 
     private solveDisallowedFunctions(fileJp: FileJp, invalidCalls: Call[]): boolean {
@@ -131,7 +130,7 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
             }
 
             const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
-            const configFix: Map<string, string> | undefined = this.getFixFromConfig(callJp, errorMsgPrefix);
+            const configFix: Map<string, string> | undefined = this.getFixFromConfig(callJp);
             if (!configFix) {
                 this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
                 continue;
@@ -146,11 +145,13 @@ export default abstract class DisallowedStdLibFunctionRule extends MISRARule {
                 continue;
             }
             
+            console.log("found func: ", functionDef.code);
+
             let externDecl: Joinpoint | undefined;
             if (!externFunctions.includes(functionDef.astId)) {
                 externDecl = addExternFunctionDecl(fileJp, functionDef);
 
-                if (!externDecl) {
+                if (externDecl === undefined) {
                     this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${location}\' does not have external linkage.`);
                     this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
                     continue;

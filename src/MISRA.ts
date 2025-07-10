@@ -6,6 +6,15 @@ import { countSwitchClauses } from "./utils/SwitchUtils.js";
 
 type NodeID = string;
 
+/**
+ * Specifies whether a MISRA rule is applied to a single translation unit
+ * or requires analysis of the entire program.
+ */
+export enum AnalysisType {
+    SINGLE_TRANSLATION_UNIT,
+    SYSTEM
+}
+
 export enum MISRATransformationType {
     NoChange,
     DescendantChange,

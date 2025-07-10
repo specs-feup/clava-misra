@@ -1,26 +1,60 @@
 import { Call, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
-import MISRARule from "../../MISRARule.js";
 import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { findFunctionDef } from "../../utils/FunctionUtils.js";
 import { getCallIndex, isCallToImplicitFunction } from "../../utils/CallUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { addExternFunctionDecl, getFilesWithCallToImplicitFunction, getIncludesOfFile, isValidFileWithExplicitCall, removeIncludeFromFile } from "../../utils/FileUtils.js";
-import { rebuildProgram } from "../../utils/ProgramUtils.js";
+import UserConfigurableRule from "../UserConfigurableRule.js";
 
 /**
  * MISRA Rule 17.3: A function shall not be declared implicitly
  */
-export default class Rule_17_3_ImplicitFunction extends MISRARule {
+export default class Rule_17_3_ImplicitFunction extends UserConfigurableRule {
     priority = 1;
+    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
     protected override readonly appliesTo = ["c90"];
-
-    constructor(context: MISRAContext) {
-        super(context);
-    }
 
     override get name(): string {
         return "17.3";
+    }
+
+    getErrorMsgPrefix(callJp: Call): string {
+        return `Function '${callJp.name}' is declared implicitly.`;
+    }
+
+    /**
+     * Retrieves the fix for a implicit call specified on the config file (.h or .c)
+     * @param callJp 
+     * @param errorMsgPrefix 
+     * @returns 
+     */
+    getFixFromConfig(callJp: Call): string | undefined {
+        const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
+        
+        if (!this.context.config) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Include or extern not added due to missing config file.`);
+            return undefined;
+        }
+    
+        let configFix: string | undefined;
+        try {
+            configFix = this.context.config.get("implicitCalls")[callJp.name];
+        } catch {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Include or extern was not added as \'implicitCalls\' is not defined in the configuration file.`);
+            return undefined;
+        }
+    
+        if (configFix === undefined) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Couldn't add include or extern due to missing configuration for function '${callJp.name}'.`);
+            return undefined;
+        }
+    
+        if (!(configFix.endsWith(".h") || configFix.endsWith(".c"))) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Cannot add include or extern without a .h or .c reference.`);
+            return undefined;
+        }
+        return configFix;
     }
 
     /**
@@ -36,7 +70,7 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         const implicitCalls = Query.searchFrom($jp, Call, (callJp) => isCallToImplicitFunction(callJp)). get();
         if (logErrors) {
             for (const callJp of implicitCalls) {
-                this.logMISRAError(callJp, `Function '${callJp.name}' is declared implicitly.`);
+                this.logMISRAError(callJp, this.getErrorMsgPrefix(callJp));
             }
         }
         
@@ -67,43 +101,11 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
         }
 
         if (changedDescendant) {
-            rebuildProgram();
+            this.rebuildProgram();
             return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
         } else {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
-    }
-
-    /**
-     * Retrieves the fix for a implicit call specified on the config file (.h or .c)
-     * @param callJp 
-     * @param errorMsgPrefix 
-     * @returns 
-     */
-    protected override getFixFromConfig(callJp: Call, errorMsgPrefix: string): string | undefined {
-        if (!this.context.config) {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Include or extern not added due to missing config file.`);
-            return undefined;
-        }
-    
-        let configFix: string | undefined;
-        try {
-            configFix = this.context.config.get("implicitCalls")[callJp.name];
-        } catch {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Include or extern was not added as \'implicitCalls\' is not defined in the configuration file.`);
-            return undefined;
-        }
-    
-        if (configFix === undefined) {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Couldn't add include or extern due to missing configuration for function '${callJp.name}'.`);
-            return undefined;
-        }
-    
-        if (!(configFix.endsWith(".h") || configFix.endsWith(".c"))) {
-            this.logMISRAError(callJp, `${errorMsgPrefix} Cannot add include or extern without a .h or .c reference.`);
-            return undefined;
-        }
-        return configFix;
     }
 
     /**
@@ -127,9 +129,8 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
                 continue;
             } 
 
-            const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
-            const configFix = this.getFixFromConfig(callJp, errorMsgPrefix);
-            if (!configFix) {
+            const configFix = this.getFixFromConfig(callJp);
+            if (configFix === undefined) {
                 this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
                 continue;
             }
@@ -151,10 +152,6 @@ export default class Rule_17_3_ImplicitFunction extends MISRARule {
             }
         }
         return changedFile;
-    }
-
-    private getErrorMsgPrefix(callJp: Call): string {
-        return `Function '${callJp.name}' is declared implicitly.`;
     }
 
     private solveWithInclude(

@@ -1,7 +1,6 @@
 import { Joinpoint } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
-import { MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getTypeDefDecl, isTypeDeclUsed } from "../../utils/TypeDeclUtils.js";
 import { isTagDecl } from "../../utils/JoinpointUtils.js";
 
@@ -10,9 +9,7 @@ import { isTagDecl } from "../../utils/JoinpointUtils.js";
  */
 export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
 
-    constructor(context: MISRAContext) {
-        super(context);
-    }
+    readonly analysisType = AnalysisType.SYSTEM;
 
     override get name(): string {
         return "2.3";
