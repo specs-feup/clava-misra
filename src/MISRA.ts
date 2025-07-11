@@ -11,8 +11,8 @@ type NodeID = string;
  * or requires analysis of the entire program.
  */
 export enum AnalysisType {
-    SINGLE_TRANSLATION_UNIT,
-    SYSTEM
+    SINGLE_TRANSLATION_UNIT = "single",
+    SYSTEM = "system"
 }
 
 export enum MISRATransformationType {

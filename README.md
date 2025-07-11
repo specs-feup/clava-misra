@@ -78,23 +78,33 @@ To execute a project that uses this tool, provide the following information:
 - The path to your **script file**. 
 - The **C standard** to use (`c90`, `c99`, or `c11`).
 - The path to the **source code** to process.
+- *(Optional)* The **analysis type** (`system`, `single`, or `all`).
 - *(Optional)* The full path to a **config file**.
-
 ```bash
 npx clava classic <scriptFile.js> -pi -std <c90 | c99 | c11> -p <path/to/source/code> [-av <path/to/config.json>]
 ```
 
 ### Examples:
 
-Default use without a config file:
+Default use without a config file and analysis type (default is `all`)
 
 ```bash
 npx clava classic src/main.js -pi -std c99 -p CxxSources/
 ```
 
+With analysis type specified:
+```bash
+npx clava classic src/main.js -pi -std c99 -p CxxSources/ -av "type=system"
+```
+
 Using a config file:
 ```bash
-npx clava classic src/main.js -pi -std c99 -p CxxSources/ -av config/misra_config.json
+npx clava classic src/main.js -pi -std c99 -p CxxSources/ -av "config=misra_config.json"
+```
+
+With both analysis and config file specified:
+```bash
+npx clava classic src/main.js -pi -std c99 -p CxxSources/ -av "type=system config=misra_config.json"
 ```
 
 To view other available options, run:

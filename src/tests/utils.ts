@@ -50,7 +50,7 @@ export function registerSourceCode(files: TestFile[], configPath?: string): void
 
       const dataStore = Clava.getData();
       dataStore.setStandard(process.env.STD_VERSION!);
-      dataStore.put("argv", configPath ?? undefined);
+      dataStore.put("argv", configPath ? `config=${configPath}` : undefined);
 
       // If running on macOS, change libcCxxMode
       if (os.platform() === 'darwin') {

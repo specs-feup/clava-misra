@@ -33,9 +33,9 @@ import Rule_8_7_RestrictExternalLinkage from "./Section8_DeclarationsAndDefiniti
 import Rule_8_9_BlockScopeDefinition from "./Section8_DeclarationsAndDefinitions/Rule_8_9_BlockScopeDefinition.js";
 
 
-export function sortRules(context: MISRAContext) {
+export function selectRules(context: MISRAContext, analysisType: string) {
      
-    const rules: MISRARule[] = [
+    let rules: MISRARule[] = [
         new Rule_2_3_UnusedTypeDecl(context),
         new Rule_2_4_UnusedTagDecl(context),
         new Rule_2_6_UnusedLabels(context),
@@ -68,8 +68,8 @@ export function sortRules(context: MISRAContext) {
         new Rule_21_10_NoTimeDateFunctions(context),
         new Rule_21_11_NoTgmathFunctions(context)
     ];
-
-    return rules.sort((ruleA, ruleB) => ruleA.priority - ruleB.priority);
+    rules.sort((ruleA, ruleB) => ruleA.priority - ruleB.priority); 
+    return analysisType === "all" ? rules : rules.filter(rule => rule.analysisType === analysisType);
 }
 
-export default sortRules;
+export default selectRules;

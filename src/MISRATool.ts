@@ -1,11 +1,11 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "./MISRARule.js";
-import sortRules from "./rules/index.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRATransformationType } from "./MISRA.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import { resetCaches } from "./utils/ProgramUtils.js";
+import { selectRules } from "./rules/index.js";
 
 export default class MISRATool {
     static #misraRules: MISRARule[];
@@ -15,17 +15,38 @@ export default class MISRATool {
         this.validateStdVersion();
         this.#context = new MISRAContext();
         resetCaches();
-        this.#misraRules = sortRules(this.#context);
+        this.initRules();
     }
 
     private static validateStdVersion() {
-        const allowedVersions = ["c90", "c99", "c11"];
+        const validVersions = ["c90", "c99", "c11"];
         const stdVersion = (Query.root() as Program).standard;
 
-        if (!allowedVersions.includes(stdVersion)) {
-            console.error(`[Clava-MISRATool] Invalid --std value. Allowed values: ${allowedVersions.join(", ")}`);
+        if (!validVersions.includes(stdVersion)) {
+            console.error(`[Clava-MISRATool] Invalid -std value. Allowed values: ${validVersions.join(", ")}`);
             process.exit(1);
         }
+    }
+
+    private static initRules() {
+        const validTypes = ["all", "system", "single"];
+        const typeStr = this.getArgValue("type", validTypes) ?? "all";
+        this.#misraRules = selectRules(this.#context, typeStr);
+    }
+
+    private static getArgValue(field: string, validValues?: string[]): string | undefined{
+        const args = Clava.getData().get("argv") as string;
+        if (!args) return undefined;
+
+        const pair = args.split(/\s+/).find(arg => arg.startsWith(field + "="));
+        if (!pair) return undefined;
+
+        const value = pair.split("=")[1];
+        if (validValues && !validValues.includes(value)) {
+            console.error(`[Clava-MISRATool] Invalid '${field}' value. Allowed values: ${validValues.join(", ")}`);
+            process.exit(1);
+        }
+        return value;
     }
 
     public static checkCompliance(startingPoint: Program | FileJp = Query.root() as Program) {
@@ -48,7 +69,7 @@ export default class MISRATool {
     public static applyCorrections() {
         this.init();
 
-        const configFilePath = Clava.getData().get("argv");
+        const configFilePath = this.getArgValue("config");
         if (configFilePath) {
             this.#context.config = configFilePath;
         }

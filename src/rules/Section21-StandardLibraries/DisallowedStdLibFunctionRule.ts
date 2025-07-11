@@ -144,8 +144,6 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
                 this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
                 continue;
             }
-            
-            console.log("found func: ", functionDef.code);
 
             let externDecl: Joinpoint | undefined;
             if (!externFunctions.includes(functionDef.astId)) {
