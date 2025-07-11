@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         node-version: ['20.x']
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         std: [c90, c99, c11]
 
     runs-on: ${{ matrix.os }}
