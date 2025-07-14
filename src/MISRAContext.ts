@@ -2,7 +2,7 @@ import { EnumDecl, FunctionJp, Joinpoint, LabelStmt, Program, RecordJp, TypedefD
 import { MISRAError, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
 import * as fs from 'fs';
 import Context from "./ast-visitor/Context.js";
-import { getFileLocation } from "./utils/JoinpointUtils.js";
+import { compareLocation, getFileLocation, getRelativeFileLocation } from "./utils/JoinpointUtils.js";
 
 /**
  * Tracks MISRA errors and warnings during the analysis and/or transformation of the code.
@@ -44,7 +44,7 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     }
 
     private sortErrors() {
-        this.errors.sort((error1, error2) => getFileLocation(error1.joinpoint).localeCompare(getFileLocation(error2.joinpoint)))
+        this.errors.sort((error1, error2) => compareLocation(error1.joinpoint, error2.joinpoint));
     }
 
     get config(): Map<string, any> | undefined {
@@ -108,7 +108,7 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     }
 
     private printError(error: MISRAError): void {
-        console.log(`- [Rule ${error.ruleID}] at ${getFileLocation(error.joinpoint)}: ${error.message}\n`);
+        console.log(`- [Rule ${error.ruleID}] at ${getRelativeFileLocation(error.joinpoint)}: ${error.message}\n`);
     }
     
     printAllErrors(): void {
