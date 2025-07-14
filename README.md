@@ -80,17 +80,23 @@ To execute a project that uses this tool, provide the following information:
 - The path to the **source code** to process.
 - *(Optional)* The **analysis type** (`system`, `single`, or `all`).
 - *(Optional)* The full path to a **config file**.
+- *(Optional)* The **analysis type**:
+  - `system`: For rules whose violation detection requires analyzing multiple files together
+  - `single`: For rules whose violation detection is identified within individual translation units independently
+  - `all`: For both system and single translation rules
+
 ```bash
-npx clava classic <scriptFile.js> -pi -std <c90 | c99 | c11> -p <path/to/source/code> [-av <path/to/config.json>]
+npx clava classic <scriptFile.js> -pi -std <c90 | c99 | c11> -p <path/to/source/code> [-av "<options>"]
 ```
 
 ### Examples:
 
-Default use without a config file and analysis type (default is `all`)
+Default use (no config file or analysis type):
 
 ```bash
 npx clava classic src/main.js -pi -std c99 -p CxxSources/
 ```
+In this case, analysis type is `all` by default.
 
 With analysis type specified:
 ```bash

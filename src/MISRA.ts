@@ -35,7 +35,7 @@ export class MISRAError {
     /**
      * The joinpoint where the error was detected
      */
-    public $jp: Joinpoint;
+    public joinpoint: Joinpoint;
     /**
      * Explanation of the violation
      */
@@ -49,7 +49,7 @@ export class MISRAError {
      */
     constructor(ruleID: string, $jp: Joinpoint, message: string) {
         this.ruleID = ruleID;
-        this.$jp = $jp;
+        this.joinpoint = $jp;
         this.message =  message;
     }
 
@@ -60,7 +60,7 @@ export class MISRAError {
      */
     equals(other: MISRAError): boolean {
         return this.ruleID === other.ruleID &&
-               this.$jp.astId === other.$jp.astId &&
+               this.joinpoint.astId === other.joinpoint.astId &&
                this.message === other.message;
     }
 
@@ -68,7 +68,7 @@ export class MISRAError {
      * Checks if the associated joinpoint is still present in program's AST
      */
     isActiveError(): boolean {
-        return (Query.root() as Joinpoint).contains(this.$jp);
+        return (Query.root() as Joinpoint).contains(this.joinpoint);
     }
 }
 

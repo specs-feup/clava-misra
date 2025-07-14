@@ -3,6 +3,7 @@ import { FileJp, Program, Include, Call, FunctionJp, Joinpoint, StorageClass } f
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isCallToImplicitFunction } from "./CallUtils.js";
 import { isExternalLinkageIdentifier } from "./IdentifierUtils.js";
+import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 
 /**
  * Checks if a file compiles correctly after adding a statement by rebuilding it.
@@ -10,16 +11,20 @@ import { isExternalLinkageIdentifier } from "./IdentifierUtils.js";
  * 
  * @param fileJp - The file to validate.
  */
-export function isValidFile(fileJp: FileJp) : boolean {
+export function isValidFile(fileJp: FileJp, jpType?: typeof Joinpoint, index?: number) : boolean | Joinpoint | undefined {
     const programJp = fileJp.parent as Program;
     let copyFile = ClavaJoinPoints.fileWithSource(`temp_misra_${fileJp.name}`, fileJp.code, fileJp.relativeFolderpath);
+    let result: boolean | Joinpoint = true;
 
     copyFile = programJp.addFile(copyFile) as FileJp;
     try {
         const rebuiltFile = copyFile.rebuild();
         const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first();
+        if (jpType && index) {
+            result = Query.searchFrom(rebuiltFile, jpType).get()[index];
+        }
         fileToRemove?.detach();
-        return true;
+        return result;
     } catch(error) {
         copyFile.detach();
         return false;

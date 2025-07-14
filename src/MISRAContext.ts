@@ -35,6 +35,37 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     #structPrefix = "_misra_struct_";
     #unionPrefix = "_misra_union_";
 
+    get errors(): MISRAError[] {
+        return this.#misraErrors;
+    }
+
+    get activeErrors(): MISRAError[] {
+        return this.#misraErrors.filter(error => error.isActiveError());
+    }
+
+    private sortErrors() {
+        this.errors.sort((error1, error2) => getFileLocation(error1.joinpoint).localeCompare(getFileLocation(error2.joinpoint)))
+    }
+
+    get config(): Map<string, any> | undefined {
+        return this.#config;
+    }
+
+    set config(configFilePath: string) {
+        if (fs.existsSync(configFilePath)) {
+            const data = fs.readFileSync(configFilePath, 'utf-8');
+            this.#config = new Map(Object.entries(JSON.parse(data)));
+        } else {
+            console.error(`[Clava-MISRATool] Provided configuration file was not found.`);
+            process.exit(1);
+        }
+    }
+
+    resetStorage() {
+        [...this.storage.keys()].forEach(key => {
+            this.storage.set(key,  new Map())
+        });
+    }
 
     getRuleResult(ruleID: string, $jp: Joinpoint): MISRATransformationType | undefined {
         return this.get(ruleID)?.get($jp.astId);
@@ -50,10 +81,12 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
         transformations.set($jp.astId, result);
     }
 
-    resetStorage() {
-        [...this.storage.keys()].forEach(key => {
-            this.storage.set(key,  new Map())
-        });
+    addMISRAError(ruleID: string, $jp: Joinpoint, message: string) {
+        const newError = new MISRAError(ruleID, $jp, message);
+
+        if (!this.#misraErrors.some(error => error.equals(newError))) {
+            this.#misraErrors.push(newError);
+        }
     }
 
     generateIdentifierName($jp: Joinpoint) {
@@ -74,47 +107,17 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
         }
     }
 
-    get errors(): MISRAError[] {
-        return this.#misraErrors;
-    }
-
-    get activeErrors(): MISRAError[] {
-        return this.#misraErrors.filter(error => error.isActiveError());
-    }
-
-    get config(): Map<string, any> | undefined {
-        return this.#config;
-    }
-
-    set config(configFilePath: string) {
-        if (fs.existsSync(configFilePath)) {
-            const data = fs.readFileSync(configFilePath, 'utf-8');
-            this.#config = new Map(Object.entries(JSON.parse(data)));
-        } else {
-            console.error(`[Clava-MISRATool] Provided configuration file was not found.`);
-            process.exit(1);
-        }
-    }
-
-    addMISRAError(ruleID: string, $jp: Joinpoint, message: string) {
-        const newError = new MISRAError(ruleID, $jp, message);
-
-        if (!this.#misraErrors.some(error => error.equals(newError))) {
-            this.#misraErrors.push(newError);
-        }
-    }
-
     private printError(error: MISRAError): void {
-        console.log(`- [Rule ${error.ruleID}] at ${getFileLocation(error.$jp)}: ${error.message}\n`);
+        console.log(`- [Rule ${error.ruleID}] at ${getFileLocation(error.joinpoint)}: ${error.message}\n`);
     }
     
     printAllErrors(): void {
+        this.sortErrors();
         this.#misraErrors.forEach(error => this.printError(error));
     }
     
     printActiveErrors(): void {
-        this.#misraErrors
-            .filter(error => error.isActiveError())
-            .forEach(error => this.printError(error));
+        this.sortErrors();
+        this.activeErrors.forEach(error => this.printError(error));
     }
 }

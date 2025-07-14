@@ -1,8 +1,10 @@
-import { BinaryOp, Call, Joinpoint, UnaryExprOrType, UnaryOp, VariableArrayType, Varref } from "@specs-feup/clava/api/Joinpoints.js";
+import { BinaryOp, Call, FileJp, Joinpoint, ParenExpr, UnaryExprOrType, UnaryOp, VariableArrayType, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { getVolatileVarRefs } from "../../utils/VarUtils.js";
+import { isValidFile } from "../../utils/FileUtils.js";
+import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 /**
  * MISRA Rule 13.6: The operand of the sizeof operator shall not contain any expression which has potential side effects
@@ -36,7 +38,7 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
         this.volatileRefs = this.operandIsVariableArrayType($jp) ? getVolatileVarRefs($jp) : [];
         this.modifyingExpressions = [
             ...Query.searchFromInclusive($jp, UnaryOp,  {kind: /(post_inc)|(post_dec)|(pre_inc)|(pre_dec)/}).get(), 
-            ...Query.searchFromInclusive($jp, BinaryOp, {kind: /(assign)|(mul_assign)|(div_assign)|(rem_assign)|(add_assign)|(sub_assign)|(shl_assign)|(shr_assign)|(and_assign)|(xor_assign)|(or_assign)/}).get()
+            ...Query.searchFromInclusive($jp, BinaryOp, {kind: /(assign)|(add_assign)|(sub_assign)|(mul_assign)|(div_assign)|(rem_assign)|(shl_assign)|(shr_assign)|(and_assign)|(xor_assign)|(or_assign)/}).get()
         ];
 
         const isNonCompliant = this.functionCalls.length > 0 || this.modifyingExpressions.length > 0 || this.volatileRefs.length > 0;
@@ -64,14 +66,26 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
         }
 
         if (!this.operandIsVariableArrayType($jp as UnaryExprOrType)) {
+            for (const callJp of this.functionCalls) {
+                const callAncestor = callJp.getAncestor("call");
+                if (callAncestor === undefined || callAncestor.depth < $jp.depth) {
+                    const functionType = callJp.functionType.returnType;
+                    const fileJp = callJp.getAncestor("file") as FileJp;
+                    const tempJp = fileJp.lastChild.insertAfter(ClavaJoinPoints.stmtLiteral(`static int _temp_misra_var = sizeof(${functionType.code});`));
+                    const jpIndex = Query.searchFrom(fileJp, UnaryExprOrType).get().length;
+
+                    let newSizeOf = isValidFile(fileJp, UnaryExprOrType, jpIndex) as UnaryExprOrType;
+                    newSizeOf = $jp.replaceWith(newSizeOf) as UnaryExprOrType;
+                    newSizeOf.setArgType(functionType);
+                    tempJp.detach();
+                    return new MISRATransformationReport(MISRATransformationType.Replacement, newSizeOf);
+                }
+            }
+
             for (const expr of this.modifyingExpressions) {
                 let varRef = expr instanceof BinaryOp ? 
                     expr.left : Query.searchFrom(expr, Varref).get()[0];
                 expr.replaceWith(varRef);
-            }
-            for (const callJp of this.functionCalls) {
-                const functionType = callJp.functionType.returnType;
-                callJp.replaceWith(functionType);
             }
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         } 
