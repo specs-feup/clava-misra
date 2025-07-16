@@ -3,34 +3,26 @@ import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestF
 const failingCode1 = `
 #include <stdint.h>
 
-static int32_t count; /* "count" has internal linkage */
+static int32_t count_5_9; /* "count" has internal linkage */
 
-static void foo ( void ) { 
-    int16_t count; // Non-compliant: clashes with internal linkage variable "count"
-    int16_t index; 
+static void foo_5_9 (void) { 
+    int16_t count_5_9; // Violation of rule 5.9
+    int16_t index_5_9; 
 }
 
-// Missing "static" keyword
-void bar1 ( void ) {
-    /* Non-compliant - clashes with internal linkage identifier "count" */
-    static int16_t count; 
-    foo();
+void bar1 (void) {
+    static int16_t count_5_9;  // Violation of rule 5.9
+    foo_5_9();
 }
 `;
 
 const failingCode2 = `
 #include <stdint.h>
 
-/* 
-* Non-compliant - "count" has internal linkage but clashes 
-* with other internal linkage identifier with the same name 
-*/
-static int8_t count; 
+static int8_t count_5_9; // Violation of rule 5.9
 
-static void foo ( void ) { /* Non-compliant - "foo" has internal
- * linkage but clashes with a function of the same name */
-
-    int32_t index;
+static void foo_5_9 ( void ) { // Violation of rule 5.9
+    int32_t index_5_9;
     int16_t nbytes; 
 }
 
@@ -44,27 +36,34 @@ const failingCode3 = `
 #include <stdint.h>
 
 static void test_5_9_1 ( void ) { 
-    int32_t index = 0;
+    int32_t index_5_9 = 0;
 
-    count: // Non-compliant: label name "count" has internal linkage in other file
-        index++;
-    if (index < 5) {
-        goto count;
+    count_5_9: // Violation of rule 5.9
+        index_5_9++;
+    if (index_5_9 < 5) {
+        goto count_5_9;
     }
 }
+`;
+
+const systemFile = `
+extern void bar1 (void);
+extern void bar2 (void);
 `;
 
 const files: TestFile[] = [
     { name: "bad1.c", code: failingCode1 },
     { name: "bad2.c", code: failingCode2 },
-    { name: "bad3.c", code: failingCode3 }
+    { name: "bad3.c", code: failingCode3 },
+    { name: "rule_5_9_system.c", code: systemFile}
 ];
 
 describe("Rule 5.9", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {
-        expect(countMISRAErrors()).toBe(7);
+        expect(countMISRAErrors()).toBe(5);
+        expect(countMISRAErrors("5.9")).toBe(5);
 
         //expect(countMISRAErrors(Query.search(FileJp, {name: "bad1.c"}).first()!)).toBe(5);
         //expect(countMISRAErrors(Query.search(FileJp, {name: "bad2.c"}).first()!)).toBe(3);

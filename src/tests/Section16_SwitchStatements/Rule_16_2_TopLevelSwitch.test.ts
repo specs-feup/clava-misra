@@ -2,8 +2,8 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 import { FileJp } from "@specs-feup/clava/api/Joinpoints.js";
 
-const passingCode = 
-`static void foo1( void ) {
+const passingCode = `
+static void foo1( void ) {
     int x, y;
     switch ( x )
     {
@@ -15,7 +15,8 @@ const passingCode =
         default:
             break;
     }
-}`;
+}
+`;
 
 const failingCode = 
 `static void foo2( void ) {
@@ -32,7 +33,8 @@ const failingCode =
         default:
             break;
     }
-}`;
+}
+`;
 
 const files: TestFile[] = [
     { name: "bad.c", code: failingCode },

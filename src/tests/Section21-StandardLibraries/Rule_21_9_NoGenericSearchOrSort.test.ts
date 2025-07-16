@@ -9,7 +9,7 @@ static int compare(const void* a, const void* b) {
     return (*(int*)a - *(int*)b);
 }
 
-int main() {
+static int test_21_9_1() {
     int arr1[] = { 5, 3, 1, 4, 2 };
     int n1 = sizeof(arr1) / sizeof(arr1[0]);
     qsort(arr1, n1, sizeof(int), compare); // Non-compliant
@@ -26,7 +26,6 @@ int main() {
 const customStdLib = `
 #include <stddef.h>
 
-// Missing "static" keyword; Will have external decl after correction
 void my_qsort(void* base, size_t num, size_t size, int (*compar)(const void*, const void*)) {
     (void)base;
     (void)num;
@@ -34,7 +33,6 @@ void my_qsort(void* base, size_t num, size_t size, int (*compar)(const void*, co
     (void)compar;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 void* my_bsearch(const void* key, const void* base, size_t num, size_t size, int (*compar)(const void*, const void*)) {
     (void)key;
     (void)base;
@@ -45,9 +43,16 @@ void* my_bsearch(const void* key, const void* base, size_t num, size_t size, int
 }
 `;
 
+const systemFile = `
+#include <stddef.h>
+extern void my_qsort(void* base, size_t num, size_t size, int (*compar)(const void*, const void*));
+extern void* my_bsearch(const void* key, const void* base, size_t num, size_t size, int (*compar)(const void*, const void*));
+`;
+
 const files: TestFile[] = [
     { name: "bad.c", code: bad },
-    { name: "custom_stdlib.c", code: customStdLib }
+    { name: "custom_stdlib.c", code: customStdLib },
+    { name: "rule_21_9_system.c", code: systemFile }
 ];
 
 describe("Rule 21.9", () => {
@@ -60,7 +65,7 @@ describe("Rule 21.9", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(4);  
+        expect(countMISRAErrors()).toBe(2);  
         expect(countMISRAErrors("21.9")).toBe(2); 
     });
 

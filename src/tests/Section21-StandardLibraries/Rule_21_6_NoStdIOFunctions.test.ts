@@ -5,27 +5,24 @@ import { fileURLToPath } from "url";
 const failingCode = `
 #include <stdio.h>
 
-int main() {
+static void test_21_6_1() {
     char buffer[100];
 
     // Non-compliant: call to stdlib function
     // Non-compliant: return value is not being used
-    printf("Enter input: ");
+    (void) printf("Enter input: "); // Violation of rule 21.6
 
     // Non-compliant: call to stdlib function
     // Non-compliant: return value is not being used
-    fgets(buffer, sizeof(buffer), stdin);
-    return 0;
+    (void) fgets(buffer, sizeof(buffer), stdin); // Violation of rule 21.6
 }
 `;
 
 const customStdIO = `
-// Missing "static" keyword; Will have external decl after correction
 void my_printf(const char* fmt, ...) {
     (void)fmt;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 char* my_fgets(char* str, int num, void* stream) {
     (void)str;
     (void)num;
@@ -34,9 +31,15 @@ char* my_fgets(char* str, int num, void* stream) {
 }
 `;
 
+const systemFile = `
+extern void my_printf(const char* fmt, ...);
+extern char* my_fgets(char* str, int num, void* stream);
+`;
+
 const files: TestFile[] = [
     { name: "bad.c", code: failingCode },
-    { name: "custom_stdio.c", code: customStdIO }
+    { name: "custom_stdio.c", code: customStdIO },
+    { name: "rule_21_6_system.c", code: systemFile }
 ];
 
 describe("Rule 21.6", () => {
@@ -49,6 +52,11 @@ describe("Rule 21.6", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
+        expect(countMISRAErrors()).toBe(2);  
         expect(countMISRAErrors("21.6")).toBeGreaterThanOrEqual(2);
+    });
+
+    it("should correct errors", () => {
+        expect(countErrorsAfterCorrection()).toBe(0);
     });
 });

@@ -11,19 +11,19 @@ static void test_13_6_1(void) {
     int32_t j; 
     size_t s;
 
-    s = sizeof(j);               /* Compliant */
-    s = sizeof(j++);             /* Non-compliant (rule 13.6)*/
-    s = sizeof(i);               /* Compliant - exception */
-    s = sizeof(int32_t);         /* Compliant */
+    s = sizeof(j);               
+    s = sizeof(j++);             // Non-compliant (rule 13.6)
+    s = sizeof(i);               
+    s = sizeof(int32_t);         
 }
+static volatile uint32_t v; 
 
-volatile uint32_t v; // Non-compliant - missing "static" (rule 8.7)
-
-void f(int32_t n) { // Non-compliant - missing "static" (rule 8.7)
+static void f(int32_t n) { 
     size_t s;
     s = sizeof(int32_t[n]);                            /* Compliant */
     s = sizeof(int32_t[n++]);                          /* Non-compliant (rule 13.6) */
-}`;
+}
+`;
 
 const passingCode = `
 #include <stdint.h>
@@ -40,7 +40,8 @@ static void test_13_6_2(int32_t n1, int32_t buffer[]) {
     s1 = sizeof(int32_t);           /* Compliant */
     s1 = sizeof( int32_t[ n1 ] );   /* Compliant */
     s1 = sizeof(buffer[s1]);        /* Compliant */
-}`;
+}
+`;
 
 const failingCode = `
 #include <stdint.h>
@@ -86,7 +87,8 @@ static void test_13_6_3(int32_t n) {
 
     // Declaration of variable-length array type; will not be corrected
     s2 = sizeof(int32_t[ n++ ]);      // Non-compliant (rule 13.6)
-}`;
+}
+`;
 
 const files: TestFile[] = [
     { name: "misraExample.c", code: misraExample},
@@ -98,10 +100,10 @@ describe("Rule 13.6", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {
-        expect(countMISRAErrors()).toBe(23);
+        expect(countMISRAErrors()).toBe(21);
         expect(countMISRAErrors("13.6")).toBe(21); 
 
-        expect(countMISRAErrors(Query.search(FileJp, {name: "misraExample.c"}).first()!)).toBe(4);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "misraExample.c"}).first()!)).toBe(2);
         expect(countMISRAErrors(Query.search(FileJp, {name: "bad.c"}).first()!)).toBe(19);
         expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!)).toBe(0);
     });

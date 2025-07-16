@@ -26,7 +26,7 @@ export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
 
         const booleanCondition = switchHasBooleanCondition($jp);
         if (booleanCondition && logErrors) {
-            this.logMISRAError($jp, `Switch statement controlling expression ${$jp.condition.code} must not have essentially boolean type.`)
+            this.logMISRAError($jp, `Switch statement controlling expression '${$jp.condition.code}' must not have essentially boolean type.`)
         }    
         return booleanCondition;
     }

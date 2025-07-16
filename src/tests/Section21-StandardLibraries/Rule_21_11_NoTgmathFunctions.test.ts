@@ -22,11 +22,14 @@ static void test_21_11_2(void) {
 `;
 
 const customMath = `
-// Missing "static" keyword; Will have external decl after correction
 float my_sqrt(float x) {
     (void)x;
     return 0.0;
 }
+`;
+
+const systemFile = `
+extern float my_sqrt(float x);
 `;
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,7 +38,8 @@ const __dirname = path.dirname(__filename);
 const files: TestFile[] = [
     { name: "bad.c", code: badCode },
     { name: "good.c", code: passingCode },
-    { name: "custom_math.c", code: customMath }
+    { name: "custom_math.c", code: customMath },
+    { name: "rule_21_11_system.c", code: systemFile }
 ];
 
 describe("Rule 21.11", () => {
@@ -48,7 +52,7 @@ describe("Rule 21.11", () => {
         registerSourceCode(files, configFilePath);
 
         it("should detect errors", () => {
-            expect(countMISRAErrors()).toBe(2);
+            expect(countMISRAErrors()).toBe(1);
             expect(countMISRAErrors("21.11")).toBe(1);
         });
 

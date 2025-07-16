@@ -67,7 +67,7 @@ export default class Rule_16_5_DefaultFirstOrLast extends MISRARule {
                     return false;
                 } 
                 if (logErrors) {
-                    this.logMISRAError($jp, "The default case of a switch statement must be the first or last label.")
+                    this.logMISRAError(currentCase, "The default case of a switch statement must be the first or last label.")
                 }
                 return true;
             }

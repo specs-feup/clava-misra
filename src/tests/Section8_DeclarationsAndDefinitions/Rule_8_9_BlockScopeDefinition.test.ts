@@ -28,7 +28,7 @@ static uint32_t test_8_9_2 ( void ) {
 const failingCode = `
 #include <stdint.h>
 
-static uint32_t bad_counter = 0;
+static uint32_t bad_counter = 0; // Violation of rule 8.9
 
 static int test_8_9_3 (void) {
     ++bad_counter;
@@ -36,9 +36,20 @@ static int test_8_9_3 (void) {
 }
 `;
 
+const misraExample = `
+#include <stdint.h>
+
+static uint32_t test_8_9_4 ( void ) {
+    static uint32_t call_count = 0;
+    ++call_count;
+    return call_count;
+}
+`;
+
 const files: TestFile[] = [
     { name: "bad.c", code: failingCode },
-    { name: "good.c", code: passingCode }
+    { name: "good.c", code: passingCode },
+    { name: "misraExample.c", code: misraExample }
 ];
 
 describe("Rule 8.9", () => {
@@ -49,6 +60,7 @@ describe("Rule 8.9", () => {
 
         expect(countMISRAErrors(Query.search(FileJp, {name: "bad.c"}).first()!)).toBe(1);
         expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!)).toBe(0);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "misraExample.c"}).first()!)).toBe(0);
     });
 
     it("should correct errors in bad.c", () => {

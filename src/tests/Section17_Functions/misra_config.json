@@ -14,8 +14,7 @@
     "sin": "math.h",
     "pow": "math.h",
     "half": "math.h",
-    "func": "good.c",
-    "func2": "good.c",
+    "foo_17_3": "good.c",
     "test_17_3_1": "good.c"
   }
 }

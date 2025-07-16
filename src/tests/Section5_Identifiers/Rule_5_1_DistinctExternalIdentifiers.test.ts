@@ -30,17 +30,33 @@ void data_collection_handler_buffer_function(void) { /* Non-compliant */
 }
 `;
 
+const systemFile = `
+#include <stdint.h>
+
+extern int32_t engine_exhaust_gas_temperature_raw;
+extern int32_t engine_exhaust_gas_temperature_scaled; 
+
+extern int32_t engine_exhaust_gas_temp_raw;
+extern int32_t engine_exhaust_gas_temp_scaled;
+
+extern void motor_controller_status_update_v1(void);
+extern void motor_controller_status_update_v2(void);
+
+extern int32_t data_collection_handler_buffer_var;
+extern void data_collection_handler_buffer_function(void);
+`;
+
 const files: TestFile[] = [
-    { name: "bad.c", code: failingCode }
+    { name: "bad.c", code: failingCode },
+    { name: "system.c", code: systemFile }
 ];
 
 describe("Rule 5.1", () => {
     registerSourceCode(files);
 
     it("should detect violations of Rule 5.1", () => {
-        expect(countMISRAErrors()).toBe(11);
+        expect(countMISRAErrors()).toBe(3);
         expect(countMISRAErrors("5.1")).toBe(3);
-        expect(countMISRAErrors("8.7")).toBe(8);
     });
 
     it("should correct all violations of Rule 5.1", () => {

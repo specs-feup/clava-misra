@@ -29,35 +29,39 @@ int main() {
 const customStdLib = `
 #include <stddef.h>
 
-// Missing "static" keyword; Will have external decl after correction
 double my_atof(const char* str) {
     (void)str;
     return 0.0;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 int my_atoi(const char* str) {
     (void)str;
     return 0;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 long my_atol(const char* str) {
     (void)str;
     return 0L;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 long long my_atoll(const char* str) {
     (void)str;
     return 0LL;
 }
 `;
 
+const systemFile = `
+extern double my_atof(const char* str);
+extern int my_atoi(const char* str);
+extern long my_atol(const char* str);
+extern long long my_atoll(const char* str);
+`;
+
 const stdVerstion = Clava.getStandard();
 const files: TestFile[] = [
     { name: "bad1.c", code: stdVerstion === "c90" ? failingCode_C90 : failingCode_C99 },
-    { name: "custom_stdlib.c", code: customStdLib }
+    { name: "custom_stdlib.c", code: customStdLib },
+    { name: "rule_21_7_system.c", code: systemFile }
 ];
 
 describe("Rule 21.7", () => {
@@ -70,7 +74,7 @@ describe("Rule 21.7", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(stdVerstion === "c90" ? 7 : 8);  
+        expect(countMISRAErrors()).toBe(stdVerstion === "c90" ? 3 : 4);  
         expect(countMISRAErrors("21.7")).toBe(stdVerstion === "c90" ? 3 : 4); 
     });
 

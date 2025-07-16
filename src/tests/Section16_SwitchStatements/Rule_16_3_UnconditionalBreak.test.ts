@@ -26,41 +26,68 @@ const passingCode =
         default:
             break;
     }
-}`;
+}
+`;
 
 const failingCode = 
-`static void foo16_3_2( void )
-{
-    int x = 4, a, b, c;
+`static void foo16_3_2( void ) {
+    int x = 4, a_16_3, b_16_3, c_16_3;
     switch (x) {
         case 1:
-            a = 1;
+            a_16_3 = 1;
             break;
-        case 2:  // Missing break
-            b = 10;
+        case 2:  
+            b_16_3 = 10; // Missing break - violation of rule 16.3
         case 6: 
         case 3:
             x++;
             // comment1
             x--;
-            // comment2
+            // comment2 Missing break - violation of rule 16.3
         default:
-            c = 30;
+            c_16_3 = 30; // Missing break - violation of rule 16.3
     }
-}`;
+}
+`;
+
+const misraExample = `
+static void foo16_3_3( void ) {
+    int x = 4, a_16_3, b_16_3, c_16_3;
+    switch ( x )
+    {
+    case 0:
+        break;          /* Compliant - unconditional break */
+    case 1:            /* Compliant - empty fall through allows a group */
+    case 2:
+        break;    
+        /* Compliant*/
+    case 4:
+        a_16_3 = b_16_3;          /* Non-compliant - break omitted (violation of rule 16.3) */
+    case 5:
+        if (a_16_3 == b_16_3) {
+            ++a_16_3;
+            break;        /* Non-compliant - conditional break (violation of rule 16.3) */
+        }
+    default:
+        ;               /* Non-compliant - default must also have a break (violation of rule 16.3) */
+    }
+}
+`;
 
 const files: TestFile[] = [
     { name: "bad.c", code: failingCode },
-    { name: "good.c", code: passingCode }
+    { name: "good.c", code: passingCode },
+    { name: "misra_example.c", code: misraExample }
 ];
 
 describe("Rule 16.3", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {
-        expect(countMISRAErrors()).toBe(3);
+        expect(countMISRAErrors()).toBe(6);
 
         expect(countMISRAErrors(Query.search(FileJp, {name: "bad.c"}).first()!)).toBe(3);
+        expect(countMISRAErrors(Query.search(FileJp, {name: "misra_example.c"}).first()!)).toBe(3);
         expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!)).toBe(0);
     });
 

@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 const failingCode = `
 #include <time.h>
 
-int main() {
+static int test_21_10_1() {
     time_t now = time(0);
     clock_t start = clock();
     return 0;
@@ -13,25 +13,28 @@ int main() {
 `;
 
 const customTimeLib = `
-// Dummy replacements for time and clock
-typedef long time_t;
-typedef unsigned long clock_t;
+#include <time.h>
 
-// Missing "static" keyword; Will have external decl after correction
 time_t my_time(void* arg) {
     (void)arg;
     return 0;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 clock_t my_clock(void) {
     return 0;
 }
 `;
 
+const systemFile = `
+#include <time.h>
+extern time_t my_time(void* arg);
+extern clock_t my_clock(void);
+`;
+
 const files: TestFile[] = [
     { name: "bad_time.c", code: failingCode },
-    { name: "custom_time.c", code: customTimeLib }
+    { name: "custom_time.c", code: customTimeLib },
+    { name: "rule_21_10_system.c", code: systemFile }
 ];
 
 describe("Rule 21.10", () => {
@@ -44,7 +47,7 @@ describe("Rule 21.10", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(4);
+        expect(countMISRAErrors()).toBe(2);
         expect(countMISRAErrors("21.10")).toBe(2);
     });
 

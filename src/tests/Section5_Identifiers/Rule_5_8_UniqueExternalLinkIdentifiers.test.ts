@@ -1,57 +1,61 @@
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 
-const compliantCode = `
+const file1 = `
 #include <stdint.h>
 
-int32_t count; /* "count" has external linkage */
+int32_t count_5_8; 
 
-void foo ( void ){ /* "foo" has external linkage */
-    int16_t index; /* "index" has no linkage */
+void foo_5_8 ( void ) { // Violation of rule 5.9
+    int16_t index_5_8; 
 }
 `;
 
-const failingCode1 = `
+const file2 = `
 #include <stdint.h>
 
-/*
-* Non-compliant - "foo" is already defined 
-* with external linkage in other file 
-*/
-static void foo ( void ) { 
-    int16_t count; // Non-compliant: "count" has external linkage in other file
-    int32_t index; 
+static void foo_5_8 ( void ) {  // Violation of rule 5.8
+    int16_t count_5_8; // Violation of rule 5.8
+    int32_t index_5_8; 
 }
 `;
 
-const failingCode2 = `
+const file3 = `
 #include <stdint.h>
 
 static void test_5_8_1 ( void ) { 
-    int32_t index = 0;
+    int32_t index_5_8 = 0;
 
-    count: // Non-compliant: "count" has external linkage in other file
-        index++;
-    if (index < 5) {
-        goto count;
+    count_5_8: // Violation of rule 5.8
+        index_5_8++;
+    if (index_5_8 < 5) {
+        goto count_5_8;
     }
 }
 
-static void count(void) {  // Non-compliant: "count" has external linkage in other file
-    int32_t foo = 0; // Non-compliant: "foo" has external linkage in other file
+static void test_5_8_2(void) {  
+    int32_t foo_5_8 = 0; // Violation of rules 5.8 and 5.9
 }
 `;
 
+const systemFile = `
+#include <stdint.h>
+extern int32_t count_5_8;
+extern void foo_5_8 (void);
+`;
+
 const files: TestFile[] = [
-    { name: "good.c", code: compliantCode },
-    { name: "bad1.c", code: failingCode1 },
-    { name: "bad2.c", code: failingCode2 }
+    { name: "file1.c", code: file1 },
+    { name: "file2.c", code: file2 },
+    { name: "file3.c", code: file3 },
+    { name: "rule_5_8_system.c", code: systemFile}
 ];
 
 describe("Rule 5.8", () => {
     registerSourceCode(files);
 
     it("should detect errors in bad.c", () => {
-        expect(countMISRAErrors("5.8")).toBe(5);
+        expect(countMISRAErrors()).toBe(6);
+        expect(countMISRAErrors("5.8")).toBe(4);
 
         //expect(countMISRAErrors(Query.search(FileJp, {name: "good.c"}).first()!, "5.8")).toBe(0);
         //expect(countMISRAErrors(Query.search(FileJp, {name: "bad1.c"}).first()!, "5.8")).toBe(2);

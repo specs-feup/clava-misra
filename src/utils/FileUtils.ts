@@ -3,7 +3,7 @@ import { FileJp, Program, Include, Call, FunctionJp, Joinpoint, StorageClass } f
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isCallToImplicitFunction } from "./CallUtils.js";
 import { isExternalLinkageIdentifier } from "./IdentifierUtils.js";
-import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
+import path from "path";
 
 /**
  * Checks if a file compiles correctly after adding a statement by rebuilding it.
@@ -38,7 +38,7 @@ export function isValidFile(fileJp: FileJp, jpType?: typeof Joinpoint, index?: n
  * @returns An array of strings with the names of the includes
  */
 export function getIncludesOfFile(fileJp: FileJp): string[] {
-    return fileJp.includes.map(includeJp => includeJp.name);
+    return fileJp.includes.map(includeJp => path.basename(includeJp.name));
 }
 
 /**

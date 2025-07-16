@@ -6,9 +6,9 @@ import { fileURLToPath } from "url";
 const failingCode = `
 #include <stdlib.h>
 
-int main() {
-    abort();
-    exit(1);
+static int test_21_8_1() {
+    abort(); // Violation of rule 21.8
+    exit(1);  // Violation of rule 21.8
     return 0;
 }
 `;
@@ -17,21 +17,25 @@ int main() {
 const customStdLib = `
 #include <stddef.h>
 
-// Missing "static" keyword; Will have external decl after correction
 void my_abort(void) {
     // safe replacement
 }
 
-// Missing "static" keyword; Will have external decl after correction
 void my_exit(int status) {
     (void)status;
     // safe replacement
 }
 `;
 
+const systemFile = `
+extern void my_abort(void);
+extern void my_exit(int status);
+`;
+
 const files: TestFile[] = [
     { name: "bad.c", code: failingCode },
-    { name: "custom_stdlib.c", code: customStdLib }
+    { name: "custom_stdlib.c", code: customStdLib },
+    { name: "rule_21_8_system.c", code: systemFile }
 ];
 
 describe("Rule 21.8", () => {
@@ -45,7 +49,7 @@ describe("Rule 21.8", () => {
         registerSourceCode(files, configFilePath);
 
         it("should detect errors", () => {
-            expect(countMISRAErrors()).toBe(4); 
+            expect(countMISRAErrors()).toBe(2); 
             expect(countMISRAErrors("21.8")).toBe(2); 
         });
 

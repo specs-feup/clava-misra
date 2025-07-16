@@ -8,17 +8,20 @@ const passingCode = `
 extern double test_17_3_4();
 
 // Missing "static" keyword; Will have external decl after correction
-unsigned int func() {
+unsigned int foo_17_3() {
     return 0;
 }
 
 // Missing "static" keyword; Will have external decl after correction
 double test_17_3_1() {
-    return sqrt(func()) + test_17_3_4();
+    return sqrt(foo_17_3()) + test_17_3_4();
 }
 `;
 
 const passingCode2 = `
+extern int foo_17_3();
+extern double test_17_3_1();
+
 double test_17_3_4() {
     return 0.0;
 }
@@ -29,45 +32,45 @@ static void test_17_3_2() {
     double a = 2.0, b = 3.0;
 
     // Implicit call to pow(): <math.h> is missing
-    double res1 = pow(a, b); 
-    double res2 = pow(b, a);
+    double res1 = pow(a, b); // Violation of rule 17.3
+    double res2 = pow(b, a); // Violation of rule 17.3
 
-    // Implicit call to strlen: <ctype.h> is missing
+    // Implicit call to toupper: <ctype.h> is missing
     char lower1 = 'a';
-    char upper1 = toupper(lower1); 
+    char upper1 = toupper(lower1); // Violation of rule 17.3
     
     // Implicit call to sin(): <math.h> is missing
     double angle = 3.14159265; 
-    double sin_val = sin(angle);
+    double sin_val = sin(angle); // Violation of rule 17.3
 
     // Implicit call to strlen(): <ctype.h> is missing
     char lower2 = 'b';
-    char upper2 = toupper(lower2); 
-}`;
+    char upper2 = toupper(lower2);  // Violation of rule 17.3
+}
+`;
 
 const failingCode2 = `
 #include <math.h>
 
-
-static unsigned int func2() {
+static unsigned int bar_17_3() {
     double a = 2.0, b = 3.0;
 
     double pow_result = pow(a, b); 
 
     // Implicit call: <string.h> is missing
     char lower1 = 'a';
-    char upper1 = toupper(lower1);
+    char upper1 = toupper(lower1); // Violation of rule 17.3
 
     return 0;
-}`;
+}
+`;
 
 // Missing externs
 const failingCode3 = `
 static unsigned int test_17_3_3() {
-    int x = func(); // Implicit call to func() in good.c
+    int x = foo_17_3(); // Implicit call to foo_17_3() in good.c - violation of rule 17.3
 
-    // Implicit call with wrong params
-    (void) test_17_3_1();
+    (void) test_17_3_1(); // Implicit call with wrong params - violation of rule 17.3
     return 0;
 }
 `;
@@ -93,7 +96,7 @@ describe("Rule 17.3", () => {
         registerSourceCode(files, configFilePath);
 
         it("should detect errors", () => {
-            expect(countMISRAErrors()).toBe(10);  
+            expect(countMISRAErrors()).toBe(8);  
             expect(countMISRAErrors("17.3")).toBe(8); 
         });
 

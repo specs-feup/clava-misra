@@ -12,14 +12,16 @@ export function getLastStmtOfCase($jp: Case): Joinpoint | undefined {
         return undefined;
     }
 
-    let lastStmt: Joinpoint | undefined;
+    let caseScopeStmts: Joinpoint[] = [];
     for (const stmt of $jp.siblingsRight) {
         if (stmt instanceof Case) {
             break;
         }
-        lastStmt = stmt;
+        caseScopeStmts.push(stmt);
     }
-    return lastStmt;
+    return !caseScopeStmts.some(stmt => stmt instanceof Break) ? 
+                caseScopeStmts[caseScopeStmts.length - 1] : 
+                caseScopeStmts.find(stmt => stmt instanceof Break);
 } 
 
 /**

@@ -5,12 +5,12 @@ import { fileURLToPath } from "url";
 const failingCode = `
 #include <stdlib.h>
 
-int main() {
-    int *a = calloc(1, sizeof(int));
-    int *b = malloc(sizeof(int));
-    a = realloc(a, 2 * sizeof(int));
-    free(a);
-    free(b);
+static int test_21_3_1() {
+    int *a = calloc(1, sizeof(int)); // Violation of rule 21.3
+    int *b = malloc(sizeof(int)); // Violation of rule 21.3
+    a = realloc(a, 2 * sizeof(int)); // Violation of rule 21.3
+    free(a); // Violation of rule 21.3
+    free(b); // Violation of rule 21.3
     return 0;
 }
 `;
@@ -18,36 +18,42 @@ int main() {
 const customStdLib = `
 #include <stddef.h>
 
-// Missing "static" keyword; Will have external decl after correction
 void* my_malloc(size_t size) {
     (void)size;
     return NULL;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 void* my_calloc(size_t num, size_t size) {
     (void)num;
     (void)size;
     return NULL;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 void* my_realloc(void* ptr, size_t size) {
     (void)ptr;
     (void)size;
     return NULL;
 }
 
-// Missing "static" keyword; Will have external decl after correction
 void my_free(void* ptr) {
     (void)ptr;
 }
 `;
 
+const systemFile = `
+#include <stddef.h>
+
+extern void* my_malloc(size_t size);
+extern void* my_calloc(size_t num, size_t size);
+extern void* my_realloc(void* ptr, size_t size);
+extern void my_free(void* ptr);
+`;
+
 
 const files: TestFile[] = [
     { name: "bad1.c", code: failingCode },
-    { name: "custom_stdlib.c", code: customStdLib }
+    { name: "custom_stdlib.c", code: customStdLib },
+    { name: "rule_21_3_system.c", code: systemFile }
 ];
 
 describe("Rule 21.3", () => {
@@ -60,7 +66,7 @@ describe("Rule 21.3", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(9);  
+        expect(countMISRAErrors()).toBe(5);  
         expect(countMISRAErrors("21.3")).toBe(5); 
     });
 

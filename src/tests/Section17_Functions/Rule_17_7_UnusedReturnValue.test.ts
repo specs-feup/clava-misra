@@ -1,32 +1,38 @@
 import { countErrorsAfterCorrection, countMISRAErrors, registerSourceCode, TestFile } from "../utils.js";
 
-const programCode = `
-    static void my_void_func() {
-        // Void function 
-    }
+const passingCode = `
+#include <stdint.h>
 
-    static unsigned int foo() {
-        return 0;
-    }
+extern uint16_t x_17_7;
 
-    static unsigned int bar(unsigned int n) {
-        return n*n;
-    }
+static void void_func_17_7_1() {
+    x_17_7++;
+}
 
-    int main() {
-        my_void_func(); // Compliant - call to void function
+static void test_17_7_2() {
+    void_func_17_7_1();
+}
+`;
 
-        unsigned int result = foo();
-        (void) bar(foo()); 
+const misraExample = `
+#include <stdint.h>
 
-        foo(); // Non-compliant
-        
-        return 0;
-    }   
+uint16_t x_17_7;
+
+static uint16_t func_17_7( uint16_t para1 ) {
+    return para1;
+}
+
+static void discarded_17_7(uint16_t para2) {
+    func_17_7(para2);            /* Violation of rule 17.7 */
+    (void) func_17_7(para2);     /* Compliant */
+    x_17_7 = func_17_7(para2);   /* Compliant  */ 
+}
 `;
 
 const files: TestFile[] = [
-    { name: "program.c", code: programCode }
+    { name: "good.c", code: passingCode },
+    { name: "misraExample.c", code: misraExample}
 ];
 
 describe("Rule 17.7", () => {

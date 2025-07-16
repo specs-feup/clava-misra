@@ -29,14 +29,13 @@ const passingCode =
         case 2:
             break;
     }
-}`;
+}
+`;
 
 const failingCode1 = 
-`static void foo16_4_3( void )
-{
+`static void foo16_4_3 (void) {
     int x;
-    switch ( x )
-    {
+    switch (x) { // violation of rule 16.4
         case 0:
             ++x;
             break;
@@ -45,15 +44,14 @@ const failingCode1 =
             x--;
             break;
     }
-}`;
+}
+`;
 
 // 4 erros: two of them are related to having boolean switch condition
 const failingCode2 = 
-`static void foo16_4_4( void )
-{
+`static void foo16_4_4 (void) {
     int x, a = 14;
-    switch ( x == 4) /* Default will not be introduced, as it will be converted by the other rule */
-    {
+    switch ( x == 4) { /* Default will not be introduced, as it will be converted by the other rule */
         case 1:
             ++x;
             break;

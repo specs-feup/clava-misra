@@ -10,63 +10,75 @@ static unsigned int test_17_4_1() {
 }`;
 
 const failingCode = `
-static unsigned int test_17_4_2() {
+static unsigned int test_17_4_2() { // Violation of rule 17.4
 
-}`;
+}
+`;
 
 const failingCode2 = `
-static float test_17_4_3() {
+static float test_17_4_3() { // Violation of rule 17.4
 
-}`;
+}
+`;
 
 const failingCode3 = `
-    enum Status { 
-        FAIL, 
-        SUCCESS
-    };
+enum Status { 
+    FAIL, 
+    SUCCESS
+};
+
+typedef enum {
+    RED,
+    GREEN, 
+} Color;
 
     typedef enum {
-        RED,
-        GREEN, 
-    } Color;
+    SMALL,
+    LARGE
+} Size;
 
-     typedef enum {
-        SMALL,
-        LARGE
-    } Size;
+typedef unsigned int my_int_type;
 
-    typedef unsigned int my_int_type;
+static enum Status test_17_4_4() { // Violation of rule 17.4
 
-    // Non-compliant
-    static enum Status test_17_4_4() {
+}
 
+static Color test_17_4_5() { // Violation of rule 17.4
+
+}
+
+static my_int_type test_17_4_6() { // Violation of rule 17.4
+
+}
+
+/* 
+    Non-compliant after correction:
+    Config file specifies an invalid default value for 'Size' type (e.g: MEDIUM)
+*/
+static Size test_17_4_7() { // Violation of rule 17.4
+
+}
+
+/* 
+    Non-compliant after correction: 
+    Config file do not specify the default value for 'double' type
+*/
+static double test_17_4_8() { // Violation of rule 17.4
+
+}
+`;
+
+const misraExample = `
+#include <stdint.h>
+#define V_MIN 1U
+#define V_MAX 4U
+
+static int absolute (int32_t v) {  // Violation of rule 17.4
+    if (v < 0) {
+        return v;
     }
-
-    // Non-compliant
-    static Color test_17_4_5() {
-
-    }
-
-    // Non-compliant
-    static my_int_type test_17_4_6() {
-    
-    }
-
-    /* 
-        Non-compliant after correction:
-        Config file specifies an invalid default value for 'Size' type (e.g: MEDIUM)
-    */
-    static Size test_17_4_7() {
-
-    }
-
-    /* 
-        Non-compliant after correction: 
-        Config file do not specify the default value for 'double' type
-    */
-    static double test_17_4_8() { 
-    
-    }
+  
+}
 `;
 
 const files: TestFile[] = [
@@ -74,6 +86,7 @@ const files: TestFile[] = [
     { name: "bad2.c", code: failingCode2 },
     { name: "bad3.c", code: failingCode3 },
     { name: "good.c", code: passingCode },
+    { name: "misraExample.c", code: misraExample },
 ];
 
 describe("Rule 17.4", () => {
@@ -86,11 +99,12 @@ describe("Rule 17.4", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(7);
+        expect(countMISRAErrors()).toBe(8);
         expect(countMISRAErrors(Query.search(FileJp, { name: "bad1.c" }).first()!)).toBe(1);
         expect(countMISRAErrors(Query.search(FileJp, { name: "bad2.c" }).first()!)).toBe(1);
         expect(countMISRAErrors(Query.search(FileJp, { name: "bad3.c" }).first()!)).toBe(5);
         expect(countMISRAErrors(Query.search(FileJp, { name: "good.c" }).first()!)).toBe(0);
+        expect(countMISRAErrors(Query.search(FileJp, { name: "misraExample.c" }).first()!)).toBe(1);
     });
 
     it("should correct errors", () => {

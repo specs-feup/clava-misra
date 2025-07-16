@@ -1,5 +1,4 @@
 import { Call, FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
-import MISRAContext from "../../MISRAContext.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { findFunctionDef } from "../../utils/FunctionUtils.js";
 import { getCallIndex, isCallToImplicitFunction } from "../../utils/CallUtils.js";

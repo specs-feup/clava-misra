@@ -43,7 +43,6 @@ export function getFileLocation($jp: Joinpoint) {
 export function getRelativeFileLocation($jp: Joinpoint) {
     const fullPath = $jp.filepath;
     const lastFolder = path.basename(Clava.getBaseFolder());
-    console.log(lastFolder);
     const index = fullPath.indexOf(lastFolder);
     const relativeFolder = index !== -1 ? fullPath.slice(index) : fullPath;
     return formatLocation(relativeFolder, $jp.line, $jp.column);
