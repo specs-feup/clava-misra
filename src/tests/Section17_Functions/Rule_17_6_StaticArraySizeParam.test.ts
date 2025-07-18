@@ -10,7 +10,7 @@ static int test_17_6_1(int my_array[]) {
 `;
 
 const failingCode = `
-static int test_17_6_2(int my_array[static 10]) { // Violation of rule 17.7
+static int test_17_6_2(int my_array[static 10]) { // Violation of rule 17.6
     return my_array[0];  
 }
 `;

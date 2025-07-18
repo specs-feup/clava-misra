@@ -94,23 +94,23 @@ npx clava classic <scriptFile.js> -pi -std <c90 | c99 | c11> -p <path/to/source/
 Default use (no config file or analysis type):
 
 ```bash
-npx clava classic src/main.js -pi -std c99 -p CxxSources/
+npx clava classic dist/main.js -pi -std c99 -p CxxSources/
 ```
 In this case, analysis type is `all` by default.
 
 With analysis type specified:
 ```bash
-npx clava classic src/main.js -pi -std c99 -p CxxSources/ -av "type=system"
+npx clava classic dist/main.js -pi -std c99 -p CxxSources/ -av "type=system"
 ```
 
 Using a config file:
 ```bash
-npx clava classic src/main.js -pi -std c99 -p CxxSources/ -av "config=misra_config.json"
+npx clava classic dist/main.js -pi -std c99 -p CxxSources/ -av "config=misra_config.json"
 ```
 
 With both analysis and config file specified:
 ```bash
-npx clava classic src/main.js -pi -std c99 -p CxxSources/ -av "type=system config=misra_config.json"
+npx clava classic dist/main.js -pi -std c99 -p CxxSources/ -av "type=system config=misra_config.json"
 ```
 
 To view other available options, run:

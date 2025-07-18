@@ -1,5 +1,6 @@
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
-import { Vardecl, Joinpoint, Type, PointerType, ArrayType, RecordJp, EnumDecl, DeclStmt } from "@specs-feup/clava/api/Joinpoints.js";
+import { Vardecl, Joinpoint, Type, PointerType, ArrayType, RecordJp, EnumDecl, DeclStmt, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import Query from "@specs-feup/lara/api/weaver/Query.js";
 import path from "path";
 
 export type TagDecl = RecordJp | EnumDecl;
@@ -32,21 +33,8 @@ export function getBaseType($jp: Joinpoint): Type | undefined {
     return jpType;
 }
 
-export function formatLocation(filepath: String, line: number, column: number): string {
-    return `${filepath}@${line}:${column}`
-}
-
 export function getFileLocation($jp: Joinpoint) {
-    return formatLocation($jp.filepath, $jp.line, $jp.column);
-}
-
-export function getRelativeFileLocation($jp: Joinpoint) {
-    const fullPath = $jp.filepath;
-    const lastFolder = path.basename(Clava.getBaseFolder());
-    const index = fullPath.indexOf(lastFolder);
-    const relativeFolder = index !== -1 ? fullPath.slice(index) : fullPath;
-    return formatLocation(relativeFolder, $jp.line, $jp.column);
-
+    return `${$jp.filepath}@${$jp.line}:${$jp.column}`
 }
 
 export function compareLocation($jp1: Joinpoint, $jp2: Joinpoint): number {
