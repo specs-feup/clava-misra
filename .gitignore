@@ -6,6 +6,11 @@ package-lock.json
 CxxSources
 /misra_config.json
 /src/main.ts
+c-common-standards
+/c90
+/c99
+/example-suite
+/experiment-3
 
 # Extensions
 ltex.dictionary.*
