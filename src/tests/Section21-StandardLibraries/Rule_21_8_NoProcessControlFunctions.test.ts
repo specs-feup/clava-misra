@@ -30,6 +30,11 @@ void my_exit(int status) {
 const systemFile = `
 extern void my_abort(void);
 extern void my_exit(int status);
+
+static void use_externs_21_8() {
+    my_abort();
+    my_exit(1);
+}
 `;
 
 const files: TestFile[] = [

@@ -31,7 +31,7 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         const nonCompliant = $jp.params.some((param) => getParamReferences(param, $jp).length === 0);
         if (logErrors && nonCompliant) {
             this.unusedParams = this.getUnusedParams($jp);
-            this.unusedParams.forEach(param => this.logMISRAError(param, `Parameter '${param.name}' is unused in function ${$jp.name}.`));
+            this.unusedParams.forEach(param => this.logMISRAError(param, `Parameter '${param.name}' is unused in function '${$jp.name}'.`));
         }
         return nonCompliant;
     }

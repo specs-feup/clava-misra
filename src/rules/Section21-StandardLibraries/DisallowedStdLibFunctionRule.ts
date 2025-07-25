@@ -1,7 +1,7 @@
 import { Call, Joinpoint, Program, FileJp } from "@specs-feup/clava/api/Joinpoints.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { addExternFunctionDecl, getCallsToLibrary, getExternFunctionDecls, getIncludesOfFile, isValidFile } from "../../utils/FileUtils.js";
+import { addExternFunctionDecl, findFilesReferencingHeader, getCallsToLibrary, getExternFunctionDecls, getIncludesOfFile, isValidFile } from "../../utils/FileUtils.js";
 import { findFunctionDef } from "../../utils/FunctionUtils.js";
 import UserConfigurableRule from "../UserConfigurableRule.js";
 /**
@@ -78,10 +78,10 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
         if (!($jp instanceof Program && this.appliesToCurrentStandard())) return false;
 
         this.invalidFiles = new Map<FileJp, Call[]>();
-        const filesJps = Query.search(FileJp, (fileJp) => {return getIncludesOfFile(fileJp).includes(this.standardLibrary)}).get();
+        const referencingFiles = findFilesReferencingHeader(this.standardLibrary);
         let nonCompliant = false;
 
-        for (const fileJp of filesJps) {
+        for (const fileJp of referencingFiles) {
             const invalidCalls = getCallsToLibrary(fileJp, this.standardLibrary, this.invalidFunctions);
             if (invalidCalls.length > 0) {
                 this.invalidFiles.set(fileJp, invalidCalls);

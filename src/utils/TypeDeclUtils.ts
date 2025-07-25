@@ -2,7 +2,7 @@ import { Joinpoint, TypedefDecl, DeclStmt, TypedefType, ElaboratedType, TagType,
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { getBaseType } from "./JoinpointUtils.js";
 import { isTagDecl, TagDecl } from "./JoinpointUtils.js";
-import { getIncludesOfFile } from "./FileUtils.js";
+import { findFilesReferencingHeader, getIncludesOfFile } from "./FileUtils.js";
 
 /**
  * Retrieves the typedef declaration for the provided joinpoint, if available
@@ -62,9 +62,14 @@ export function jpUsesTag($jp: Joinpoint, tag: TagDecl): boolean {
  */
 export function isTypeDeclUsed(decl: TypedefDecl | TagDecl): boolean {
     const fileJp = decl.getAncestor("file") as FileJp;
-    const jps = fileJp.isHeader ? Query.search(FileJp, (fileJp) => {
-        return getIncludesOfFile(fileJp).includes(fileJp.name)
-    }).get() : fileJp.descendants;
+    let jps: Joinpoint[] = [];
+
+    if (fileJp.isHeader) {
+        const referencingFiles = findFilesReferencingHeader(fileJp.name);
+        jps = [...fileJp.descendants, ...referencingFiles.flatMap(file => file.descendants)];
+    } else {
+        jps = fileJp.descendants;
+    }
     
     return decl instanceof TypedefDecl ? 
         jps.some((jp) => jpUsesTypedef(jp, decl)) :

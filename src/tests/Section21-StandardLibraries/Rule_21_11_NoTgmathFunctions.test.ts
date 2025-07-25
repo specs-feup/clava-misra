@@ -30,6 +30,10 @@ float my_sqrt(float x) {
 
 const systemFile = `
 extern float my_sqrt(float x);
+
+static void use_externs_21_11() {
+    (void)my_sqrt(20.0);
+}
 `;
 
 const __filename = fileURLToPath(import.meta.url);

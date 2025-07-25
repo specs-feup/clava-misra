@@ -1,5 +1,5 @@
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
-import { Vardecl, Joinpoint, Type, PointerType, ArrayType, RecordJp, EnumDecl, DeclStmt, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { Vardecl, Joinpoint, Type, PointerType, ArrayType, RecordJp, EnumDecl, DeclStmt, Program, QualType } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import path from "path";
 
@@ -25,7 +25,7 @@ export function hasDefinedType($jp: Joinpoint): boolean {
  */
 export function getBaseType($jp: Joinpoint): Type | undefined {
     if (!hasDefinedType($jp)) return undefined;
-    let jpType = $jp.type;
+    let jpType = $jp.type instanceof QualType ? $jp.type.unqualifiedType : $jp.type;
 
     while (jpType instanceof PointerType || jpType instanceof ArrayType) {
         jpType = jpType instanceof PointerType ? jpType.pointee : jpType.elementType;

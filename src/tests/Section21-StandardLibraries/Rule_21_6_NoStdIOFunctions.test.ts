@@ -34,6 +34,12 @@ char* my_fgets(char* str, int num, void* stream) {
 const systemFile = `
 extern void my_printf(const char* fmt, ...);
 extern char* my_fgets(char* str, int num, void* stream);
+
+static void use_externs_21_6() {
+    char buffer_21_6[10];
+    my_printf("Done");
+    (void) my_fgets(buffer_21_6, 10, 0);
+}
 `;
 
 const files: TestFile[] = [

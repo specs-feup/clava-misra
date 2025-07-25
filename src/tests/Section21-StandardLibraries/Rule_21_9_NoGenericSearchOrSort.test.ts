@@ -47,6 +47,20 @@ const systemFile = `
 #include <stddef.h>
 extern void my_qsort(void* base, size_t num, size_t size, int (*compar)(const void*, const void*));
 extern void* my_bsearch(const void* key, const void* base, size_t num, size_t size, int (*compar)(const void*, const void*));
+
+static int compare_21_9(const void* a, const void* b) {
+    int arg1 = *(const int*)a;
+    int arg2 = *(const int*)b;
+    return (arg1 > arg2) - (arg1 < arg2);
+}
+
+static void use_externs_21_9(void) {
+    int arr[5] = {5, 3, 1, 4, 2};
+    int key = 3;
+
+    my_qsort(arr, 5, sizeof(int), compare_21_9);
+    (void) my_bsearch(&key, arr, 5, sizeof(int), compare_21_9);
+}
 `;
 
 const files: TestFile[] = [

@@ -53,6 +53,16 @@ export function removeIncludeFromFile(includeName: string, fileJp: FileJp) {
 }
 
 /**
+ * Returns all files in the program that include a given header file using the `#include` directive
+ *
+ * @param headerName - The name of the header file to search for
+ * @returns A array of files that include the specified header
+ */
+export function findFilesReferencingHeader(headerName: string): FileJp[] {
+    return Query.search(FileJp, (jp) =>{ return getIncludesOfFile(jp).includes(headerName)}).get();
+}
+
+/**
  * Returns all files in the program that contain at least one call to an implicit function
  *
  * @param programJp - The program to analyze

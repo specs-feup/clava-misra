@@ -6,64 +6,8 @@ const utils_code = `
 #include <stdint.h>
 #include <stdbool.h>
 
-void use_bool(bool param) {
-    (void)(param == false);
-}
-
-void use_char(char param) {
-    (void)(param + 1);
-}
-
-void use_int(int param) {
-    (void)(param + 1);
-}
-
-void use_int8(int8_t param) {
-    (void)(param - 1);
-}
-
-void use_int16(int16_t param) {
-    (void)(param * 2);
-}
-
-void use_int32(int32_t param) {
-    (void)(param / 2);
-}
-
-void use_int64(int64_t param) {
-    (void)(param + 100);
-}
-
-void use_uint8(uint8_t param) {
-    (void)(param | 0x0F);
-}
-
 void use_uint16(uint16_t param) {
     (void)(param & 0xFF00U);
-}
-
-void use_uint32(uint32_t param) {
-    (void)(param ^ 0xDEADBEEFU);
-}
-
-void use_uint64(uint64_t param) {
-    (void)(param + 0x12345678U);
-}
-
-void use_uint128(unsigned __int128 param) {
-    (void)(param - 42);
-}
-
-void use_float32(float param) {
-    (void)(param * 1.1f);
-}
-
-void use_float64(double param) {
-    (void)(param + 0.001);
-}
-
-void use_float128(long double param) {
-    (void)(param / 3.14L);
 }
 `;
 
@@ -71,21 +15,7 @@ const utils_header = `
 #include <stdint.h>
 #include <stdbool.h>
 
-extern void use_bool(bool param);
-extern void use_char(char param);
-extern void use_int(int param);
-extern void use_int8(int8_t param);
-extern void use_int16(int16_t param);
-extern void use_int32(int32_t param);
-extern void use_int64(int64_t param);
-extern void use_uint8(uint8_t param);
 extern void use_uint16(uint16_t param);
-extern void use_uint32(uint32_t param);
-extern void use_uint64(uint64_t param);
-extern void use_uint128(unsigned __int128 param);
-extern void use_float32(float param);
-extern void use_float64(double param);
-extern void use_float128(long double param);
 `;
 
 const misraExample = `

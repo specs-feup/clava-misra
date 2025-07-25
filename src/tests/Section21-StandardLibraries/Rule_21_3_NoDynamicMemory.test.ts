@@ -47,6 +47,14 @@ extern void* my_malloc(size_t size);
 extern void* my_calloc(size_t num, size_t size);
 extern void* my_realloc(void* ptr, size_t size);
 extern void my_free(void* ptr);
+
+static void use_externs_21_3() {
+    void* p1_21_3 = my_malloc(16);
+    void* p2_21_3 = my_calloc(4, 4);  
+    void* p3_21_3 = my_realloc(p1_21_3, 32);
+    my_free(p2_21_3);
+    my_free(p3_21_3);
+}
 `;
 
 

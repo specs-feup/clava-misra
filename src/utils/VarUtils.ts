@@ -1,7 +1,8 @@
-import { FunctionJp, Joinpoint, QualType, StorageClass, Vardecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
+import { FileJp, FunctionJp, Joinpoint, QualType, StorageClass, Vardecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { getIdentifierName, isExternalLinkageIdentifier } from "./IdentifierUtils.js";
 import { getExternalLinkageIdentifiers } from "./ProgramUtils.js";
+import { findFilesReferencingHeader } from "./FileUtils.js";
 
 /**
  * Retrieves all variable references qualified as "volatile" starting from the given joinpoint
@@ -54,4 +55,18 @@ export function hasMultipleExternalLinkDeclarations($jp: Vardecl): boolean {
     return getExternalLinkageIdentifiers().some(identifier => 
         isSameVarDecl(identifier, $jp) && identifier.getAncestor("file").ast !== $jp.getAncestor("file").ast
     );
+}
+
+export function isVarUsed(varDecl: Vardecl): boolean {
+    const fileJp = varDecl.getAncestor("file") as FileJp;
+    let referencingFiles: FileJp[];
+
+    if (fileJp.isHeader) {
+        const filesWithInclude = findFilesReferencingHeader(fileJp.name);
+        referencingFiles = [fileJp, ...filesWithInclude];
+    } else {
+        referencingFiles = [fileJp];
+    }
+
+    return referencingFiles.some(fileJp => Query.searchFrom(fileJp, Varref, {name: varDecl.name, decl: (declJp) => declJp?.astId === varDecl.astId}).get().length > 0)
 }

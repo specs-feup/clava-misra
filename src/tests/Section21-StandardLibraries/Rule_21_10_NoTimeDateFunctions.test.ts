@@ -27,8 +27,15 @@ clock_t my_clock(void) {
 
 const systemFile = `
 #include <time.h>
+#include <stddef.h>
+
 extern time_t my_time(void* arg);
 extern clock_t my_clock(void);
+
+static void use_externs_21_10() {
+    (void) my_clock();
+    (void) my_time(NULL);
+}
 `;
 
 const files: TestFile[] = [

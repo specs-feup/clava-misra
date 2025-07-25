@@ -55,6 +55,13 @@ extern double my_atof(const char* str);
 extern int my_atoi(const char* str);
 extern long my_atol(const char* str);
 extern long long my_atoll(const char* str);
+
+static void use_externs_21_7(void) {
+    (void) my_atof("3.14");
+    (void) my_atoi("42");
+    (void) my_atol("100000");
+    (void) my_atoll("9223372036854775807");
+}
 `;
 
 const stdVerstion = Clava.getStandard();

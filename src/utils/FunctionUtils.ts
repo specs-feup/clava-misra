@@ -1,5 +1,6 @@
-import { Param, Joinpoint, Varref, FunctionJp, StorageClass, GotoStmt, LabelStmt } from "@specs-feup/clava/api/Joinpoints.js";
+import { Param, Joinpoint, Varref, FunctionJp, StorageClass, GotoStmt, LabelStmt, FileJp, Call } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
+import { findFilesReferencingHeader } from "./FileUtils.js";
 
 /**
  * Retrieves all variable references to a given parameter
@@ -24,16 +25,30 @@ export function getUnusedLabels(func: FunctionJp): LabelStmt[] {
 }
 
 export function findFunctionDef(functionName: string, pathSuffix: string) {
-    return Query.search(FunctionJp, (func) => {
+    const funcDefs = Query.search(FunctionJp, (func) => {
                 try {
                     return func.name === functionName && func.isImplementation && func.filepath.endsWith(pathSuffix)
                 } catch (error) {
                     return false;
                 }
-            }).first();
+            }).get();
+    return funcDefs.length > 0 ? funcDefs[0] : undefined;
 }
 
 export function findExternalFunctionDecl(functionJp: FunctionJp): FunctionJp[] {
     return functionJp.declarationJps
             .filter((declJp) => declJp.storageClass === StorageClass.EXTERN);
+}
+
+export function isFunctionUsed(functionJp: FunctionJp): boolean {
+    const fileJp = functionJp.getAncestor("file") as FileJp;
+    let referencingFiles: FileJp[];
+
+    if (fileJp.isHeader) {
+        const filesWithInclude = findFilesReferencingHeader(fileJp.name);
+        referencingFiles = [fileJp, ...filesWithInclude];
+    } else {
+        referencingFiles = [fileJp];
+    }
+    return referencingFiles.some(fileJp => Query.searchFrom(fileJp, Call, {name: functionJp.name, directCallee: (jp) => jp?.ast === functionJp.ast}).get().length > 0)
 }
