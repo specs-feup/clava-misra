@@ -10,7 +10,7 @@ import { getParamReferences } from "../../utils/FunctionUtils.js";
  */
 export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
-    protected override readonly appliesTo = ["c99", "c11"];
+    protected override readonly appliesTo = new Set(["c99", "c11"]);
     #invalidParams: Param[] = [];
 
     override get name(): string {

@@ -6,7 +6,7 @@ import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
  */
 export default class Rule_21_7_NoNumericStringConversions extends DisallowedStdLibFunctionRule {
     protected standardLibrary = "stdlib.h";
-    protected invalidFunctions = ["atof", "atoi", "atol", "atoll"];
+    protected invalidFunctions = new Set(["atof", "atoi", "atol", "atoll"]);
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {

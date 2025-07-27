@@ -6,7 +6,7 @@ import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
  */
 export default class Rule_21_9_NoGenericSearchOrSort extends DisallowedStdLibFunctionRule {
     protected standardLibrary = "stdlib.h";
-    protected invalidFunctions = ["bsearch", "qsort"];
+    protected invalidFunctions = new Set(["bsearch", "qsort"]);
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {

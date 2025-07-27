@@ -7,9 +7,9 @@ import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
  * The termination functions are abort, exit, _Exit and quick_exit.
  */
 export default class Rule_21_8_NoProcessControlFunctions extends DisallowedStdLibFunctionRule {
-    protected override readonly appliesTo = ["c90", "c99"];
+    protected override readonly appliesTo = new Set(["c90", "c99"]);
     protected standardLibrary = "stdlib.h";
-    protected invalidFunctions = ["abort", "exit", "_Exit", "quick_exit"];
+    protected invalidFunctions = new Set(["abort", "exit", "_Exit", "quick_exit"]);
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {

@@ -35,7 +35,7 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
         }
 
         this.functionCalls = Query.searchFromInclusive($jp, Call).get();
-        this.volatileRefs = this.operandIsVariableArrayType($jp) ? getVolatileVarRefs($jp) : [];
+        this.volatileRefs = this.operandIsVariableArrayType($jp) ? getVolatileVarRefs(($jp.argType as VariableArrayType).sizeExpr) : [];
         this.modifyingExpressions = [
             ...Query.searchFromInclusive($jp, UnaryOp,  {kind: /(post_inc)|(post_dec)|(pre_inc)|(pre_dec)/}).get(), 
             ...Query.searchFromInclusive($jp, BinaryOp, {kind: /(assign)|(add_assign)|(sub_assign)|(mul_assign)|(div_assign)|(rem_assign)|(shl_assign)|(shr_assign)|(and_assign)|(xor_assign)|(or_assign)/}).get()

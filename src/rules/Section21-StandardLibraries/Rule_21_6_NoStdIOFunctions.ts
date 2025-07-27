@@ -6,7 +6,7 @@ import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
  */
 export default class Rule_21_6_NoStdIOFunctions extends DisallowedStdLibFunctionRule {
     protected standardLibrary = "stdio.h";
-    protected invalidFunctions = [];
+    protected invalidFunctions = new Set<string>();
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {

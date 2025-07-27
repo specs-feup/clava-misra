@@ -132,10 +132,10 @@ export function getExternFunctionDecls(fileJp: FileJp) {
     return Query.searchFrom(fileJp, FunctionJp, {storageClass: StorageClass.EXTERN}).get();
 }
 
-export function getCallsToLibrary(fileJp: FileJp, libraryFile: string, functionNames: string[] = []): Call[] {
+export function getCallsToLibrary(fileJp: FileJp, libraryFile: string, functionNames: Set<string> = new Set()): Call[] {
     return Query.searchFrom(fileJp, Call, (callJp) =>
         callJp.function?.isInSystemHeader &&
         callJp.function?.filepath.endsWith(libraryFile) &&
-        (functionNames.length === 0 || functionNames.includes(callJp.name))
+        (functionNames.size === 0 || functionNames.has(callJp.name))
     ).get();
 }

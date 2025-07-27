@@ -1,37 +1,32 @@
-import { Call, FileJp } from "@specs-feup/clava/api/Joinpoints.js";
+import { Call, FileJp, FunctionJp, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { getIncludesOfFile } from "./FileUtils.js";
 import { findExternalFunctionDecl } from "./FunctionUtils.js";
+import { getFileLocation } from "./JoinpointUtils.js";
 
 /**
- * Check if the given joinpoint represents a call to an implicit function.
+ * Checks if the given joinpoint represents a call to an implicit function.
  *
  * @param callJp The call join point to analyze
  */
 export function isCallToImplicitFunction(callJp: Call): boolean {
-    if (callJp.function.isInSystemHeader) {
+    if ( callJp.function?.isInSystemHeader) { // Call to system header function
         return false;
-    }
-
-    if (callJp.function.definitionJp === undefined) {
-        return !callJp.function.isInSystemHeader;
     } 
-    
-    const definitionJp = callJp.directCallee.definitionJp;
-    const defLocation = callJp.function.definitionJp.getAncestor("file") as FileJp;
-    const callLocation = callJp.getAncestor("file") as FileJp;
-    const fileIncludes = getIncludesOfFile(callLocation);
 
-    if (defLocation.ast === callLocation.ast) { // calling the definition
+    const varrefs = Query.searchFrom(callJp, Varref, {isFunctionCall: false}).get().map(varRef => varRef.astId);
+    const args = new Set(callJp.argList.flatMap(arg => Query.searchFromInclusive(arg, Varref).get().map(varRef => varRef.astId)));
+    if (varrefs.length > 0 && !args.has(varrefs[0])) { // Call using function pointer
         return false;
     }
+    
+    const directCallee = callJp.directCallee;
+    if (directCallee === undefined) return true;
+    
+    const fileJp = directCallee.getAncestor("file");
+    if (fileJp === undefined) return true;
 
-    return !findExternalFunctionDecl(definitionJp)
-            .some((declJp) => {
-                const declLocation = declJp.getAncestor("file") as FileJp;
-                return declLocation?.ast === callLocation.ast || 
-                       (declLocation.isHeader && fileIncludes.includes(declLocation.name))
-            });
+    return Query.searchFrom(fileJp, FunctionJp, {name: callJp.name}).get().length === 0;
 }
 
 /**

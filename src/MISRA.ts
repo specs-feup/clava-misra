@@ -31,15 +31,15 @@ export class MISRAError {
     /**
      * Represents the specific MISRA-C rule that was violated
      */
-    public ruleID: string;
+    public readonly ruleID: string;
     /**
      * The joinpoint where the error was detected
      */
-    public joinpoint: Joinpoint;
+    public readonly joinpoint: Joinpoint;
     /**
      * Explanation of the violation
      */
-    public message: string;
+    public readonly message: string;
 
     /**
      * 

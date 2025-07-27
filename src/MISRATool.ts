@@ -8,62 +8,21 @@ import { resetCaches } from "./utils/ProgramUtils.js";
 import { selectRules } from "./rules/index.js";
 
 export default class MISRATool {
-    static #misraRules: MISRARule[];
-    static #context: MISRAContext;
-
-    private static init() {
-        this.validateStdVersion();
-        this.#context = new MISRAContext();
-        resetCaches();
-        this.initRules();
-    }
-
-    private static validateStdVersion() {
-        const validVersions = ["c90", "c99", "c11"];
-        const stdVersion = (Query.root() as Program).standard;
-
-        if (!validVersions.includes(stdVersion)) {
-            console.error(`[Clava-MISRATool] Invalid -std value. Allowed values: ${validVersions.join(", ")}`);
-            process.exit(1);
-        }
-    }
-
-    private static initRules() {
-        const validTypes = ["all", "system", "single"];
-        const typeStr = this.getArgValue("type", validTypes) ?? "all";
-        this.#misraRules = selectRules(this.#context, typeStr);
-    }
-
-    private static getArgValue(field: string, validValues?: string[]): string | undefined{
-        const args = Clava.getData().get("argv") as string;
-        if (!args) return undefined;
-
-        const pair = args.split(/\s+/).find(arg => arg.startsWith(field + "="));
-        if (!pair) return undefined;
-
-        const value = pair.split("=")[1];
-        if (validValues && !validValues.includes(value)) {
-            console.error(`[Clava-MISRATool] Invalid '${field}' value. Allowed values: ${validValues.join(", ")}`);
-            process.exit(1);
-        }
-        return value;
-    }
+    private static misraRules: MISRARule[];
+    public static context: MISRAContext;
+    private static readonly standards = new Set(["c90", "c99", "c11"]);
+    private static readonly ruleTypes = new Set(["all", "single", "system"]);
 
     public static checkCompliance(startingPoint: Program | FileJp = Query.root() as Program) {
         this.init();
 
         const nodes = [startingPoint, ...startingPoint.descendants];
         for (const node of nodes) {
-            for (const rule of this.#misraRules) {
+            for (const rule of this.misraRules) {
                 rule.match(node, true);
             }
         }
-        if (this.getErrorCount() > 0) {
-            console.log(`[Clava-MISRATool] Detected ${this.getErrorCount()} MISRA-C violation${this.getErrorCount() === 1 ? '' : 's'}:\n`);
-            this.#context.printAllErrors();
-        } else {
-            console.log("[Clava-MISRATool] No MISRA-C violations detected.");
-        }
+        this.outputReport("detection");
     } 
 
     public static applyCorrections() {
@@ -71,7 +30,7 @@ export default class MISRATool {
 
         const configFilePath = this.getArgValue("config");
         if (configFilePath) {
-            this.#context.config = configFilePath;
+            this.context.config = configFilePath;
         }
 
         let iteration = 0;
@@ -81,18 +40,29 @@ export default class MISRATool {
             modified = this.transformAST(Query.root() as Program);
         }
 
-        if (this.getActiveErrorCount() === 0) {
-            console.log("[Clava-MISRATool] All detected violations were corrected.\n");
-        } else {
-            console.log(`\n[Clava-MISRATool] ${this.getActiveErrorCount()} MISRA-C violation${this.getActiveErrorCount() === 1 ? '' : 's'} remain after transformation:\n`);
-            this.#context.printActiveErrors();
+        this.outputReport("correction");
+    }
+
+    private static outputReport(stage: "detection" | "correction") {
+        const isDetection = stage === "detection";
+        const errorCount = isDetection ? this.getErrorCount() : this.getActiveErrorCount();
+
+        if (errorCount > 0) {
+          console.log(isDetection
+            ? `[Clava-MISRATool] Detected ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"}:\n`
+            : `[Clava-MISRATool] ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"} remain after transformation:\n`
+          );
+          isDetection ? this.context.outputAllErrors() : this.context.outputActiveErrors();
+        } 
+        else {
+          console.log(isDetection ? "[Clava-MISRATool] No MISRA-C violations detected.\n" : "[Clava-MISRATool] All detected violations were corrected.\n");
         }
     }
 
     private static transformAST($jp: Joinpoint): boolean {
         let modified = false;
 
-        for (const rule of this.#misraRules) {
+        for (const rule of this.misraRules) {
             const transformReport = rule.apply($jp);
 
             if (transformReport.type !== MISRATransformationType.NoChange) {
@@ -111,15 +81,47 @@ export default class MISRATool {
         return modified;
     }
 
+    private static init() {
+        this.validateStdVersion();
+        this.context = new MISRAContext();
+        resetCaches();
+        this.initRules();
+    }
+
+    private static validateStdVersion() {
+        const stdVersion = (Query.root() as Program).standard;
+
+        if (!this.standards.has(stdVersion)) {
+            console.error(`[Clava-MISRATool] Invalid -std value. Allowed values: ${[...this.standards].join(", ")}`);
+            process.exit(1);
+        }
+    }
+
+    private static initRules() {
+        const typeStr = this.getArgValue("type", this.ruleTypes) ?? "all";
+        this.misraRules = selectRules(this.context, typeStr);
+    }
+
+    private static getArgValue(field: string, validValues?: Set<string>): string | undefined{
+        const args = Clava.getData().get("argv") as string;
+        if (!args) return undefined;
+
+        const pair = args.split(/\s+/).find(arg => arg.startsWith(field + "="));
+        if (!pair) return undefined;
+
+        const value = pair.split("=")[1];
+        if (validValues && !validValues.has(value)) {
+            console.error(`[Clava-MISRATool] Invalid '${field}' value. Allowed values: ${[...validValues].join(", ")}`);
+            process.exit(1);
+        }
+        return value;
+    }
+
     public static getErrorCount(): number {
-        return this.#context.errors.length;
+        return this.context.errors.length;
     }
 
     public static getActiveErrorCount(): number {
-        return this.#context.activeErrors.length;
-    }
-
-    public static get context() {
-        return this.#context;
+        return this.context.activeErrors.length;
     }
 }

@@ -12,7 +12,7 @@ import UserConfigurableRule from "../UserConfigurableRule.js";
 export default class Rule_17_3_ImplicitFunction extends UserConfigurableRule {
     priority = 1;
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
-    protected override readonly appliesTo = ["c90"];
+    protected override readonly appliesTo = new Set(["c90"]);
 
     override get name(): string {
         return "17.3";

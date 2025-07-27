@@ -14,6 +14,9 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
      */
     #misraErrors: MISRAError[] = [];
 
+
+    #misraErrorKeys = new Set<string>();
+
     /**
      * Configuration provided by the user to assist in rule corrections
      */
@@ -63,8 +66,10 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
 
     resetStorage() {
         [...this.storage.keys()].forEach(key => {
-            this.storage.set(key,  new Map())
+            this.storage.set(key, new Map())
         });
+        this.#misraErrors = [];
+        this.#misraErrorKeys = new Set<string>();
     }
 
     getRuleResult(ruleID: string, $jp: Joinpoint): MISRATransformationType | undefined {
@@ -82,10 +87,10 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     }
 
     addMISRAError(ruleID: string, $jp: Joinpoint, message: string) {
-        const newError = new MISRAError(ruleID, $jp, message);
-
-        if (!this.#misraErrors.some(error => error.equals(newError))) {
-            this.#misraErrors.push(newError);
+        const key = `${ruleID}-${$jp.astId}-${message}`;
+        if (!this.#misraErrorKeys.has(key)) {
+            this.#misraErrorKeys.add(key);
+            this.#misraErrors.push(new MISRAError(ruleID, $jp, message));
         }
     }
 
@@ -107,17 +112,17 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
         }
     }
 
-    private printError(error: MISRAError): void {
+    private outputError(error: MISRAError): void {
         console.log(`- [Rule ${error.ruleID}] at ${getFileLocation(error.joinpoint)}: ${error.message}\n`);
     }
     
-    printAllErrors(): void {
+    outputAllErrors(): void {
         this.sortErrors();
-        this.#misraErrors.forEach(error => this.printError(error));
+        this.#misraErrors.forEach(error => this.outputError(error));
     }
     
-    printActiveErrors(): void {
+    outputActiveErrors(): void {
         this.sortErrors();
-        this.activeErrors.forEach(error => this.printError(error));
+        this.activeErrors.forEach(error => this.outputError(error));
     }
 }

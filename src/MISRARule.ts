@@ -30,7 +30,7 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
     /**
      * Standards to which this rule applies to
      */
-    protected readonly appliesTo: string[] = ["c90", "c99", "c11"];
+    protected readonly appliesTo: Set<string> = new Set(["c90", "c99", "c11"]);
 
     /**
      * 
@@ -70,11 +70,12 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
     }
 
     protected appliesToCurrentStandard(): boolean {
-        return this.appliesTo.includes(Clava.getStandard());
+        return this.appliesTo.has(Clava.getStandard());
     }
 
     protected rebuildProgram() {
         (Query.root() as Program).rebuild();
+        this.context.resetStorage();
         resetCaches();
     }
 

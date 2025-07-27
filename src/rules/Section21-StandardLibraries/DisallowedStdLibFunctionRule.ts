@@ -18,7 +18,7 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
     priority = 1;
     protected invalidFiles = new Map<FileJp, Call[]>();
     protected abstract standardLibrary: string;
-    protected abstract invalidFunctions: string[];
+    protected abstract invalidFunctions: Set<string>;
 
     /**
      * Specifies the scope of analysis: single unit or entire system.
