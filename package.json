@@ -27,6 +27,7 @@
     "test:c90": "cross-env STD_VERSION=c90 NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --detectOpenHandles --forceExit src --std=c90",
     "test:c99": "cross-env STD_VERSION=c99 NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --detectOpenHandles --forceExit src --std=c99",
     "test:c11": "cross-env STD_VERSION=c11 NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --detectOpenHandles --forceExit src --std=c11",
+    "test:profile": "cross-env STD_VERSION=c90 node --cpu-prof --experimental-vm-modules ./node_modules/jest/bin/jest.js --detectOpenHandles --forceExit src --std=c90",
     "test:cov": "npm run test -- --coverage",
     "test:watch": "npm run test -- --watch"
   },
@@ -35,14 +36,18 @@
     "url": "git+https://github.com/specs-feup/clava-misra.git"
   },
   "dependencies": {
-    "@specs-feup/clava": "^3.0.18",
+    "@specs-feup/clava": "^3.0.19",
     "@specs-feup/clava-visualization": "^1.0.5",
-    "@specs-feup/lara": "^3.0.11"
+    "@specs-feup/lara": "^3.0.11",
+    "@specs-feup/clava-flow": "^1.0.1",
+    "@specs-feup/flow": "^1.0.3"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@specs-feup/clava": "^3.0.17",
-    "@specs-feup/lara": "^3.0.4",
+    "@specs-feup/clava": "^3.0.19",
+    "@specs-feup/lara": "^3.0.11",
+    "@specs-feup/clava-flow": "^1.0.1",
+    "@specs-feup/flow": "^1.0.3",
     "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^7.16.0",
     "@typescript-eslint/parser": "^7.16.0",

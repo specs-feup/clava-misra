@@ -25,9 +25,14 @@ export default class MISRATool {
         this.outputReport("detection");
     } 
 
+    /**
+     * Transforms the source code to comply with the coding guidelines. 
+     * After the transformation, any violations that could not be fixed will be displayed along with their justification.
+     */
     public static applyCorrections() {
         this.init();
 
+        // Store config file in context, if provided
         const configFilePath = this.getArgValue("config");
         if (configFilePath) {
             this.context.config = configFilePath;
@@ -43,8 +48,15 @@ export default class MISRATool {
         this.outputReport("correction");
     }
 
-    private static outputReport(stage: "detection" | "correction") {
-        const isDetection = stage === "detection";
+    /**
+     * Displays standard violations based on execution mode. 
+     * - In detection mode, all violations are shown.
+     * - In correction mode, only the remaining violations are displayed
+     * 
+     * @param mode execution mode 
+     */
+    private static outputReport(mode: "detection" | "correction") {
+        const isDetection = mode === "detection";
         const errorCount = isDetection ? this.getErrorCount() : this.getActiveErrorCount();
 
         if (errorCount > 0) {
@@ -59,6 +71,11 @@ export default class MISRATool {
         }
     }
 
+    /**
+     * Recursively transforms the AST using a pre-order traversal.
+     * @param $jp  AST node from which to start the visit.
+     * @returns Return true if any modifications were made (removal, replacement, or changes in descendants). Otherwise, returns false.
+     */
     private static transformAST($jp: Joinpoint): boolean {
         let modified = false;
 
@@ -88,6 +105,9 @@ export default class MISRATool {
         this.initRules();
     }
 
+    /**
+     * Checks whether the provided standard version is valid and supported
+     */
     private static validateStdVersion() {
         const stdVersion = (Query.root() as Program).standard;
 
@@ -97,6 +117,9 @@ export default class MISRATool {
         }
     }
 
+    /**
+     * Selects applicable rules according to the analysis type. When not specified, both system and single translation unit rules are selected.
+    */
     private static initRules() {
         const typeStr = this.getArgValue("type", this.ruleTypes) ?? "all";
         this.misraRules = selectRules(this.context, typeStr);
@@ -117,10 +140,16 @@ export default class MISRATool {
         return value;
     }
 
+    /**
+     * @returns Returns the number of identified violations.
+     */
     public static getErrorCount(): number {
         return this.context.errors.length;
     }
 
+    /**
+     * @returns Returns the number of active errors linked to nodes that are still present in the AST after correction.
+     */
     public static getActiveErrorCount(): number {
         return this.context.activeErrors.length;
     }

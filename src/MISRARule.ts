@@ -69,10 +69,16 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
         this.context.addMISRAError(this.ruleID, $jp, msg); 
     }
 
+    /**
+     * Verifies if the rule applies to the standard being used
+     */
     protected appliesToCurrentStandard(): boolean {
         return this.appliesTo.has(Clava.getStandard());
     }
 
+    /**
+     *  Rebuilds the program based on the current AST, clears stored data in the shared context, and resets all caches
+     */
     protected rebuildProgram() {
         (Query.root() as Program).rebuild();
         this.context.resetStorage();

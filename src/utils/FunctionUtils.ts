@@ -1,21 +1,41 @@
-import { Param, Joinpoint, Varref, FunctionJp, StorageClass, GotoStmt, LabelStmt, FileJp, Call } from "@specs-feup/clava/api/Joinpoints.js";
+import { Param, Joinpoint, Varref, FunctionJp, StorageClass, GotoStmt, LabelStmt, FileJp, Call, VariableArrayType } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { findFilesReferencingHeader } from "./FileUtils.js";
+import { hasDefinedType } from "./JoinpointUtils.js";
 
 /**
- * Retrieves all variable references to a given parameter
- * @param $param 
- * @param $startingPoint 
- * @returns 
+ * Gets direct references to a parameter within a function
+ * @param $param Parameter to find references for
+ * @param functionJp Function joinpoint to search in
  */
-export function getParamReferences($param: Param, $startingPoint: Joinpoint): Varref[] {
-    return Query.searchFrom($startingPoint, Varref, (ref) => {
-                try {
-                    return ref.decl && ref.decl.astId === $param.astId;
-                } catch (error) {
-                    return false;
-                }
-            }).get();
+export function getDirectParamReferences($param: Param, functionJp: FunctionJp): Varref[] {
+    return Query.searchFrom(functionJp, Varref, (ref) => { return ref.decl?.astId === $param.astId}).get();
+}
+
+/**
+ * Gets variable references to a parameter inside Variable-Length Array (VLA) fields
+ * @param $param Parameter to find references for
+ * @param functionJp Function joinpoint to search in 
+ */
+export function getVLAFieldParamReferences($param: Param, functionJp: FunctionJp): Varref[] { 
+    const vlaJoinpoints = functionJp.descendants.filter(jp => hasDefinedType(jp) && jp.type instanceof VariableArrayType);
+    const fieldsInVLAs = vlaJoinpoints.flatMap(jp => jp.jpFieldsRecursive.flatMap(field => [field, ...field.descendants]));
+
+    return fieldsInVLAs.filter(field => field instanceof Varref && field.decl?.astId === $param.astId) as Varref[];
+}
+
+/**
+ * Gets all unique variable references to a parameter in a function.
+ * @param $param Parameter to find references for
+ * @param functionJp Function joinpoint to search in 
+ * @returns Array of unique Varref references
+ */
+export function getParamReferences($param: Param, functionJp: FunctionJp): Varref[] {
+    const directRefs = getDirectParamReferences($param, functionJp);
+    const refsInVLAFields = getVLAFieldParamReferences($param, functionJp);
+    
+    // Remove duplicated nodes
+    return Array.from(new Map([...directRefs, ...refsInVLAFields as Varref[]].map(ref => [ref.ast, ref])).values());
 }
 
 export function getUnusedLabels(func: FunctionJp): LabelStmt[] {

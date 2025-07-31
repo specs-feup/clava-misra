@@ -52,7 +52,7 @@ export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         for (const invalidParam of this.#invalidParams) {
-            const paramRefs = getParamReferences(invalidParam, $jp);
+            const paramRefs = getParamReferences(invalidParam, $jp as FunctionJp);
 
             // Replace the parameter with a new array parameter whose size is variant
             const originalType = (invalidParam.type as AdjustedType).originalType;

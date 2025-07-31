@@ -15,7 +15,7 @@ npm install @specs-feup/clava-misra
 ## Usage
 
 ### 1. Analysis
-You can use the tool to simply check the violations by executing the following statements in your script:
+You can use the tool to detect violations by executing the following statements in your script:
 
 ```ts
 import MISRATool from "@specs-feup/clava-misra/dist/MISRATool.js";

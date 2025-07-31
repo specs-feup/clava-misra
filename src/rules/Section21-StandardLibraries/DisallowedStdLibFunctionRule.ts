@@ -121,9 +121,11 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
     }
 
     private solveDisallowedFunctions(fileJp: FileJp, invalidCalls: Call[]): boolean {
-        let externFunctions = getExternFunctionDecls(fileJp).map(funcJp => funcJp.definitionJp.astId);
+        let externFunctions = getExternFunctionDecls(fileJp)
+            .filter(funcJp => funcJp.definitionJp !== undefined)
+            .map(funcJp => funcJp.definitionJp.astId);
+        
         let changedFile = false;
-
         for (const callJp of invalidCalls) {
             if (this.context.getRuleResult(this.ruleID, callJp) === MISRATransformationType.NoChange) {
                 continue;

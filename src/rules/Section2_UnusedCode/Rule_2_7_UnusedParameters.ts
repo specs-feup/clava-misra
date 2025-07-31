@@ -1,9 +1,8 @@
 import { FunctionJp, Joinpoint, Param, Varref, Call, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { getParamReferences } from "../../utils/FunctionUtils.js";
+import { getDirectParamReferences, getParamReferences, getVLAFieldParamReferences } from "../../utils/FunctionUtils.js";
 
 /**
  * MISRA-C Rule 2.7: There should be no unused parameters in functions.
@@ -49,7 +48,7 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         const funcJp = $jp as FunctionJp;
         const usedParams = this.getUsedParams(funcJp);
         const unusedParamsPosition = this.getUnusedParamsPositions(funcJp);
-        const calls = Query.search(Call, {function: jp => jp.astId === funcJp.astId}).get();
+        const calls = Query.search(Call, {function: jp => jp?.astId === funcJp.astId}).get();
         
         funcJp.setParams(usedParams);
 
@@ -67,7 +66,10 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
      * @returns Returns a list of all unused parameters from a function.
      */
     private getUnusedParams(func: FunctionJp): Param[] {
-        return func.params.filter(param => getParamReferences(param, func).length === 0);
+        return func.params.filter((param) => {
+            if (getDirectParamReferences(param, func).length > 0) return false;
+            return getVLAFieldParamReferences(param, func).length === 0;
+        });
     }    
 
     /**
@@ -77,7 +79,10 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
      * @returns Returns a list of parameters that are used within a function.
      */
     private getUsedParams(func: FunctionJp): Param[] {
-        return func.params.filter(param => getParamReferences(param, func).length > 0);
+        return func.params.filter((param) => {
+            if (getDirectParamReferences(param, func).length > 0) return true;
+            return getVLAFieldParamReferences(param, func).length > 0;
+        });
     }
 
     /**

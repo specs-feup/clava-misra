@@ -13,12 +13,10 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
      * List of MISRA errors, that could not be resolved during the transformation process
      */
     #misraErrors: MISRAError[] = [];
-
-
     #misraErrorKeys = new Set<string>();
 
     /**
-     * Configuration provided by the user to assist in rule corrections
+     * User-provided configuration to assist in violation correction
      */
     #config: Map<string, any> | undefined = undefined;
 
@@ -38,22 +36,38 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     #structPrefix = "_misra_struct_";
     #unionPrefix = "_misra_union_";
 
+    /**
+     * Returns all violations found in the source code.
+     */
     get errors(): MISRAError[] {
         return this.#misraErrors;
     }
 
+    /**
+     * Returns violations linked to nodes that are still present in the AST after correction.
+     */
     get activeErrors(): MISRAError[] {
         return this.#misraErrors.filter(error => error.isActiveError());
     }
 
+    /**
+     * Orders errors according to their location
+     */
     private sortErrors() {
         this.errors.sort((error1, error2) => compareLocation(error1.joinpoint, error2.joinpoint));
     }
 
+   /**
+    * Returns the user-provided configuration that assists in violation correction, if provided. Otherwise, returns undefined. 
+    */
     get config(): Map<string, any> | undefined {
         return this.#config;
     }
 
+    /**
+     * Loads the JSON config file and transforms it into an internal Map representation.
+     * If the file does not exist, logs an error and exits the process.
+     */
     set config(configFilePath: string) {
         if (fs.existsSync(configFilePath)) {
             const data = fs.readFileSync(configFilePath, 'utf-8');
@@ -64,6 +78,9 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
         }
     }
 
+    /**
+     * Clears stored information.
+     */
     resetStorage() {
         [...this.storage.keys()].forEach(key => {
             this.storage.set(key, new Map())
@@ -116,11 +133,17 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
         console.log(`- [Rule ${error.ruleID}] at ${getFileLocation(error.joinpoint)}: ${error.message}\n`);
     }
     
+    /**
+     * Displays all violations found in the source code.
+     */
     outputAllErrors(): void {
         this.sortErrors();
         this.#misraErrors.forEach(error => this.outputError(error));
     }
     
+    /**
+     * Displays violations linked to nodes that are still present in the AST after correction.
+     */
     outputActiveErrors(): void {
         this.sortErrors();
         this.activeErrors.forEach(error => this.outputError(error));
