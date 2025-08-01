@@ -7,7 +7,32 @@ import { fileURLToPath } from "url";
 const passingCode = `
 static unsigned int test_17_4_1() {
     return 0;  
-}`;
+}
+
+static unsigned int test_17_4_11(int w) {
+    if (w > 20) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+static unsigned int test_17_4_12(int w) {
+    if (w > 0) {
+        if (w < 5) {
+            return 4;
+        } else {
+            return 5;
+        }
+    } else {
+        if (w == 0) {
+            return 0;
+        } else {
+            return 0;
+        }
+    }
+}
+`;
 
 const failingCode = `
 static unsigned int test_17_4_2() { // Violation of rule 17.4
@@ -32,7 +57,7 @@ typedef enum {
     GREEN, 
 } Color;
 
-    typedef enum {
+typedef enum {
     SMALL,
     LARGE
 } Size;
@@ -65,6 +90,20 @@ static Size test_17_4_7() { // Violation of rule 17.4
 */
 static double test_17_4_8() { // Violation of rule 17.4
 
+}
+
+static unsigned int test_17_4_13(int w) { // Violation of rule 17.4
+    if (w > 0) {
+        if (w < 5) {
+            return 4;
+        } else {
+            return 5;
+        }
+    } else {
+        if (w == 0) {
+            return 0;
+        }
+    }
 }
 `;
 
@@ -99,10 +138,10 @@ describe("Rule 17.4", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(8);
+        expect(countMISRAErrors()).toBe(9);
         expect(countMISRAErrors(Query.search(FileJp, { name: "bad1.c" }).first()!)).toBe(1);
         expect(countMISRAErrors(Query.search(FileJp, { name: "bad2.c" }).first()!)).toBe(1);
-        expect(countMISRAErrors(Query.search(FileJp, { name: "bad3.c" }).first()!)).toBe(5);
+        expect(countMISRAErrors(Query.search(FileJp, { name: "bad3.c" }).first()!)).toBe(6);
         expect(countMISRAErrors(Query.search(FileJp, { name: "good.c" }).first()!)).toBe(0);
         expect(countMISRAErrors(Query.search(FileJp, { name: "misraExample.c" }).first()!)).toBe(1);
     });

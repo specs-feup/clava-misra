@@ -1,49 +1,24 @@
-import { BuiltinType, FileJp, FunctionJp, Joinpoint, ReturnStmt } from "@specs-feup/clava/api/Joinpoints.js";
+import { Body, BuiltinType, FileJp, FunctionJp, Joinpoint, ReturnStmt } from "@specs-feup/clava/api/Joinpoints.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isValidFile } from "../../utils/FileUtils.js";
 import UserConfigurableRule from "../UserConfigurableRule.js";
+import ClavaNode from "@specs-feup/clava-flow/ClavaNode";
+import ReturnNode from "@specs-feup/clava-flow/cfg/node/ReturnNode";
+import ClavaCfgGenerator from "@specs-feup/clava-flow/transformation/ClavaCfgGenerator";
+import BaseNode from "@specs-feup/flow/graph/BaseNode";
+import Graph from "@specs-feup/flow/graph/Graph";
 
 /**
- * MISRA Rule 17.4: All exit paths from a function with non-void return type shall have an
-explicit return statement with an expression. In a non-void function:
-- Every return statement has an expression, and 
-- Control cannot reach the end of the function without encountering a return statement
+* MISRA Rule 17.4: All exit paths from a function with non-void return type shall have an explicit return statement with an expression. In a non-void function:
+*   - Every return statement has an expression, and 
+*   - Control cannot reach the end of the function without encountering a return statement
  */
 export default class Rule_17_4_NonVoidReturn extends UserConfigurableRule {
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
     override get name(): string {
         return "17.4";
-    }
-
-    getErrorMsgPrefix(functionJp: FunctionJp): string {
-        return `Function '${functionJp.name}' reaches the end without a return statement.`;
-    }
-
-
-    getFixFromConfig(functionJp: FunctionJp): string | undefined {
-        const errorMsgPrefix = this.getErrorMsgPrefix(functionJp);
-
-        if (!this.context.config) {
-            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return not added due to missing config file.`)
-            return undefined;
-        }
-
-        let defaultValueReturn: string | undefined = undefined;
-        const returnType = functionJp.type.code;
-        try {
-            defaultValueReturn = this.context.config.get("defaultValues")[returnType];
-        } catch (error) {  
-            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return was not added as \'defaultValues\' is not defined in the configuration file.`);
-            return undefined;
-        }
-
-        if (defaultValueReturn === undefined) {
-            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return not added due to missing default value configuration for type '${returnType}'.`);
-        }
-        return defaultValueReturn;
     }
 
     /**
@@ -55,20 +30,43 @@ export default class Rule_17_4_NonVoidReturn extends UserConfigurableRule {
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
         if (!($jp instanceof FunctionJp && $jp.isImplementation)) return false;
-
         if ($jp.returnType instanceof BuiltinType && $jp.returnType.isVoid) return false;
+        if ($jp.body.children.some(childJp => childJp instanceof ReturnStmt)) return false;
+        
+        const nonCompliant = !this.allControlPathsReturn($jp);
 
-        const emptyReturnStms = Query.searchFrom($jp, ReturnStmt, {returnExpr: undefined}).get();
-        const exitReturn = $jp.body.children.filter(child => child instanceof ReturnStmt && !emptyReturnStms.includes(child))[0];
-        if (logErrors) {
-            emptyReturnStms?.forEach(emptyReturn =>
-                this.logMISRAError(emptyReturn, "Every return statement in a non-void function must include an expression.")
-            )
-            if (exitReturn === undefined) {
-                this.logMISRAError($jp, `Function '${$jp.name}' reaches the end without a return statement.`)
-            }
+        if (logErrors && nonCompliant) {
+            this.logMISRAError($jp, `Function '${$jp.name}' reaches the end without a return statement.`)
         }
-        return emptyReturnStms.length > 0 || exitReturn === undefined;
+        return nonCompliant;
+    }
+
+    /**
+     * Performs a depth.first search on the function's control flow graph (CFG) to check if all exit paths in the function have a return statement
+     * 
+     * @param functionJp  The function to analyze
+     * @returns Returns true if all exit paths in the function have an explicit return statement, otherwise returns false.
+     */
+    private allControlPathsReturn(functionJp: FunctionJp) {
+        const cfg = Graph.create().apply(new ClavaCfgGenerator(functionJp));
+        const startNode: BaseNode.Class = cfg.nodes.filterIs(ClavaNode).filter(node => node.jp instanceof Body)[0];
+        const stack = [startNode];
+        const visited = new Set();
+    
+        while (stack.length > 0) {
+            const node = stack.pop()!;
+    
+            if (visited.has(node) || node?.is(ReturnNode)) 
+                continue;
+            
+            let children = Array.from(node.outgoers).map(edge => edge.target);
+            if (!children || children.length === 0)  
+                return false; // Reached the end of the graph without finding a single return statement
+    
+            children = children.filter(child => !visited.has(child));
+            children.forEach(child => stack.push(child.as(BaseNode)));
+        }
+        return true; 
     }
 
     /**
@@ -109,5 +107,32 @@ export default class Rule_17_4_NonVoidReturn extends UserConfigurableRule {
         this.logMISRAError($jp, `${errorMsgPrefix} Provided default value for type '${functionJp.type.code}' is invalid and was therefore not inserted.`);
         this.context.addRuleResult(this.ruleID, $jp, MISRATransformationType.NoChange);
         return new MISRATransformationReport(MISRATransformationType.NoChange);
+    }
+
+    getErrorMsgPrefix(functionJp: FunctionJp): string {
+        return `Function '${functionJp.name}' reaches the end without a return statement.`;
+    }
+
+    getFixFromConfig(functionJp: FunctionJp): string | undefined {
+        const errorMsgPrefix = this.getErrorMsgPrefix(functionJp);
+
+        if (!this.context.config) {
+            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return not added due to missing config file.`)
+            return undefined;
+        }
+
+        let defaultValueReturn: string | undefined = undefined;
+        const returnType = functionJp.type.code;
+        try {
+            defaultValueReturn = this.context.config.get("defaultValues")[returnType];
+        } catch (error) {  
+            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return was not added as \'defaultValues\' is not defined in the configuration file.`);
+            return undefined;
+        }
+
+        if (defaultValueReturn === undefined) {
+            this.logMISRAError(functionJp, `${errorMsgPrefix} Default value return not added due to missing default value configuration for type '${returnType}'.`);
+        }
+        return defaultValueReturn;
     }
 }
