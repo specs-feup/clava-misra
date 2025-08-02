@@ -2,6 +2,6 @@ import VisualizationTool from "@specs-feup/clava-visualization/api/Visualization
 import MISRATool from "./MISRATool.js";
 
 MISRATool.checkCompliance();
-MISRATool.applyCorrections();
+MISRATool.correctViolations();
 
 //await VisualizationTool.visualize();
