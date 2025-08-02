@@ -8,14 +8,19 @@ import IdentifierRenameRule from "./IdentifierRenameRule.js";
 import { AnalysisType } from "../../MISRA.js";
 
 /**
- * Rule 5.7: A tag name shall be a unique identifier.
+ * MISRA-C Rule 5.7: A tag name shall be a unique identifier.
  * 
  * Exception: The tag name may be the same as the typedef name with which it is  associated.
  */
 export default class Rule_5_7_UniqueTagNames extends IdentifierRenameRule {
-
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SYSTEM;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "5.7";
     }

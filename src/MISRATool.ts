@@ -7,29 +7,34 @@ import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import { resetCaches } from "./utils/ProgramUtils.js";
 import { selectRules } from "./rules/index.js";
 
+enum ExecutionMode {
+    CORRECTION,
+    DETECTION
+}
+
 export default class MISRATool {
-    private static misraRules: MISRARule[];
+    static #misraRules: MISRARule[];
     public static context: MISRAContext;
-    private static readonly standards = new Set(["c90", "c99", "c11"]);
-    private static readonly ruleTypes = new Set(["all", "single", "system"]);
+    static readonly #standards = new Set(["c90", "c99", "c11"]);
+    static readonly #ruleTypes = new Set(["all", "single", "system"]);
 
     public static checkCompliance(startingPoint: Program | FileJp = Query.root() as Program) {
         this.init();
 
         const nodes = [startingPoint, ...startingPoint.descendants];
         for (const node of nodes) {
-            for (const rule of this.misraRules) {
+            for (const rule of this.#misraRules) {
                 rule.match(node, true);
             }
         }
-        this.outputReport("detection");
+        this.outputReport(ExecutionMode.DETECTION);
     } 
 
     /**
      * Transforms the source code to comply with the coding guidelines. 
      * After the transformation, any violations that could not be fixed will be displayed along with their justification.
      */
-    public static applyCorrections() {
+    public static correctViolations() {
         this.init();
 
         // Store config file in context, if provided
@@ -45,7 +50,7 @@ export default class MISRATool {
             modified = this.transformAST(Query.root() as Program);
         }
 
-        this.outputReport("correction");
+        this.outputReport(ExecutionMode.CORRECTION);
     }
 
     /**
@@ -55,8 +60,8 @@ export default class MISRATool {
      * 
      * @param mode execution mode 
      */
-    private static outputReport(mode: "detection" | "correction") {
-        const isDetection = mode === "detection";
+    private static outputReport(mode: ExecutionMode) {
+        const isDetection = mode === ExecutionMode.DETECTION;
         const errorCount = isDetection ? this.getErrorCount() : this.getActiveErrorCount();
 
         if (errorCount > 0) {
@@ -79,7 +84,7 @@ export default class MISRATool {
     private static transformAST($jp: Joinpoint): boolean {
         let modified = false;
 
-        for (const rule of this.misraRules) {
+        for (const rule of this.#misraRules) {
             const transformReport = rule.apply($jp);
 
             if (transformReport.type !== MISRATransformationType.NoChange) {
@@ -111,8 +116,8 @@ export default class MISRATool {
     private static validateStdVersion() {
         const stdVersion = (Query.root() as Program).standard;
 
-        if (!this.standards.has(stdVersion)) {
-            console.error(`[Clava-MISRATool] Invalid -std value. Allowed values: ${[...this.standards].join(", ")}`);
+        if (!this.#standards.has(stdVersion)) {
+            console.error(`[Clava-MISRATool] Invalid -std value. Allowed values: ${[...this.#standards].join(", ")}`);
             process.exit(1);
         }
     }
@@ -121,8 +126,8 @@ export default class MISRATool {
      * Selects applicable rules according to the analysis type. When not specified, both system and single translation unit rules are selected.
     */
     private static initRules() {
-        const typeStr = this.getArgValue("type", this.ruleTypes) ?? "all";
-        this.misraRules = selectRules(this.context, typeStr);
+        const typeStr = this.getArgValue("type", this.#ruleTypes) ?? "all";
+        this.#misraRules = selectRules(this.context, typeStr);
     }
 
     private static getArgValue(field: string, validValues?: Set<string>): string | undefined{

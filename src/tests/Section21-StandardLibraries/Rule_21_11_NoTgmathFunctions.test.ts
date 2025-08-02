@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const badCode = `
-#include <tgmath.h>
+#include <tgmath.h>   /* Non-compliant */
 
 static void test_21_11_1(void) {
     float f1, f2;
@@ -56,8 +56,8 @@ describe("Rule 21.11", () => {
         registerSourceCode(files, configFilePath);
 
         it("should detect errors", () => {
-            expect(countMISRAErrors()).toBe(1);
-            expect(countMISRAErrors("21.11")).toBe(1);
+            expect(countMISRAErrors()).toBe(2);
+            expect(countMISRAErrors("21.11")).toBe(2);
         });
 
         it("should correct errors", () => {

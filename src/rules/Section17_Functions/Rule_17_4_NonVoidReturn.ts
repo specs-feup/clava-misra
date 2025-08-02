@@ -8,15 +8,22 @@ import ReturnNode from "@specs-feup/clava-flow/cfg/node/ReturnNode";
 import ClavaCfgGenerator from "@specs-feup/clava-flow/transformation/ClavaCfgGenerator";
 import BaseNode from "@specs-feup/flow/graph/BaseNode";
 import Graph from "@specs-feup/flow/graph/Graph";
+import ControlFlowEdge from "@specs-feup/flow/flow/ControlFlowEdge";
 
 /**
-* MISRA Rule 17.4: All exit paths from a function with non-void return type shall have an explicit return statement with an expression. In a non-void function:
+* MISRA-C Rule 17.4: All exit paths from a function with non-void return type shall have an explicit return statement with an expression. In a non-void function:
 *   - Every return statement has an expression, and 
 *   - Control cannot reach the end of the function without encountering a return statement
  */
 export default class Rule_17_4_NonVoidReturn extends UserConfigurableRule {
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "17.4";
     }
@@ -48,8 +55,13 @@ export default class Rule_17_4_NonVoidReturn extends UserConfigurableRule {
      * @returns Returns true if all exit paths in the function have an explicit return statement, otherwise returns false.
      */
     private allControlPathsReturn(functionJp: FunctionJp) {
+        // Generate control flow graph 
         const cfg = Graph.create().apply(new ClavaCfgGenerator(functionJp));
         const startNode: BaseNode.Class = cfg.nodes.filterIs(ClavaNode).filter(node => node.jp instanceof Body)[0];
+        cfg.edges.filter(edge => edge.is(ControlFlowEdge) && edge.as(ControlFlowEdge).isFake).forEach((edge) => {
+            edge.remove();
+        })
+        
         const stack = [startNode];
         const visited = new Set();
     
@@ -109,10 +121,21 @@ export default class Rule_17_4_NonVoidReturn extends UserConfigurableRule {
         return new MISRATransformationReport(MISRATransformationType.NoChange);
     }
 
+    /**
+     * Returns the prefix to be used for error messages related to the given joinpoint
+     * 
+     * @param $jp - Joinpoint where the violation was detected 
+     * @returns Returns a prefix to prepend to error messages if no configuration is specified or if the configuration does not contain a fix for this violation
+     */
     getErrorMsgPrefix(functionJp: FunctionJp): string {
         return `Function '${functionJp.name}' reaches the end without a return statement.`;
     }
 
+    /**
+     * Retrieves a fix for the given joinpoint using the provided configuration file
+     * @param $jp - Joinpoint where the violation was detected
+     * @return The fix retrieved from the configuration for the violation, or `undefined` if no applicable fix is found.
+     */
     getFixFromConfig(functionJp: FunctionJp): string | undefined {
         const errorMsgPrefix = this.getErrorMsgPrefix(functionJp);
 

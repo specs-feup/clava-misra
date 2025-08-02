@@ -15,6 +15,9 @@ export enum AnalysisType {
     SYSTEM = "system"
 }
 
+/**
+ * Types of transformations a rule can apply to a AST node.
+ */
 export enum MISRATransformationType {
     NoChange,
     DescendantChange,
@@ -25,7 +28,7 @@ export enum MISRATransformationType {
 export type MISRATransformationResults = Map<NodeID, MISRATransformationType>;
 
 /**
- * Represents an error in MISRA compliance, including the rule ID, the joinpoint where the violation occurred, and a descriptive message.
+ * Represents a MISRA-C rule violation.
  */
 export class MISRAError {
     /**
@@ -43,9 +46,9 @@ export class MISRAError {
 
     /**
      * 
-     * @param ruleID - specific MISRA rule that was violated
-     * @param $jp - joinpoint where the error was detected
-     * @param message - description of the error
+     * @param ruleID Identifier of the violated rule
+     * @param $jp Joinpoint where the error was detected
+     * @param message Description of the error
      */
     constructor(ruleID: string, $jp: Joinpoint, message: string) {
         this.ruleID = ruleID;
@@ -81,11 +84,11 @@ export class MISRATransformationReport {
     /**
      * The type of the MISRA transformation
      */
-    type: MISRATransformationType;
+    public readonly type: MISRATransformationType;
     /**
      * An optional new joinpoint node, provided if the transformation involves a replacement
      */
-    newNode?: Joinpoint; 
+    public readonly newNode?: Joinpoint; 
 
     /**
      * 

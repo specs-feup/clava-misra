@@ -13,7 +13,10 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
  *  - match($jp, logErrors)
  */
 export default abstract class IdentifierRenameRule extends MISRARule {
-    priority = 2;
+    /**
+     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     */
+    readonly priority = 2;
 
     /**
      * Specifies the scope of analysis: single unit or entire system.

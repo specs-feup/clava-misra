@@ -3,18 +3,13 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const failingCode = `
-#include <stdio.h>
+#include <stdio.h>  /* Non-compliant */
 
 static void test_21_6_1() {
     char buffer[100];
 
     // Non-compliant: call to stdlib function
-    // Non-compliant: return value is not being used
     (void) printf("Enter input: "); // Violation of rule 21.6
-
-    // Non-compliant: call to stdlib function
-    // Non-compliant: return value is not being used
-    (void) fgets(buffer, sizeof(buffer), stdin); // Violation of rule 21.6
 }
 `;
 

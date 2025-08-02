@@ -27,6 +27,7 @@ export default abstract class UserConfigurableRule extends MISRARule {
     abstract override get name(): string;
 
     /**
+     * Returns the prefix to be used for error messages related to the given joinpoint
      * 
      * @param $jp - Joinpoint where the violation was detected 
      * @returns Returns a prefix to prepend to error messages if no configuration is specified or if the configuration does not contain a fix for this violation

@@ -7,11 +7,17 @@ import { isInternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
 import { resetCaches } from "../../utils/ProgramUtils.js";
 
 /**
- * Rule 8.9: An object should be defined at block scope if its identifier only appears in a single function
+ * MISRA-C Rule 8.9: An object should be defined at block scope if its identifier only appears in a single function
  */
 export default class Rule_8_9_BlockScopeDefinition extends MISRARule {
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SYSTEM;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "8.9";
     }

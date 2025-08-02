@@ -1,12 +1,13 @@
-import { Call, Joinpoint, Program, FileJp } from "@specs-feup/clava/api/Joinpoints.js";
+import { Call, Joinpoint, Program, FileJp, Include } from "@specs-feup/clava/api/Joinpoints.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { addExternFunctionDecl, findFilesReferencingHeader, getCallsToLibrary, getExternFunctionDecls, getIncludesOfFile, isValidFile } from "../../utils/FileUtils.js";
 import { findFunctionDef } from "../../utils/FunctionUtils.js";
 import UserConfigurableRule from "../UserConfigurableRule.js";
+
 /**
  * 
- * Abstract base class for MISRA-C rules that prohibit the use of specific standard library functions.
+ * Abstract base class for MISRA-C rules that prohibit the use of function of a standard library.
  *
  * Need to implement/define:
  *  - analysisType
@@ -15,9 +16,25 @@ import UserConfigurableRule from "../UserConfigurableRule.js";
  *  - name() 
  */
 export default abstract class DisallowedStdLibFunctionRule extends UserConfigurableRule {
-    priority = 1;
+    /**
+     *  A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     */
+    readonly priority = 1;
+
+    /**
+     * A map that keeps track of invalid usages found in each file.
+     */
     protected invalidFiles = new Map<FileJp, Call[]>();
+
+    /**
+     * The name of the standard library 
+     */
     protected abstract standardLibrary: string;
+
+    /**
+     * Names of functions from {@link standardLibrary} that forbidden. 
+     * If the set is empty, all functions from {@link standardLibrary} are forbidden.
+     */
     protected abstract invalidFunctions: Set<string>;
 
     /**
@@ -25,12 +42,47 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
      */
     abstract readonly analysisType: AnalysisType;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     abstract override get name(): string;
 
+    /**
+     * Checks if all functions of the library are forbidden
+     */
+    private isLibraryFullyDisallowed(): boolean {
+        return this.invalidFunctions.size === 0;
+    }
+
+    /**
+     * Logs a MISRA error if all functions of the library are forbidden 
+     * @param fileJp 
+     * @returns 
+     */
+    private logDisallowedInclude(fileJp: FileJp) {
+        if (!this.isLibraryFullyDisallowed()) { // Only specific functions are forbidden
+            return;
+        } 
+        const includeJp = Query.searchFrom(fileJp, Include, {name: this.standardLibrary}).get()[0];
+        this.logMISRAError(includeJp, `The system header file <${includeJp.name}> shall not be used.`);
+        this.context.addRuleResult(this.ruleID, includeJp, MISRATransformationType.NoChange);
+    }
+
+    /**
+     * Returns the prefix to be used for error messages related to the given joinpoint
+     * 
+     * @param $jp - Joinpoint where the violation was detected 
+     * @returns Returns a prefix to prepend to error messages if no configuration is specified or if the configuration does not contain a fix for this violation
+     */
     protected getErrorMsgPrefix(callJp: Call): string {
         return `Function '${callJp.name}' of <${this.standardLibrary}> shall not be used.`
     }
 
+    /**
+     * Retrieves a fix for the given joinpoint using the provided configuration file
+     * @param $jp - Joinpoint where the violation was detected
+     * @return The fix retrieved from the configuration for the violation, or `undefined` if no applicable fix is found.
+     */
     protected getFixFromConfig(callJp: Call): Map<string, string> | undefined {
         const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
 
@@ -83,14 +135,15 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
 
         for (const fileJp of referencingFiles) {
             const invalidCalls = getCallsToLibrary(fileJp, this.standardLibrary, this.invalidFunctions);
-            if (invalidCalls.length > 0) {
+            
+            if (invalidCalls.length > 0 || this.isLibraryFullyDisallowed()) {
                 this.invalidFiles.set(fileJp, invalidCalls);
-                nonCompliant = true; 
-
-                if (logErrors) {
-                    invalidCalls.forEach(callJp => this.logMISRAError(callJp, this.getErrorMsgPrefix(callJp)));
-                } 
+                nonCompliant = true;
             }
+            if (logErrors) {
+                invalidCalls.forEach(callJp => this.logMISRAError(callJp, this.getErrorMsgPrefix(callJp)));
+                this.logDisallowedInclude(fileJp);
+            } 
         }
         return nonCompliant;
     }
@@ -101,76 +154,126 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
      * @returns Report detailing the transformation result
      */
     apply($jp: Joinpoint): MISRATransformationReport {
-        if (!this.match($jp)) 
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
+        if (!this.match($jp)) return new MISRATransformationReport(MISRATransformationType.NoChange);
     
         let changedDescendant = false;
-
         for (const [fileJp, invalidCalls] of this.invalidFiles) {
             if (this.solveDisallowedFunctions(fileJp, invalidCalls)) {
                 changedDescendant = true;
             }
         }
 
-        if (changedDescendant) {
+        // Rebuild AST if any file changed
+        if (changedDescendant) { 
             this.rebuildProgram();
             return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
-        } else {
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
+        return new MISRATransformationReport(MISRATransformationType.NoChange);
     }
 
     private solveDisallowedFunctions(fileJp: FileJp, invalidCalls: Call[]): boolean {
-        let externFunctions = getExternFunctionDecls(fileJp)
-            .filter(funcJp => funcJp.definitionJp !== undefined)
-            .map(funcJp => funcJp.definitionJp.astId);
-        
+        let externFunctions = this.getExternFunctionDeclIds(fileJp);
         let changedFile = false;
+        let solvedCallsCount = 0;
+
         for (const callJp of invalidCalls) {
-            if (this.context.getRuleResult(this.ruleID, callJp) === MISRATransformationType.NoChange) {
-                continue;
-            }
-
-            const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
-            const configFix: Map<string, string> | undefined = this.getFixFromConfig(callJp);
-            if (!configFix) {
-                this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
-                continue;
-            }
-
-            const replacement_func = configFix.get("function");
-            const location = configFix.get("location");
-            const functionDef = findFunctionDef(replacement_func!, location!);
-            if (!functionDef) {
-                this.logMISRAError(callJp, `${errorMsgPrefix} Provided file \'${location}\' does not have function definition.`);
-                this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
-                continue;
-            }
-
-            let externDecl: Joinpoint | undefined;
-            if (!externFunctions.includes(functionDef.astId)) {
-                externDecl = addExternFunctionDecl(fileJp, functionDef);
-
-                if (externDecl === undefined) {
-                    this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${location}\' does not have external linkage.`);
-                    this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
-                    continue;
-                }
-            }
-
-            const previousCallName = callJp.name;
-            callJp.setName(functionDef.name);
-            if (isValidFile(fileJp)) {
+            if (this.solveDisallowedFunctionCall(callJp, fileJp, externFunctions)) {
                 changedFile = true;
-                externFunctions.push(functionDef.astId);
-            } else {
-                externDecl?.detach();
-                callJp.setName(previousCallName);
-                this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${location}\' does not fix the violation.`);
-                this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
+                solvedCallsCount++;
             }
         }
 
+        // Try to remove the include 
+        const fixedAllCalls = solvedCallsCount === invalidCalls.length;
+        this.removeInclude(fileJp, fixedAllCalls);
+
         return changedFile;
+    }
+
+    private solveDisallowedFunctionCall(callJp: Call, fileJp: FileJp, externFunctions: Set<string>): boolean {
+        // Skip call if previous AST visit marked it as unfixable
+        if (this.context.getRuleResult(this.ruleID, callJp) === MISRATransformationType.NoChange) {
+            return false;
+        }
+
+        const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
+        const configFix = this.getFixFromConfig(callJp);
+       
+        // Skip if config file was not specified or provides an invalid fix
+        if (!configFix) { 
+            this.logDisallowedInclude(fileJp);
+            this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
+            return false;
+        }
+
+        const [location, replacement_func] = [configFix.get("location"), configFix.get("function")];
+        const functionDef = findFunctionDef(replacement_func!, location!);
+
+        // Skip if specified function doesn't exist
+        if (!functionDef) {
+            this.logMISRAError(callJp, `${errorMsgPrefix} Provided file \'${location}\' does not have function definition.`);
+            this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
+            return false;
+        }
+
+        // Skip if specified function doesn't have external linkage
+        let externDecl: Joinpoint | undefined;
+        if (!externFunctions.has(functionDef.astId)) {
+            externDecl = addExternFunctionDecl(fileJp, functionDef);
+
+            if (externDecl === undefined) {
+                this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${location}\' does not have external linkage.`);
+                this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
+                return false;
+            }
+        }
+
+        const previousCallName = callJp.name;
+        callJp.setName(functionDef.name);
+        if (isValidFile(fileJp)) {
+            externFunctions.add(functionDef.astId);
+            return true;
+        } else { // If file does not compile, remove added external declaration and mark call as unfixable
+            externDecl?.detach();
+            callJp.setName(previousCallName);
+            this.logMISRAError(callJp, `${errorMsgPrefix} Provided definition at \'${location}\' does not fix the violation.`);
+            this.context.addRuleResult(this.ruleID, callJp, MISRATransformationType.NoChange);
+            return false;
+        }
+    }
+
+    private getExternFunctionDeclIds(fileJp: FileJp): Set<string> {
+        return new Set(
+          getExternFunctionDecls(fileJp)
+            .filter((funcJp) => funcJp.definitionJp !== undefined)
+            .map((funcJp) => funcJp.definitionJp.astId)
+        );
+    }
+
+    /**
+     * Removes the standard library include if it is fully disallowed and all invalid calls were fixed.
+     * If the file is invalid after include removal  because other library features are still being used (e.g.: typedefs), the include is re-added.
+     * 
+     * @param fileJp The file to modify
+     * @param fixedAllCalls Flag to indicate whether all calls were fixed
+     */
+    private removeInclude(fileJp: FileJp, fixedAllCalls: boolean) {
+        const includeJp = Query.searchFrom(fileJp, Include, {name: this.standardLibrary}).get()[0];
+        const ruleResult = this.context.getRuleResult(this.ruleID, includeJp);
+
+        if (this.isLibraryFullyDisallowed() && ruleResult === undefined) {            
+            if (!fixedAllCalls) { // Keep include and log MISRA error
+                this.logDisallowedInclude(fileJp);
+            } 
+            else { 
+                includeJp.detach();
+
+                // Re-add include and log error if any other library features are still referenced
+                if (!isValidFile(fileJp)) { 
+                    fileJp.addInclude(this.standardLibrary, true);
+                    this.logDisallowedInclude(fileJp);
+                }
+            }
+        }
     }
 }

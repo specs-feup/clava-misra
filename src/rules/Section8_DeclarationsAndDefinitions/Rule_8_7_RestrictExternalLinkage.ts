@@ -7,12 +7,19 @@ import { findExternalFunctionDecl, isFunctionUsed } from "../../utils/FunctionUt
 import { resetCaches } from "../../utils/ProgramUtils.js";
 
 /**
- * Rule 8.7: Functions and objects should not be defined with external linkage if they are referenced in only one translation unit
+ * MISRA-C Rule 8.7: Functions and objects should not be defined with external linkage if they are referenced in only one translation unit
  */
 export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
-    private externalDecls: FunctionJp[] | Vardecl[] = [];
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SYSTEM;
 
+    #externalDecls: FunctionJp[] | Vardecl[] = [];
+
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "8.7";
     }
@@ -28,15 +35,15 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
             return false;
         } 
 
-        this.externalDecls = $jp instanceof Vardecl ? findExternalVarRefs($jp) : findExternalFunctionDecl($jp as FunctionJp);
-        const isUsed = this.externalDecls.some(decl => decl instanceof Vardecl ? isVarUsed(decl) : isFunctionUsed(decl));
-        const nonCompliant = this.externalDecls.length === 0 || !isUsed; 
+        this.#externalDecls = $jp instanceof Vardecl ? findExternalVarRefs($jp) : findExternalFunctionDecl($jp as FunctionJp);
+        const isUsed = this.#externalDecls.some(decl => decl instanceof Vardecl ? isVarUsed(decl) : isFunctionUsed(decl));
+        const nonCompliant = this.#externalDecls.length === 0 || !isUsed; 
         if (nonCompliant && logErrors) {
             this.logMISRAError(
                 $jp, 
                 `${$jp instanceof FunctionJp ? "Function" : "Object"} '${getIdentifierName($jp)}' has external linkage but is only referenced within a single translation unit. Consider using the 'static' keyword to give it internal linkage.`
             );
-            this.externalDecls.forEach(decl => this.logMISRAError(decl, `'extern' declaration of '${getIdentifierName(decl)}' is unused. The corresponding definition is not referenced outside its translation unit and does not require external linkage.`))
+            this.#externalDecls.forEach(decl => this.logMISRAError(decl, `'extern' declaration of '${getIdentifierName(decl)}' is unused. The corresponding definition is not referenced outside its translation unit and does not require external linkage.`))
         } 
         return nonCompliant;
     }
@@ -61,7 +68,7 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
         }
         
         ($jp as Vardecl | FunctionJp).setStorageClass(StorageClass.STATIC);
-        this.externalDecls.forEach(decl => decl instanceof FunctionJp ? decl.detach() : decl.parent.detach());
+        this.#externalDecls.forEach(decl => decl instanceof FunctionJp ? decl.detach() : decl.parent.detach());
         resetCaches();
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }

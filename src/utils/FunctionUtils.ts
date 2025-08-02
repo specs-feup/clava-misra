@@ -9,7 +9,7 @@ import { hasDefinedType } from "./JoinpointUtils.js";
  * @param functionJp Function joinpoint to search in
  */
 export function getDirectParamReferences($param: Param, functionJp: FunctionJp): Varref[] {
-    return Query.searchFrom(functionJp, Varref, (ref) => { return ref.decl?.astId === $param.astId}).get();
+    return Query.searchFrom(functionJp, Varref, (ref) => { return ref.decl && ref.decl.astId === $param.astId}).get();
 }
 
 /**
@@ -19,7 +19,7 @@ export function getDirectParamReferences($param: Param, functionJp: FunctionJp):
  */
 export function getVLAFieldParamReferences($param: Param, functionJp: FunctionJp): Varref[] { 
     const vlaJoinpoints = functionJp.descendants.filter(jp => hasDefinedType(jp) && jp.type instanceof VariableArrayType);
-    const fieldsInVLAs = vlaJoinpoints.flatMap(jp => jp.jpFieldsRecursive.flatMap(field => [field, ...field.descendants]));
+    const fieldsInVLAs = vlaJoinpoints.flatMap(jp => jp.jpFields(true).flatMap(field => [field, ...field.descendants]));
 
     return fieldsInVLAs.filter(field => field instanceof Varref && field.decl?.astId === $param.astId) as Varref[];
 }
@@ -72,3 +72,4 @@ export function isFunctionUsed(functionJp: FunctionJp): boolean {
     }
     return referencingFiles.some(fileJp => Query.searchFrom(fileJp, Call, {name: functionJp.name, directCallee: (jp) => jp?.ast === functionJp.ast}).get().length > 0)
 }
+

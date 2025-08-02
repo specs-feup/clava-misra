@@ -4,11 +4,17 @@ import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
- * MISRA Rule 17.7: The value returned by a function having non-void return type shall be used
+ * MISRA-C Rule 17.7: The value returned by a function having non-void return type shall be used
  */
 export default class Rule_17_7_UnusedReturnValue extends MISRARule {
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "17.7";
     }

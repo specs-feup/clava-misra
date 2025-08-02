@@ -4,13 +4,22 @@ import { AnalysisType, MISRASwitchConverter, MISRATransformationReport, MISRATra
 import { countSwitchClauses, switchHasConditionalBreak } from "../../utils/SwitchUtils.js";
 
 /**
- * MISRA Rule 16.6:  Every switch statement shall have at least two switch-clauses.
+ * MISRA-C Rule 16.6:  Every switch statement shall have at least two switch-clauses.
  */
 export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
-    priority = 4;
+    /**
+     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     */
+    readonly priority = 4;
 
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+     /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "16.6";
     }

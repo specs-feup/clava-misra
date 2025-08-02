@@ -4,12 +4,17 @@ import { AnalysisType, MISRATransformationReport, MISRATransformationType } from
 import { isCommentStmt } from "../../utils/CommentUtils.js";
 
 /**
- * MISRA Rule 16.5: A default label shall appear as either the first or the last switch label of
-a switch statement
+ * MISRA-C Rule 16.5: A default label shall appear as either the first or the last switch label of a switch statement
  */
 export default class Rule_16_5_DefaultFirstOrLast extends MISRARule {
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+     /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "16.5";
     }

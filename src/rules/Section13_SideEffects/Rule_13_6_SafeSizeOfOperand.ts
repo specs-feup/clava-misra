@@ -7,14 +7,21 @@ import { isValidFile } from "../../utils/FileUtils.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 /**
- * MISRA Rule 13.6: The operand of the sizeof operator shall not contain any expression which has potential side effects
+ * MISRA-C Rule 13.6: The operand of the sizeof operator shall not contain any expression which has potential side effects
  */
 export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {   
-    private modifyingExpressions: (UnaryOp | BinaryOp)[] = [];
-    private functionCalls: Call[] = [];
-    private volatileRefs: Varref[] = [];
-    readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
+    /**
+     * Scope of analysis
+     */
+    analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+    #modifyingExpressions: (UnaryOp | BinaryOp)[] = [];
+    #functionCalls: Call[] = [];
+    #volatileRefs: Varref[] = [];
+
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "13.6";
     }
@@ -34,25 +41,25 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
             return false;
         }
 
-        this.functionCalls = Query.searchFromInclusive($jp, Call).get();
-        this.volatileRefs = this.operandIsVariableArrayType($jp) ? getVolatileVarRefs(($jp.argType as VariableArrayType).sizeExpr) : [];
-        this.modifyingExpressions = [
+        this.#functionCalls = Query.searchFromInclusive($jp, Call).get();
+        this.#volatileRefs = this.operandIsVariableArrayType($jp) ? getVolatileVarRefs(($jp.argType as VariableArrayType).sizeExpr) : [];
+        this.#modifyingExpressions = [
             ...Query.searchFromInclusive($jp, UnaryOp,  {kind: /(post_inc)|(post_dec)|(pre_inc)|(pre_dec)/}).get(), 
             ...Query.searchFromInclusive($jp, BinaryOp, {kind: /(assign)|(add_assign)|(sub_assign)|(mul_assign)|(div_assign)|(rem_assign)|(shl_assign)|(shr_assign)|(and_assign)|(xor_assign)|(or_assign)/}).get()
         ];
 
-        const isNonCompliant = this.functionCalls.length > 0 || this.modifyingExpressions.length > 0 || this.volatileRefs.length > 0;
+        const isNonCompliant = this.#functionCalls.length > 0 || this.#modifyingExpressions.length > 0 || this.#volatileRefs.length > 0;
 
         if (isNonCompliant && logErrors) {
-            this.functionCalls.forEach(call => {
+            this.#functionCalls.forEach(call => {
                 this.logMISRAError(call, `Function call '${call.name}' in sizeof is not allowed because it has no effect.`);
             });
 
-            this.modifyingExpressions.forEach(expr => {
+            this.#modifyingExpressions.forEach(expr => {
                 this.logMISRAError(expr, `Modifying expression '${expr.code}' in sizeof is not allowed because it has no effect.`);
             });
 
-            this.volatileRefs.forEach(ref => {
+            this.#volatileRefs.forEach(ref => {
                 this.logMISRAError(ref, `Access to volatile object ${ref.name} in sizeof is not allowed.`);
             });
         } 
@@ -66,7 +73,7 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
         }
 
         if (!this.operandIsVariableArrayType($jp as UnaryExprOrType)) {
-            for (const callJp of this.functionCalls) {
+            for (const callJp of this.#functionCalls) {
                 const callAncestor = callJp.getAncestor("call");
                 if (callAncestor === undefined || callAncestor.depth < $jp.depth) {
                     const functionType = callJp.functionType.returnType;
@@ -82,7 +89,7 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
                 }
             }
 
-            for (const expr of this.modifyingExpressions) {
+            for (const expr of this.#modifyingExpressions) {
                 let varRef = expr instanceof BinaryOp ? 
                     expr.left : Query.searchFrom(expr, Varref).get()[0];
                 expr.replaceWith(varRef);
@@ -90,15 +97,15 @@ export default class Rule_13_6_SafeSizeOfOperand extends MISRARule {
             return new MISRATransformationReport(MISRATransformationType.DescendantChange);
         } 
         else {
-            this.functionCalls.forEach(call => {
+            this.#functionCalls.forEach(call => {
                 this.logMISRAError(call, `Function call '${call.name}' in sizeof is not allowed. Could not correct because it is used to define a variable-length array type and it is unspecified whether it will be evaluated or not.`);
             });
 
-            this.modifyingExpressions.forEach(expr => {
+            this.#modifyingExpressions.forEach(expr => {
                 this.logMISRAError(expr, `Modifying expression '${expr.code}' in sizeof is not allowed. Could not correct because it is used to define a variable-length array type and it is unspecified whether it will be evaluated or not.`);
             });
 
-            this.volatileRefs.forEach(ref => {
+            this.#volatileRefs.forEach(ref => {
                 this.logMISRAError(ref,`Access to volatile object '${ref.name}' in sizeof is not allowed. Could not correct because it is used to define a variable-length array type and it is unspecified whether it will be evaluated or not.`);
             });
             return new MISRATransformationReport(MISRATransformationType.NoChange);

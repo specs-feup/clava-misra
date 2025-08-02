@@ -4,12 +4,17 @@ import { isInlineComment, getComments } from "../../utils/CommentUtils.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 
 /**
- * MISRA Rule 3.1: The character sequences /* an d // shall not be used within a comment.
+ * MISRA-C Rule 3.1: The character sequences /* an d // shall not be used within a comment.
  */
 export default class Rule_3_1_CommentSequences extends MISRARule {
-    
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+     /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "3.1";
     }

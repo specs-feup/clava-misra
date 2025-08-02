@@ -4,13 +4,22 @@ import { AnalysisType, MISRASwitchConverter, MISRATransformationReport, MISRATra
 import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils/SwitchUtils.js";
 
 /**
- * MISRA Rule 16.7: A switch-expression shall not have essentially Boolean type.
+ * MISRA-C Rule 16.7: A switch-expression shall not have essentially Boolean type.
  */
 export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
-    priority = 4; 
+    /**
+     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     */
+    readonly priority = 4; 
     
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "16.7";
     }

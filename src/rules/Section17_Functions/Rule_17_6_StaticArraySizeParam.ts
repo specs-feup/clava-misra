@@ -1,18 +1,31 @@
 import { AdjustedType, ArrayType, FunctionJp, Joinpoint, Param } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
-import MISRAContext from "../../MISRAContext.js";
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getParamReferences } from "../../utils/FunctionUtils.js";
 
 /**
- * MISRA Rule 17.6: The declaration of an array parameter shall not contain the static keyword between the [ ]
+ * MISRA-C Rule 17.6: The declaration of an array parameter shall not contain the static keyword between the [ ]
  */
 export default class Rule_17_6_StaticArraySizeParam extends MISRARule {
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
+
+    /**
+     * Standards to which this rule applies to
+     */
     protected override readonly appliesTo = new Set(["c99", "c11"]);
+
+    /**
+     * List of static array size params
+     */
     #invalidParams: Param[] = [];
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "17.6";
     }

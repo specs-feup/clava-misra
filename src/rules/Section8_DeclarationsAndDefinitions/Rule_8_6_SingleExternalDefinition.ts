@@ -8,13 +8,24 @@ import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isSameVarDecl } from "../../utils/VarUtils.js";
 
 /**
- * Rule 8.6: An identifier with external linkage shall have exactly one external definition
+ * MISRA-C Rule 8.6: An identifier with external linkage shall have exactly one external definition
  */
 export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
-    priority = 2; 
-    private invalidDecls: Vardecl[] = [];
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SYSTEM;
 
+    /**
+     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     */
+    readonly priority = 2; 
+    
+    #invalidDecls: Vardecl[] = [];
+
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "8.6";
     }
@@ -31,7 +42,7 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
         } 
 
         const externalLinkageVars = getExternalLinkageIdentifiers().filter((identifierJp) => identifierJp instanceof Vardecl);
-        this.invalidDecls = externalLinkageVars.filter((decl1) =>
+        this.#invalidDecls = externalLinkageVars.filter((decl1) =>
           externalLinkageVars.some((decl2) =>
                 isSameVarDecl(decl1, decl2) &&
                 decl1.getAncestor("file").ast !== decl2.getAncestor("file").ast &&
@@ -39,9 +50,9 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
             )
         );
 
-        const nonCompliant = this.invalidDecls.length > 0;
+        const nonCompliant = this.#invalidDecls.length > 0;
         if (nonCompliant && logErrors) {
-            this.invalidDecls.forEach(identifierJp => {
+            this.#invalidDecls.forEach(identifierJp => {
                 this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' with external linkage is defined in multiple files`)
             });
         }
@@ -59,7 +70,7 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
         } 
 
         let solved = false;
-        const uniqueDecls = this.invalidDecls.reduce((acc: Vardecl[], decl1) => acc.some(decl2 => isSameVarDecl(decl1, decl2)) ? acc : [...acc, decl1], []);
+        const uniqueDecls = this.#invalidDecls.reduce((acc: Vardecl[], decl1) => acc.some(decl2 => isSameVarDecl(decl1, decl2)) ? acc : [...acc, decl1], []);
 
         for (const decl of uniqueDecls) {
             if (this.context.getRuleResult(this.ruleID, decl) === MISRATransformationType.NoChange) {
@@ -74,14 +85,14 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
 
             if (filesWithInitialization.length > 1) {
                 
-                const other = this.invalidDecls.filter(identifier => isSameVarDecl(identifier, decl));
+                const other = this.#invalidDecls.filter(identifier => isSameVarDecl(identifier, decl));
                 for (const varDecl of other) {
                     this.logMISRAError(varDecl, `Identifier '${getIdentifierName(varDecl)}' with external linkage is defined in multiple files`);
                     this.context.addRuleResult(this.ruleID, varDecl, MISRATransformationType.NoChange);
                 }
             } 
             else if (filesWithInitialization.length === 0) {
-                const other = this.invalidDecls.filter(identifier => isSameVarDecl(decl, identifier));
+                const other = this.#invalidDecls.filter(identifier => isSameVarDecl(decl, identifier));
                 other.forEach(varDecl => {
                     varDecl.setStorageClass(StorageClass.EXTERN)
                 });

@@ -8,12 +8,19 @@ import { getDirectParamReferences, getParamReferences, getVLAFieldParamReference
  * MISRA-C Rule 2.7: There should be no unused parameters in functions.
  */
 export default class Rule_2_7_UnusedParameters extends MISRARule {
-    private unusedParams: Param[] = [];
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
-
+    
+    /**
+     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     */
     override get name(): string {
         return "2.7";
     }
+
+    #unusedParams: Param[] = [];
 
     /**
      * Checks if the program contains function with unused parameters.
@@ -29,8 +36,8 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
         
         const nonCompliant = $jp.params.some((param) => getParamReferences(param, $jp).length === 0);
         if (logErrors && nonCompliant) {
-            this.unusedParams = this.getUnusedParams($jp);
-            this.unusedParams.forEach(param => this.logMISRAError(param, `Parameter '${param.name}' is unused in function '${$jp.name}'.`));
+            this.#unusedParams = this.getUnusedParams($jp);
+            this.#unusedParams.forEach(param => this.logMISRAError(param, `Parameter '${param.name}' is unused in function '${$jp.name}'.`));
         }
         return nonCompliant;
     }

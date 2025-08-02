@@ -3,34 +3,31 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const failingCode = `
-#include <time.h>
+#include <time.h>   /* Non-compliant */
 
 static int test_21_10_1() {
-    time_t now = time(0);
-    clock_t start = clock();
+    int now = time(0);
+    int start = clock();
     return 0;
 }
 `;
 
 const customTimeLib = `
-#include <time.h>
-
-time_t my_time(void* arg) {
+int my_time(void* arg) {
     (void)arg;
     return 0;
 }
 
-clock_t my_clock(void) {
+int my_clock(void) {
     return 0;
 }
 `;
 
 const systemFile = `
-#include <time.h>
 #include <stddef.h>
 
-extern time_t my_time(void* arg);
-extern clock_t my_clock(void);
+extern int my_time(void* arg);
+extern int my_clock(void);
 
 static void use_externs_21_10() {
     (void) my_clock();
@@ -54,8 +51,8 @@ describe("Rule 21.10", () => {
     registerSourceCode(files, configFilePath);
 
     it("should detect errors", () => {
-        expect(countMISRAErrors()).toBe(2);
-        expect(countMISRAErrors("21.10")).toBe(2);
+        expect(countMISRAErrors()).toBe(3);
+        expect(countMISRAErrors("21.10")).toBe(3);
     });
 
     it("should correct errors", () => {

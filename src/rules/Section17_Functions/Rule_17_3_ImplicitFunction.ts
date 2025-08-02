@@ -7,17 +7,37 @@ import { addExternFunctionDecl, getFilesWithCallToImplicitFunction, getIncludesO
 import UserConfigurableRule from "../UserConfigurableRule.js";
 
 /**
- * MISRA Rule 17.3: A function shall not be declared implicitly
+ * MISRA-C Rule 17.3: A function shall not be declared implicitly
  */
 export default class Rule_17_3_ImplicitFunction extends UserConfigurableRule {
-    priority = 1;
+    /**
+     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     */
+    readonly priority = 1;
+
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
+
+    /**
+     * Standards to which this rule applies to
+     */
     protected override readonly appliesTo = new Set(["c90"]);
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "17.3";
     }
 
+    /**
+     * Returns the prefix to be used for error messages related to the given joinpoint
+     * 
+     * @param $jp - Joinpoint where the violation was detected 
+     * @returns Returns a prefix to prepend to error messages if no configuration is specified or if the configuration does not contain a fix for this violation
+     */
     getErrorMsgPrefix(callJp: Call): string {
         return `Function '${callJp.name}' is declared implicitly.`;
     }
@@ -79,7 +99,7 @@ export default class Rule_17_3_ImplicitFunction extends UserConfigurableRule {
     /**
      * Transforms every implicit call by adding a missing include directive or extern statement specified on the config file.
      * 
-     * - If the configuration is missing or the specified fix is invalid (i.e., not a '.h' or '.c'), no transformation is performed and the call is left unchanged.
+     * - If the configuration is missing or the specified fix is invalid (i.e., not a '.h' or '.c' file), no transformation is performed and the call is left unchanged.
      * - The fix is applied only if it successfully resolves the issue (i.e., makes the call explicit and the file compiles with no error).
      * - Otherwise, the fix is removed.
      * 
@@ -153,18 +173,11 @@ export default class Rule_17_3_ImplicitFunction extends UserConfigurableRule {
         return changedFile;
     }
 
-    private solveWithInclude(
-        fileJp: FileJp, 
-        callJp: Call, 
-        includePath: string, 
-        originalIncludes: string[], 
-        addedIncludes: Set<string>, 
-        callIndex: number
-    ): boolean {
+    private solveWithInclude(fileJp: FileJp, callJp: Call, includePath: string, originalIncludes: Set<string>, addedIncludes: Set<string>, callIndex: number): boolean {
         const errorMsgPrefix = this.getErrorMsgPrefix(callJp);
         let success = false;
 
-        if (originalIncludes.includes(includePath)) {
+        if (originalIncludes.has(includePath)) {
             this.logMISRAError(callJp, `${errorMsgPrefix} Provided include \'${includePath}\' does not fix the violation.`);
         } 
         else if (addedIncludes.has(includePath)) {

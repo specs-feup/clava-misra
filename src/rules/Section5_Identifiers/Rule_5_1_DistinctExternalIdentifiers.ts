@@ -7,12 +7,17 @@ import IdentifierRenameRule from "./IdentifierRenameRule.js";
 import { AnalysisType } from "../../MISRA.js";
 
 /**
- * Rule 5.1 External identifiers shall be distinct.
+ * MISRA-C Rule 5.1 External identifiers shall be distinct.
  */
 export default class Rule_5_1_DistinctExternalIdentifiers extends IdentifierRenameRule {
-
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SYSTEM;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "5.1";
     }

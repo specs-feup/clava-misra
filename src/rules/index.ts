@@ -32,7 +32,14 @@ import Rule_8_6_SingleExternalDefinition from "./Section8_DeclarationsAndDefinit
 import Rule_8_7_RestrictExternalLinkage from "./Section8_DeclarationsAndDefinitions/Rule_8_7_RestrictExternalLinkage.js";
 import Rule_8_9_BlockScopeDefinition from "./Section8_DeclarationsAndDefinitions/Rule_8_9_BlockScopeDefinition.js";
 
-
+/**
+ * Selects MISRA-C rules based on the provided analysis type.
+ * Returns rules sorted by priority (lower value = higher priority).
+ *
+ * @param context - The shared analysis context
+ * @param analysisType - Rule type to include ("all" for all rules).
+ * @returns Filtered and sorted list of MISRA rules.
+ */
 export function selectRules(context: MISRAContext, analysisType: string) {
      
     let rules: MISRARule[] = [

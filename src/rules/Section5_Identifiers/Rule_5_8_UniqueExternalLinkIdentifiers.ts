@@ -5,12 +5,17 @@ import IdentifierRenameRule from "./IdentifierRenameRule.js";
 import { AnalysisType } from "../../MISRA.js";
 
 /**
- * Rule 5.8: Identifiers that define objects or functions with external linkage shall be unique
+ * MISRA-C Rule 5.8: Identifiers that define objects or functions with external linkage shall be unique
  */
 export default class Rule_5_8_UniqueExternalLinkIdentifiers extends IdentifierRenameRule {
-
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SYSTEM;
 
+     /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "5.8";
     }

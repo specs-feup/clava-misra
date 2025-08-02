@@ -18,12 +18,13 @@ import { resetCaches } from "./utils/ProgramUtils.js";
  */
 export default abstract class MISRARule extends VisitWithContext<MISRATransformationResults, MISRAContext> {
     /**
-     * Priority of the rule which is low by default.
+     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     * By default, a rule has the lowest priority unless overridden.
      */
     readonly priority: number = Number.MAX_VALUE;
 
     /**
-     * Specifies the scope of analysis: single unit or entire system.
+     * Scope of analysis: single unit or entire system.
      */
     abstract readonly analysisType: AnalysisType;
 

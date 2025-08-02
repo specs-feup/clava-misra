@@ -37,8 +37,8 @@ export function isValidFile(fileJp: FileJp, jpType?: typeof Joinpoint, index?: n
  * @param fileJp The file join point
  * @returns An array of strings with the names of the includes
  */
-export function getIncludesOfFile(fileJp: FileJp): string[] {
-    return fileJp.includes.map(includeJp => path.basename(includeJp.name));
+export function getIncludesOfFile(fileJp: FileJp): Set<string> {
+    return new Set(fileJp.includes.map(includeJp => path.basename(includeJp.name)));
 }
 
 /**
@@ -59,7 +59,7 @@ export function removeIncludeFromFile(includeName: string, fileJp: FileJp) {
  * @returns A array of files that include the specified header
  */
 export function findFilesReferencingHeader(headerName: string): FileJp[] {
-    return Query.search(FileJp, (jp) =>{ return getIncludesOfFile(jp).includes(headerName)}).get();
+    return Query.search(FileJp, (jp) =>{ return getIncludesOfFile(jp).has(headerName)}).get();
 }
 
 /**

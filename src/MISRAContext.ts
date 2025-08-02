@@ -5,12 +5,15 @@ import Context from "./ast-visitor/Context.js";
 import { compareLocation, getFileLocation } from "./utils/JoinpointUtils.js";
 
 /**
- * Tracks MISRA errors and warnings during the analysis and/or transformation of the code.
- * Also generated unique variable and function names.
+ * Tracks MISRA-C violations during the analysis and/or transformation of the code.
+ * Also generates unique variable and function names.
  */
 export default class MISRAContext extends Context<MISRATransformationResults> {
     /**
-     * List of MISRA errors, that could not be resolved during the transformation process
+     * Stores MISRA-C rule violations.
+     * 
+     * When checking compliance, this includes all detected violations.
+     * When performing transformations, it includes only the violations that could not be resolved.
      */
     #misraErrors: MISRAError[] = [];
     #misraErrorKeys = new Set<string>();
@@ -53,8 +56,9 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
     /**
      * Orders errors according to their location
      */
-    private sortErrors() {
-        this.errors.sort((error1, error2) => compareLocation(error1.joinpoint, error2.joinpoint));
+    private sortErrors(errors?: MISRAError[]) {
+        let errorList = errors ? errors : this.#misraErrors;
+        errorList.sort((error1, error2) => compareLocation(error1.joinpoint, error2.joinpoint));
     }
 
    /**
@@ -89,10 +93,24 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
         this.#misraErrorKeys = new Set<string>();
     }
 
+    /**
+     * Returns the type of transformation applied by the specified rule to the given AST node.
+     * If no transformation was recorded, returns undefined.
+     * 
+     * @param ruleID Identifier of the violated rule
+     * @param $jp AST node
+     * @returns The type of transformation applied, or undefined if none was recorded.
+     */
     getRuleResult(ruleID: string, $jp: Joinpoint): MISRATransformationType | undefined {
         return this.get(ruleID)?.get($jp.astId);
     }
 
+    /**
+     * Registers the type of transformation a rule applied to a AST node
+     * @param ruleID Identifier of the violated rule
+     * @param $jp 
+     * @param result Applied transformation
+     */
     addRuleResult(ruleID: string, $jp: Joinpoint, result: MISRATransformationType) {
         let transformations = this.get(ruleID);
 
@@ -103,6 +121,13 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
         transformations.set($jp.astId, result);
     }
 
+    /**
+     * Registers a new violation of the standard
+     * 
+     * @param ruleID Identifier of the violated rule
+     * @param $jp Joinpoint where the error was detected
+     * @param message Description of the error
+     */
     addMISRAError(ruleID: string, $jp: Joinpoint, message: string) {
         const key = `${ruleID}-${$jp.astId}-${message}`;
         if (!this.#misraErrorKeys.has(key)) {
@@ -129,6 +154,11 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
         }
     }
 
+    /**
+     * Outputs a formatted MISRA-C rule violation message
+     * 
+     * @param error - The MISRA error object containing the rule ID, message, and location
+     */
     private outputError(error: MISRAError): void {
         console.log(`- [Rule ${error.ruleID}] at ${getFileLocation(error.joinpoint)}: ${error.message}\n`);
     }
@@ -145,7 +175,8 @@ export default class MISRAContext extends Context<MISRATransformationResults> {
      * Displays violations linked to nodes that are still present in the AST after correction.
      */
     outputActiveErrors(): void {
-        this.sortErrors();
-        this.activeErrors.forEach(error => this.outputError(error));
+        const errors = this.activeErrors;
+        this.sortErrors(errors);
+        errors.forEach(error => this.outputError(error));
     }
 }

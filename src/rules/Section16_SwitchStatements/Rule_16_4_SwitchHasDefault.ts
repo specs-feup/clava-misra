@@ -4,11 +4,17 @@ import { AnalysisType, MISRATransformationReport, MISRATransformationType } from
 import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 /**
- * MISRA Rule 16.4: Every switch statement shall have a default label
+ * MISRA-C Rule 16.4: Every switch statement shall have a default label
  */
 export default class Rule_16_4_SwitchHasDefault extends MISRARule {
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+     /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "16.4";
     }

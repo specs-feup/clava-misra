@@ -8,13 +8,19 @@ import IdentifierRenameRule from "./IdentifierRenameRule.js";
 import { AnalysisType } from "../../MISRA.js";
 
 /**
- * Rule 5.6: A typedef name shall be a unique identifier.
+ * MISRA-C Rule 5.6: A typedef name shall be a unique identifier.
  * 
  * Exception: The typedef name may be the same as the structure, union  or enumeration tag name associated with the typedef.
  */
 export default class Rule_5_6_UniqueTypedefNames extends IdentifierRenameRule {
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SYSTEM;
     
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "5.6";
     }

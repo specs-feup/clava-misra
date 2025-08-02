@@ -5,13 +5,27 @@ import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 import { getLastStmtOfCase } from "../../utils/SwitchUtils.js";
 
 /**
- * MISRA Rule 16.3: An unconditional break statement shall terminate every switch-clause
+ * MISRA-C Rule 16.3: An unconditional break statement shall terminate every switch-clause
  */
 export default class Rule_16_3_UnconditionalBreak extends MISRARule {
-    priority = 3; 
-    #statementsNeedingBreakAfter: Joinpoint[] = [];
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
+
+    /**
+     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     */
+    readonly priority = 3; 
     
+    /**
+     * List of statements that require a `break` statement as their last sibling 
+     */
+    #statementsNeedingBreakAfter: Joinpoint[] = [];
+    
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "16.3";
     }

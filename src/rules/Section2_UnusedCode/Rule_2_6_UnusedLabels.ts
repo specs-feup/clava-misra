@@ -8,9 +8,14 @@ import { getUnusedLabels } from "../../utils/FunctionUtils.js";
  *  
  */
 export default class Rule_2_6_UnusedLabels extends MISRARule {
-
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "2.6";
     }

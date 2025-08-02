@@ -31,7 +31,7 @@ export function countMISRAErrors(arg1?: FileJp | Program | string, arg2?: string
 }
 
 export function countErrorsAfterCorrection(ruleID?: string): number {
-  MISRATool.applyCorrections();
+  MISRATool.correctViolations();
 
   return ruleID ? 
     MISRATool.context.activeErrors.filter(error => error.ruleID === ruleID).length :

@@ -8,9 +8,14 @@ import { isTagDecl } from "../../utils/JoinpointUtils.js";
  * MISRA-C Rule 2.3: A project should not contain unused type declarations.
  */
 export default class Rule_2_3_UnusedTypeDecl extends MISRARule {
-
+    /**
+     * Scope of analysis
+     */
     readonly analysisType = AnalysisType.SYSTEM;
 
+    /**
+     * @returns Rule identifier according to MISRA-C:2012
+     */
     override get name(): string {
         return "2.3";
     }

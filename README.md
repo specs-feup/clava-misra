@@ -30,7 +30,7 @@ Besides analysis, the tool can also correct the provided source code to comply w
 ```ts
 import MISRATool from "@specs-feup/clava-misra/dist/MISRATool.js";
 
-MISRATool.applyCorrections();
+MISRATool.correctViolations();
 ```
 
 After the transformation, any violations that could not be fixed will be displayed along with their justification. The corrected files will be saved in the `woven_code` folder.
