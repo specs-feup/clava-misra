@@ -69,8 +69,8 @@
       }
     },
     "time.h": {
-      "time": {
-        "replacement": "my_time",
+      "difftime": {
+        "replacement": "my_difftime",
         "location": "custom_time.c"
       },
       "clock": {

@@ -38,7 +38,7 @@ export function isValidFile(fileJp: FileJp, jpType?: typeof Joinpoint, index?: n
  * @returns An array of strings with the names of the includes
  */
 export function getIncludesOfFile(fileJp: FileJp): Set<string> {
-    return new Set(fileJp.includes.map(includeJp => path.basename(includeJp.name)));
+    return new Set(fileJp.includes.map(includeJp => includeJp.isAngled ? includeJp.name : path.basename(includeJp.name)));
 }
 
 /**

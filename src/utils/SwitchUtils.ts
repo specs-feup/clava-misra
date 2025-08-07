@@ -1,4 +1,4 @@
-import { BinaryOp, Break, BuiltinType, Case, Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
+import { BinaryOp, Break, BuiltinType, Case, Joinpoint, Switch, UnaryOp } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { hasDefinedType } from "./JoinpointUtils.js";
 
@@ -42,24 +42,11 @@ export function countSwitchClauses($jp: Switch): number  {
 } 
 
 /**
- * Checks if the provided switch statement has a Boolean condition
- * @param switchStmt The switch statement to check
- * @returns Returns true if the switch statement has a Boolean condition, otherwise false
- */
-export function switchHasBooleanCondition(switchStmt: Switch): boolean {
-    return switchStmt.condition instanceof BinaryOp ||
-            (hasDefinedType(switchStmt.condition) &&
-             switchStmt.condition.type instanceof BuiltinType &&
-              switchStmt.condition.type.builtinKind === "Bool"
-            );
-}
-
-/**
  * Checks if the provided switch statement contains any conditional break
  * 
  * @param switchStmt - The switch statement to analyze
  * @returns Returns true if the switch statement contains a conditional break, otherwise false
  */
-export function switchHasConditionalBreak(switchStmt: Switch): boolean {
+export function hasConditionalBreak(switchStmt: Switch): boolean {
     return Query.searchFrom(switchStmt, Break, { currentRegion: region => region.astId !== switchStmt.astId, enclosingStmt: jp => jp.astId === switchStmt.astId }).get().length > 0;
 }

@@ -3,18 +3,19 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const failingCode = `
-#include <time.h>   /* Non-compliant */
+#include <time.h>
 
 static int test_21_10_1() {
-    int now = time(0);
-    int start = clock();
+    int start = clock(); /*  Violation of rule 21.10 */
+    int execution_time = difftime(0, 5); /*  Violation of rule 21.10 */
     return 0;
 }
 `;
 
 const customTimeLib = `
-int my_time(void* arg) {
-    (void)arg;
+int my_difftime(int arg1, int arg2) {
+    (void)arg1;
+    (void)arg2;
     return 0;
 }
 
@@ -26,12 +27,12 @@ int my_clock(void) {
 const systemFile = `
 #include <stddef.h>
 
-extern int my_time(void* arg);
+extern int my_difftime(int arg1, int arg2);
 extern int my_clock(void);
 
 static void use_externs_21_10() {
     (void) my_clock();
-    (void) my_time(NULL);
+    (void) my_difftime(1, 0);
 }
 `;
 

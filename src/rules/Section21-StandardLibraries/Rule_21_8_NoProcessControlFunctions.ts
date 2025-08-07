@@ -2,9 +2,8 @@ import { AnalysisType } from "../../MISRA.js";
 import DisallowedStdLibFunctionRule from "./DisallowedStdLibFunctionRule.js";
 
 /**
- * MISRA-C Rule 21.8: The Standard Library termination functions of <stdlib.h> shall not be used.
- * 
- * The termination functions are abort, exit, _Exit and quick_exit.
+ * MISRA-C Rule 21.8: The library functions abort, exit, getenv and system of <stdlib.h>
+ * shall not be used
  */
 export default class Rule_21_8_NoProcessControlFunctions extends DisallowedStdLibFunctionRule {
     /**
@@ -21,7 +20,7 @@ export default class Rule_21_8_NoProcessControlFunctions extends DisallowedStdLi
      * Names of functions from {@link standardLibrary} that forbidden. 
      * If the set is empty, all functions from {@link standardLibrary} are forbidden.
      */
-    protected invalidFunctions = new Set(["abort", "exit", "_Exit", "quick_exit"]);
+    protected invalidFunctions = new Set(["abort", "exit", "getenv", "system"]);
 
     /**
      * Scope of analysis

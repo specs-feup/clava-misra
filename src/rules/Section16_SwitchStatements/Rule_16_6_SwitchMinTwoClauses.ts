@@ -1,7 +1,7 @@
 import {Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import { AnalysisType, MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { countSwitchClauses, switchHasConditionalBreak } from "../../utils/SwitchUtils.js";
+import { countSwitchClauses, hasConditionalBreak } from "../../utils/SwitchUtils.js";
 
 /**
  * MISRA-C Rule 16.6:  Every switch statement shall have at least two switch-clauses.
@@ -52,7 +52,7 @@ export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         
         const switchJp = $jp as Switch;
-        if (switchHasConditionalBreak(switchJp)) {
+        if (hasConditionalBreak(switchJp)) {
             if (switchJp.hasDefaultCase) {
                 this.logMISRAError($jp, "Switch statement must have at least two clauses and cannot be transformed due to a conditional break statement.")
             }

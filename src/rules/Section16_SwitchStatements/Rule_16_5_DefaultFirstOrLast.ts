@@ -29,7 +29,7 @@ export default class Rule_16_5_DefaultFirstOrLast extends MISRARule {
     private getConsecutiveRightCases($jp: Case): Joinpoint[] {
         const cases = [];
         for (const stmt of $jp.siblingsRight) {
-            if (!(stmt instanceof Case || isCommentStmt($jp)))
+            if (!(stmt instanceof Case || isCommentStmt(stmt)))
                 break;
             cases.push(stmt);
         }

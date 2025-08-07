@@ -1,7 +1,8 @@
-import { Joinpoint, Switch } from "@specs-feup/clava/api/Joinpoints.js";
+import { BinaryOp, BuiltinType, Joinpoint, Switch, UnaryOp } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "../../MISRARule.js";
 import { AnalysisType, MISRASwitchConverter, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
-import { switchHasBooleanCondition, switchHasConditionalBreak } from "../../utils/SwitchUtils.js";
+import { hasConditionalBreak } from "../../utils/SwitchUtils.js";
+import { hasDefinedType } from "../../utils/JoinpointUtils.js";
 
 /**
  * MISRA-C Rule 16.7: A switch-expression shall not have essentially Boolean type.
@@ -25,6 +26,24 @@ export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
     }
 
     /**
+     * Checks if the provided switch statement has a Boolean condition
+     * @param switchStmt The switch statement to check
+     * @returns Returns true if the switch statement has a Boolean condition, otherwise false
+     */
+    switchHasBooleanCondition(switchStmt: Switch): boolean {
+        const switchCondition = switchStmt.condition;
+
+        if (switchCondition instanceof BinaryOp || switchCondition instanceof UnaryOp) {
+            const logicalOps = new Set(["lt", "gt", "le", "ge", "eq", "ne", "not", "l_not", "and", "or"]);
+            return logicalOps.has(switchCondition.kind);
+        }
+        
+        return hasDefinedType(switchCondition) && 
+            switchCondition.type instanceof BuiltinType && 
+            switchCondition.type.builtinKind === "Bool";
+    }
+
+    /**
      * Checks if the given joinpoint is a switch statement with an essentially Boolean condition
      * @param $jp - Joinpoint to analyze
      * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected
@@ -33,7 +52,7 @@ export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
         if (!($jp instanceof Switch)) return false;
 
-        const booleanCondition = switchHasBooleanCondition($jp);
+        const booleanCondition = this.switchHasBooleanCondition($jp);
         if (booleanCondition && logErrors) {
             this.logMISRAError($jp, `Switch statement controlling expression '${$jp.condition.code}' must not have essentially boolean type.`)
         }    
@@ -51,7 +70,7 @@ export default class Rule_16_7_NonBooleanSwitchCondition extends MISRARule {
         if (!this.match($jp)) 
             return new MISRATransformationReport(MISRATransformationType.NoChange);
 
-        if (switchHasConditionalBreak($jp as Switch)) {
+        if (hasConditionalBreak($jp as Switch)) {
             this.logMISRAError($jp, `The switch statement's controlling expression ${($jp as Switch).condition.code} must not be of a boolean type and cannot be transformed due to a conditional break statement.`)
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }

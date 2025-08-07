@@ -4,7 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const passingCode = `
-#include <math.h>
+
 extern double test_17_3_4();
 
 // Missing "static" keyword; Will have external decl after correction
@@ -14,7 +14,7 @@ unsigned int foo_17_3() {
 
 // Missing "static" keyword; Will have external decl after correction
 double test_17_3_1() {
-    return sqrt(foo_17_3()) + test_17_3_4();
+    return foo_17_3() + test_17_3_4();
 }
 `;
 

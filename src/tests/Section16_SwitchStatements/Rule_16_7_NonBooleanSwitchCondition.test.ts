@@ -25,7 +25,7 @@ const failingCode1 =
 static void foo16_6_2( int num )
 {
     int a = 7;
-    switch (num % 3) { 
+    switch ((num % 3) == 0) { 
         case 0:
             a *= 2;
             break;
