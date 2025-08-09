@@ -15,14 +15,17 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
      */
     readonly analysisType = AnalysisType.SYSTEM;
 
-    #externalDecls: FunctionJp[] | Vardecl[] = [];
-
     /**
      * @returns Rule identifier according to MISRA-C:2012
      */
     override get name(): string {
         return "8.7";
     }
+
+    /**
+     * External declarations (`extern`) of the current identifier found in other source files.
+     */
+    #externalDecls: FunctionJp[] | Vardecl[] = [];
 
     /**
      * 
@@ -59,6 +62,7 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         } 
 
+        this.removeExternalDeclarations();
         if ($jp instanceof Vardecl && hasMultipleExternalLinkDeclarations($jp)) {
             this.logMISRAError(
                 $jp, 
@@ -68,8 +72,14 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
         }
         
         ($jp as Vardecl | FunctionJp).setStorageClass(StorageClass.STATIC);
-        this.#externalDecls.forEach(decl => decl instanceof FunctionJp ? decl.detach() : decl.parent.detach());
         resetCaches();
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);
+    }
+
+    /**
+     * Removes unused external declarations (`extern`) of the current identifier found in other source files.
+     */
+    private removeExternalDeclarations() {
+        this.#externalDecls.forEach(decl => decl instanceof FunctionJp ? decl.detach() : decl.parent.detach());
     }
 }

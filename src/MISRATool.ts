@@ -54,30 +54,8 @@ export default class MISRATool {
     }
 
     /**
-     * Displays standard violations based on execution mode. 
-     * - In detection mode, all violations are shown.
-     * - In correction mode, only the remaining violations are displayed
+     * Recursively transforms the AST using a pre-order traversal
      * 
-     * @param mode execution mode 
-     */
-    private static outputReport(mode: ExecutionMode) {
-        const isDetection = mode === ExecutionMode.DETECTION;
-        const errorCount = isDetection ? this.getErrorCount() : this.getActiveErrorCount();
-
-        if (errorCount > 0) {
-          console.log(isDetection
-            ? `[Clava-MISRATool] Detected ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"}:\n`
-            : `[Clava-MISRATool] ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"} remain after transformation:\n`
-          );
-          isDetection ? this.context.outputAllErrors() : this.context.outputActiveErrors();
-        } 
-        else {
-          console.log(isDetection ? "[Clava-MISRATool] No MISRA-C violations detected.\n" : "[Clava-MISRATool] All detected violations were corrected.\n");
-        }
-    }
-
-    /**
-     * Recursively transforms the AST using a pre-order traversal.
      * @param $jp  AST node from which to start the visit.
      * @returns Return true if any modifications were made (removal, replacement, or changes in descendants). Otherwise, returns false.
      */
@@ -111,6 +89,14 @@ export default class MISRATool {
     }
 
     /**
+     * Selects applicable rules according to the analysis type. When not specified, both system and single translation unit rules are selected.
+     */
+    private static initRules() {
+        const typeStr = this.getArgValue("type", this.#ruleTypes) ?? "all";
+        this.#misraRules = selectRules(this.context, typeStr);
+    }
+
+    /**
      * Checks whether the provided standard version is valid and supported
      */
     private static validateStdVersion() {
@@ -120,14 +106,6 @@ export default class MISRATool {
             console.error(`[Clava-MISRATool] Invalid -std value. Allowed values: ${[...this.#standards].join(", ")}`);
             process.exit(1);
         }
-    }
-
-    /**
-     * Selects applicable rules according to the analysis type. When not specified, both system and single translation unit rules are selected.
-    */
-    private static initRules() {
-        const typeStr = this.getArgValue("type", this.#ruleTypes) ?? "all";
-        this.#misraRules = selectRules(this.context, typeStr);
     }
 
     private static getArgValue(field: string, validValues?: Set<string>): string | undefined{
@@ -143,6 +121,29 @@ export default class MISRATool {
             process.exit(1);
         }
         return value;
+    }
+
+    /**
+     * Displays standard violations based on execution mode. 
+     * - In detection mode, all violations are shown.
+     * - In correction mode, only the remaining violations are displayed
+     * 
+     * @param mode execution mode 
+     */
+    private static outputReport(mode: ExecutionMode) {
+        const isDetection = mode === ExecutionMode.DETECTION;
+        const errorCount = isDetection ? this.getErrorCount() : this.getActiveErrorCount();
+
+        if (errorCount > 0) {
+          console.log(isDetection
+            ? `[Clava-MISRATool] Detected ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"}:\n`
+            : `[Clava-MISRATool] ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"} remain after transformation:\n`
+          );
+          isDetection ? this.context.outputAllErrors() : this.context.outputActiveErrors();
+        } 
+        else {
+          console.log(isDetection ? "[Clava-MISRATool] No MISRA-C violations detected.\n" : "[Clava-MISRATool] All detected violations were corrected.\n");
+        }
     }
 
     /**
