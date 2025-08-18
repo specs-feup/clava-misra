@@ -39,9 +39,10 @@ export function hasTypeDefDecl($jp: Joinpoint): boolean {
 export function jpUsesTypedef(jp: Joinpoint, typeDecl: TypedefDecl): boolean {
     const jpType = getBaseType(jp);
 
-    return !jpType?.isBuiltin && 
-        jpType instanceof TypedefType && 
-        jpType.decl.astId === typeDecl.astId;
+    return !jpType?.isBuiltin && (
+        (jpType instanceof TypedefType &&jpType.decl.astId === typeDecl.astId) ||
+        (jpType instanceof ElaboratedType && jpType.namedType instanceof TypedefType &&jpType.namedType.decl.astId === typeDecl.astId)
+    );
 }
 
 /**

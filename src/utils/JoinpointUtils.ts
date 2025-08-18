@@ -35,7 +35,7 @@ export function getFilepath($jp: Joinpoint) {
 }
 
 export function getFileLocation($jp: Joinpoint) {
-    if ($jp instanceof Include) {
+    if ($jp instanceof Include && $jp.line === undefined) {
         return `${$jp.parent?.filepath}`;
     }
     return `${$jp.filepath}@${$jp.line}:${$jp.column}`
