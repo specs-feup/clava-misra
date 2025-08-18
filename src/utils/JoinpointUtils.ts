@@ -30,24 +30,13 @@ export function getBaseType($jp: Joinpoint): Type | undefined {
     return jpType;
 }
 
-export function getFilepath($jp: Joinpoint) {
-    return $jp instanceof Include ? $jp.parent.filepath : $jp.filepath;
-}
-
 export function getFileLocation($jp: Joinpoint) {
-    if ($jp instanceof Include) {
-        return `${$jp.parent?.filepath}`;
-    }
     return `${$jp.filepath}@${$jp.line}:${$jp.column}`
 }
 
 export function compareLocation($jp1: Joinpoint, $jp2: Joinpoint): number {
-    const filepath1 = getFilepath($jp1), filepath2 = getFilepath($jp2);
-    
-    if (filepath1 !== filepath2) return getFileLocation($jp1).localeCompare(getFileLocation($jp2));
-
-    if (($jp1 instanceof Include) && !($jp2 instanceof Include)) return -1;
-    if (!($jp1 instanceof Include) && ($jp2 instanceof Include)) return 1;
-
+    if ($jp1.filepath !== $jp2.filepath) {
+        return getFileLocation($jp1).localeCompare(getFileLocation($jp2));
+    }
     return $jp1.line !== $jp2.line ? $jp1.line - $jp2.line : $jp1.column - $jp2.column;
 }

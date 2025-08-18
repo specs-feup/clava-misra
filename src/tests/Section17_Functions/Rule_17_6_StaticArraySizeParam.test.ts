@@ -34,8 +34,8 @@ static void g_17_7 (void) {
     uint16_t v1[10];
     uint16_t v2[ 20 ];
 
-    x = total(10U, v1);
-    x = total(20U, v2);
+    x = total_17_7(10U, v1);
+    x = total_17_7(20U, v2);
 }
 `;
 

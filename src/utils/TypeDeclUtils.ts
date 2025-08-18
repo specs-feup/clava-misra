@@ -38,7 +38,11 @@ export function hasTypeDefDecl($jp: Joinpoint): boolean {
  */
 export function jpUsesTypedef(jp: Joinpoint, typeDecl: TypedefDecl): boolean {
     const jpType = getBaseType(jp);
-    return !jpType?.isBuiltin && jpType instanceof TypedefType && jpType.decl.astId === typeDecl.astId;
+
+    return !jpType?.isBuiltin && 
+        jpType instanceof ElaboratedType && 
+        jpType.namedType instanceof TypedefType && 
+        jpType.namedType.decl.astId === typeDecl.astId;
 }
 
 /**
@@ -72,6 +76,6 @@ export function isTypeDeclUsed(decl: TypedefDecl | TagDecl): boolean {
     }
     
     return decl instanceof TypedefDecl ? 
-        jps.some((jp) => jpUsesTypedef(jp, decl)) :
-        jps.some((jp) => jpUsesTag(jp, decl));
+        jps.some(jp => jpUsesTypedef(jp, decl)) :
+        jps.some(jp => jpUsesTag(jp, decl));
 }

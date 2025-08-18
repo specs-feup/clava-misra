@@ -58,7 +58,6 @@ export default abstract class IdentifierRenameRule extends MISRARule {
             const newName = this.context.generateIdentifierName(identifierJp)!;
             renameIdentifier(identifierJp, newName);
         }
-        this.rebuildProgram();
         return new MISRATransformationReport(MISRATransformationType.Replacement, Query.root() as Program);
     }
 }

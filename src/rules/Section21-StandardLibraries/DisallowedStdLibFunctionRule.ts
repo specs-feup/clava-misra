@@ -295,7 +295,6 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
      * @param fixedAllCalls Flag to indicate whether all calls were fixed
      */
     private removeInclude(fileJp: FileJp, fixedAllCalls: boolean) {
-        console.log("current ruleID: ", this.ruleID)
         if (!this.isLibraryFullyDisallowed()) return;
 
         const includeJp = Query.searchFrom(fileJp, Include, {name: this.standardLibrary}).get()[0];
@@ -305,7 +304,6 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
           
         if (this.filesWithRetainedHeaders.has(fileJp.name) || !fixedAllCalls) { // Keep include and log MISRA error 
             this.logDisallowedInclude(fileJp);
-            console.log("called logDissallowdInclude");
         } else { 
             includeJp.detach();
 
@@ -313,7 +311,6 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
             if (!isValidFile(fileJp)) { 
                 fileJp.addInclude(this.standardLibrary, true);
                 this.logDisallowedInclude(fileJp);
-                console.log("called logDissallowdInclude");
             }
         }
     }
