@@ -35,16 +35,16 @@
     "url": "git+https://github.com/specs-feup/clava-misra.git"
   },
   "dependencies": {
-    "@specs-feup/clava": "^3.0.27",
+    "@specs-feup/clava": "^3.0.25",
     "@specs-feup/clava-visualization": "^1.0.5",
-    "@specs-feup/lara": "^3.0.12",
+    "@specs-feup/lara": "^3.0.11",
     "@specs-feup/clava-flow": "^1.0.1",
     "@specs-feup/flow": "^1.0.3"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@specs-feup/clava": "^3.0.27",
-    "@specs-feup/lara": "^3.0.12",
+    "@specs-feup/clava": "^3.0.25",
+    "@specs-feup/lara": "^3.0.11",
     "@specs-feup/clava-flow": "^1.0.1",
     "@specs-feup/flow": "^1.0.3",
     "@types/jest": "^29.5.14",

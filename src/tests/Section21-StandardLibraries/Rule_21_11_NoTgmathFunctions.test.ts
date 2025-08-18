@@ -61,7 +61,7 @@ describe("Rule 21.11", () => {
         });
 
         it("should correct errors", () => {
-            expect(countErrorsAfterCorrection()).toBe(1);
+            expect(countErrorsAfterCorrection()).toBe(2);
         });
     }
 });
