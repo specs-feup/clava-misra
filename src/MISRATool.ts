@@ -49,7 +49,6 @@ export default class MISRATool {
             console.log(`[Clava-MISRATool] Iteration #${++iteration}: Applying MISRA-C transformations...`);
             modified = this.transformAST(Query.root() as Program);
         }
-
         this.outputReport(ExecutionMode.CORRECTION);
     }
 

@@ -1,0 +1,110 @@
+{
+  "defaultValues": {
+    "int": 0,
+    "double": 0.0,
+    "unsigned int": 0,  
+    "float": 0.0,
+    "enum Status": "SUCCESS",
+    "Color": "RED",
+    "Size": "SMALL",
+    "my_int_type": 0,
+    "int32_t": 0
+  },
+  "implicitCalls": {
+    "toupper": "ctype.h",
+    "toupper_transformation": "ctype.h",
+    "sin": "math.h",
+    "pow": "math.h",
+    "half": "math.h",
+    "func": "good.c",
+    "foo_17_3": "rule_17_3_valid1.c",
+    "test_17_3_1": "rule_17_3_valid1.c", 
+    "power": "custom_functions.c"
+  },
+  "disallowedFunctions": {
+    "stdlib.h": {
+      "malloc": {
+        "replacement": "custom_malloc",
+        "location": "custom_functions.c"
+      },
+      "calloc": {
+        "replacement": "custom_calloc",
+        "location": "custom_functions.c"
+      },
+      "realloc": {
+        "replacement": "custom_realloc",
+        "location": "custom_functions.c"
+      },
+      "free": {
+        "replacement": "custom_free",
+        "location": "custom_functions.c"
+      },
+      "atof": {
+        "replacement": "custom_atof",
+        "location": "custom_functions.c"
+      },
+      "atoi": {
+        "replacement": "custom_atoi",
+        "location": "custom_functions.c"
+      },
+      "atol": {
+        "replacement": "custom_atol",
+        "location": "custom_functions.c"
+      },
+      "atoll": {
+        "replacement": "custom_atoll",
+        "location": "custom_functions.c"
+      },
+      "abort": {
+        "replacement": "custom_abort",
+        "location": "custom_functions.c"
+      },
+      "exit": {
+        "replacement": "custom_exit",
+        "location": "custom_functions.c"
+      },
+      "getenv": {
+        "replacement": "custom_getenv",
+        "location": "custom_functions.c"
+      },
+      "system": {
+        "replacement": "custom_system",
+        "location": "custom_functions.c"
+      },
+      "qsort": {
+        "replacement": "custom_qsort",
+        "location": "custom_functions.c"
+      },
+      "bsearch": {
+        "replacement": "custom_bsearch",
+        "location": "custom_functions.c"
+      }
+    },
+    "stdio.h": {
+      "printf": {
+        "replacement": "custom_printf",
+        "location": "custom_functions.c"
+      },
+      "fgets": {
+        "replacement": "custom_fgets",
+        "location": "custom_functions.c"
+      }
+    },
+    "time.h": {
+      "clock": {
+        "replacement": "custom_clock",
+        "location": "custom_functions.c"
+      },
+      "difftime": {
+        "replacement": "custom_difftime",
+        "location": "custom_functions.c"
+      }
+    },
+    "tgmath.h": {
+      "__tg_sqrt": {
+        "replacement": "custom_sqrt",
+        "location": "custom_functions.c"
+      }
+    }
+  }
+}
