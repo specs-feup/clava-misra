@@ -1,11 +1,11 @@
 import { Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRAContext from "./MISRAContext.js";
-import { AnalysisType, MISRATransformationReport, MISRATransformationResults, MISRATransformationType } from "./MISRA.js";
-import VisitWithContext from "./ast-visitor/VisitWithContext.js";
+import { AnalysisType, MISRATransformationReport, MISRATransformationResults } from "./MISRA.js";
 import { LaraJoinPoint } from "@specs-feup/lara/api/LaraJoinPoint.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { resetCaches } from "./utils/ProgramUtils.js";
+import StandardGuideline from "./StandardGuideline.js";
 
 /**
  * Represents a MISRA Rule that detects and corrects violations in the code according to MISRA standards.
@@ -16,7 +16,7 @@ import { resetCaches } from "./utils/ProgramUtils.js";
  *  - match($jp, logErrors)
  *  - apply($jp)
  */
-export default abstract class MISRARule extends VisitWithContext<MISRATransformationResults, MISRAContext> {
+export default abstract class MISRARule extends StandardGuideline<MISRATransformationResults, MISRAContext> {
     /**
      * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
      * By default, a rule has the lowest priority unless overridden.
@@ -54,7 +54,7 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
     abstract override get name(): string;
 
     /**
-     * Unique identifier for the MISRA rule.
+     * An alias for 'name'
      */
     get ruleID(): string {
         return this.name;
@@ -85,15 +85,6 @@ export default abstract class MISRARule extends VisitWithContext<MISRATransforma
         this.context.resetStorage();
         resetCaches();
     }
-
-    /**
-     * Checks if the joinpoint violates the rule
-     * 
-     * @param $jp - Joinpoint to analyze
-     * @param logErrors - [logErrors=false] - Whether to log errors if a violation is detected
-     * @returns Returns true if the joinpoint violates the rule, false otherwise
-     */
-    abstract match($jp: Joinpoint, logErrors: boolean): boolean;
 
     /**
      * Transforms the joinpoint to comply with the MISRA-C rule

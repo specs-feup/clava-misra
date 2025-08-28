@@ -11,7 +11,7 @@ export default class Rule_21_6_NoStdIOFunctions extends DisallowedStdLibFunction
     protected standardLibrary = "stdio.h";
     
     /**
-     * Names of functions from {@link standardLibrary} that forbidden. 
+     * Names of functions from {@link standardLibrary} that are forbidden. 
      * If the set is empty, all functions from {@link standardLibrary} are forbidden.
      */
     protected invalidFunctions = new Set<string>();

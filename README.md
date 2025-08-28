@@ -1,4 +1,4 @@
-# Clava MISRA Tool
+# Clava-MISRA Library
 
 A Clava-based library to automatically detect and correct parts of C code that violate MISRA-C:2012 coding standard.
 

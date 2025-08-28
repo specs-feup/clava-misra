@@ -32,7 +32,7 @@ export default abstract class DisallowedStdLibFunctionRule extends UserConfigura
     protected abstract standardLibrary: string;
 
     /**
-     * Names of functions from {@link standardLibrary} that forbidden. 
+     * Names of functions from {@link standardLibrary} that are forbidden. 
      * If the set is empty, all functions from {@link standardLibrary} are forbidden.
      */
     protected abstract invalidFunctions: Set<string>;

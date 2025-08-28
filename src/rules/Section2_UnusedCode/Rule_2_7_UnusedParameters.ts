@@ -14,7 +14,7 @@ export default class Rule_2_7_UnusedParameters extends MISRARule {
     readonly analysisType = AnalysisType.SINGLE_TRANSLATION_UNIT;
     
     /**
-     * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
+     * @returns Rule identifier according to MISRA-C:2012
      */
     override get name(): string {
         return "2.7";
