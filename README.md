@@ -1,4 +1,4 @@
-# Clava-MISRA Library
+# Clava-MISRA Tool
 
 A Clava-based library to automatically detect and correct parts of C code that violate MISRA-C:2012 coding standard.
 
@@ -78,7 +78,6 @@ To execute a project that uses this tool, provide the following information:
 - The path to your **script file**. 
 - The **C standard** to use (`c90`, `c99`, or `c11`).
 - The path to the **source code** to process.
-- *(Optional)* The **analysis type** (`system`, `single`, or `all`).
 - *(Optional)* The full path to a **config file**.
 - *(Optional)* The **analysis type**:
   - `system`: For rules whose violation detection requires analyzing multiple files together
