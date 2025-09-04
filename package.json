@@ -4,6 +4,12 @@
   "author": "L. Sousa",
   "description": "Clava library to automatically detect and correct violations of the MISRA-C:2012 standard in C code",
   "type": "module",
+  "exports": {
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
   "files": [
     "dist",
     "src",
