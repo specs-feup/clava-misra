@@ -2,7 +2,7 @@ import { FileJp, Joinpoint, Program, StorageClass, Vardecl } from "@specs-feup/c
 import MISRARule from "../../MISRARule.js";
 import { AnalysisType, MISRATransformationReport, MISRATransformationType } from "../../MISRA.js";
 import { getIdentifierName } from "../../utils/IdentifierUtils.js";
-import { getExternalLinkageIdentifiers, resetCaches } from "../../utils/ProgramUtils.js";
+import { getExternalLinkageVars, resetCaches, resetExternalVarRefs } from "../../utils/ProgramUtils.js";
 import { compareLocation } from "../../utils/JoinpointUtils.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isSameVarDecl } from "../../utils/VarUtils.js";
@@ -41,7 +41,7 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
             return false;
         } 
 
-        const externalLinkageVars = getExternalLinkageIdentifiers().filter((identifierJp) => identifierJp instanceof Vardecl);
+        const externalLinkageVars = getExternalLinkageVars();
         this.#invalidDecls = externalLinkageVars.filter((decl1) =>
           externalLinkageVars.some((decl2) =>
                 isSameVarDecl(decl1, decl2) &&
@@ -53,7 +53,7 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
         const nonCompliant = this.#invalidDecls.length > 0;
         if (nonCompliant && logErrors) {
             this.#invalidDecls.forEach(identifierJp => {
-                this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' with external linkage is defined in multiple files`)
+                this.logMISRAError(identifierJp, `Identifier '${getIdentifierName(identifierJp)}' with external linkage is defined in multiple files.`)
             });
         }
         return nonCompliant;
@@ -87,7 +87,7 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
                 
                 const other = this.#invalidDecls.filter(identifier => isSameVarDecl(identifier, decl));
                 for (const varDecl of other) {
-                    this.logMISRAError(varDecl, `Identifier '${getIdentifierName(varDecl)}' with external linkage is defined in multiple files`);
+                    this.logMISRAError(varDecl, `Identifier '${getIdentifierName(varDecl)}' with external linkage has multiple definitions across files. Automatic correction cannot be applied due to multiple initializations.`);
                     this.context.addRuleResult(this.ruleID, varDecl, MISRATransformationType.NoChange);
                 }
             } 
@@ -99,12 +99,13 @@ export default class Rule_8_6_SingleExternalDefinition extends MISRARule {
                 solved = true;
             }
             else {
-                const externalLinkageVars = getExternalLinkageIdentifiers().filter((identifierJp) => identifierJp instanceof Vardecl);
-                const other = externalLinkageVars.filter(identifierJp => 
+                const other = getExternalLinkageVars().filter(identifierJp => 
                     isSameVarDecl(decl, identifierJp) && 
                     (identifierJp.getAncestor("file").ast !== filesWithInitialization[0].ast)
                 ); 
-                other.forEach(varDecl => varDecl.setStorageClass(StorageClass.EXTERN));
+                other.forEach(varDecl => {
+                    varDecl.setStorageClass(StorageClass.EXTERN);
+                });
                 solved = true;
             } 
         }

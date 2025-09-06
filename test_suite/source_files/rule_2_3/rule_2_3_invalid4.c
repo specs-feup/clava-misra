@@ -18,4 +18,8 @@ typedef enum ColorEnum {  /*  Violation of rule 2.3 */
     GREEN,
     BLUE
 } RGB_Color;
-static enum ColorEnum colorInstance = GREEN;  
+
+static void use_color_enum() {
+    enum ColorEnum colorInstance = GREEN;  
+    (void) colorInstance;
+}

@@ -20,4 +20,9 @@ static struct PersonStruct personInstance = {1, "Alice"};
 
 static void use_person_struct(struct PersonStruct param) {
     (void) (param.id);
+    (void) personInstance;
+}
+
+static void use_person_instance() {
+    (void) personInstance;
 }

@@ -16,4 +16,7 @@ typedef union NumberUnion {  /* Violation of rule 2.3 */
     float floatValue;
 } Number;
 
-static union NumberUnion unionInst = {.intValue = 10};
+static void use_number_union() {
+    union NumberUnion unionInst = {.intValue = 10};
+    (void) unionInst;
+}

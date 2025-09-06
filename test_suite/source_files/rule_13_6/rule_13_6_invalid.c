@@ -37,7 +37,11 @@ static void test_13_6_3(int32_t n) {
     
     // Function calls
     s2 = sizeof(bar_13_6_4());  /* Non-compliant (rule 13.6) */
-    s2 = sizeof(foo_13_6_3(bar_13_6_4())); /* Non-compliant (rule 13.6) */
+    s2 = sizeof(
+            foo_13_6_3( /* Non-compliant (rule 13.6) */
+                bar_13_6_4() /* Non-compliant (rule 13.6) */
+            )
+        );
 
     // Declaration of variable-length array type; will not be corrected
     s2 = sizeof(int32_t[ n++ ]);      /* Non-compliant (rule 13.6) */

@@ -62,6 +62,11 @@ typedef int OtherInt;
 typedef OtherInt** OtherPointer; // Violation of rule 2.3
 typedef int MyUnusedType; // Violation of rule 2.3
 typedef int** MyUnusedPointer; // Violation of rule 2.3
+
+static void use_other_int() {
+    OtherInt int_a = 1;
+    (void) int_a;
+}
 `;
 
 // 4 errors, where 1 is the unused tag decl
@@ -84,6 +89,15 @@ typedef struct PersonStruct {  // Violation of rule 2.3
     char name[10];
 } Person;
 static struct PersonStruct personInstance = {1, "Alice"};
+
+static void use_person_struct(struct PersonStruct param) {
+    (void) (param.id);
+    (void) personInstance;
+}
+
+static void use_person_instance() {
+    (void) personInstance;
+}
 `;
 
 // 4 errors, one is from the other class
@@ -106,7 +120,10 @@ typedef union NumberUnion {  // Violation of rule 2.3
     float floatValue;
 } Number;
 
-static union NumberUnion unionInst = {.intValue = 10};
+static void use_number_union() {
+    union NumberUnion unionInst = {.intValue = 10};
+    (void) unionInst;
+}
 `;
 
 // 4 errors, one is from the other class
@@ -130,8 +147,11 @@ typedef enum ColorEnum {  // Violation of rule 2.3
     RED,
     GREEN,
     BLUE
-} Color;
-static enum ColorEnum colorInstance = GREEN;  
+} RGB_Color;
+static void use_color_enum() {
+    enum ColorEnum colorInstance = GREEN;  
+    (void) colorInstance;
+} 
 `;
 
 const misraExample = `
@@ -173,7 +193,7 @@ describe("Rule 2.3", () => {
         expect(Query.searchFrom(misraExampleFile, TypedefDecl).get().length).toBe(0);
 
         const badFile1 = Query.search(FileJp, {name: "bad1.c"}).first()!;
-        expect(Query.searchFrom(badFile1, TypedefDecl).get().length).toBe(0);
+        expect(Query.searchFrom(badFile1, TypedefDecl).get().length).toBe(1);
 
         const badFile2 = Query.search(FileJp, {name: "bad2.c"}).first()!;
         expect(Query.searchFrom(badFile2, TypedefDecl).get().length).toBe(0);

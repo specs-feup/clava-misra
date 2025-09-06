@@ -11,3 +11,11 @@ static void foo_5_9 ( void ) { /* Violation of rule 5.9 */
 void bar2 ( void ){
     static uint8_t nbytes; 
 }
+
+void static use_static_count_3() {
+    (void) count_5_9;
+}
+
+void static use_static_count_4() {
+    (void) count_5_9;
+}

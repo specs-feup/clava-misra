@@ -30,19 +30,14 @@ export default class Rule_8_9_BlockScopeDefinition extends MISRARule {
      * @returns Returns true if the joinpoint violates the rule, false otherwise
      */
     match($jp: Joinpoint, logErrors: boolean = false): boolean {
-        if (!($jp instanceof DeclStmt && $jp.decls.length === 1)) {
+        if (!($jp instanceof Vardecl && isInternalLinkageIdentifier($jp))) {
             return false;
         }
 
-        const varDecls = Query.searchFrom($jp, Vardecl).get();
-        if (!(varDecls.length === 1 && isInternalLinkageIdentifier(varDecls[0]))) {
-            return false;
-        }
-        const varDecl = varDecls[0];
-        const nonCompliant = findReferencingFunctions(varDecl).length === 1;
+        const nonCompliant = findReferencingFunctions($jp).length <= 1;
 
         if (nonCompliant && logErrors) {
-            this.logMISRAError(varDecl, `Object '${varDecl.name}' should be defined at block scope because its identifier only appears in one single function.`)
+            this.logMISRAError($jp, `Object '${$jp.name}' should be defined at block scope because its identifier only appears in one single function.`)
         }
         return nonCompliant;
     }
@@ -58,16 +53,13 @@ export default class Rule_8_9_BlockScopeDefinition extends MISRARule {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
 
-        try {
-            const varDecl = Query.searchFrom($jp, Vardecl).get()[0];
-            const functionJp = findReferencingFunctions(varDecl)[0];
-            $jp.detach();
-            functionJp.body.firstChild.insertBefore($jp);
-            resetCaches();
-            
-            return new MISRATransformationReport(MISRATransformationType.Removal);
-        } catch(error) {
-            return new MISRATransformationReport(MISRATransformationType.NoChange);
-        }
+        const referencingFunctions = findReferencingFunctions($jp as Vardecl);
+        const functionJp = referencingFunctions.length > 0 ? referencingFunctions[0] : undefined;
+        const declStmt = $jp.getAncestor("declStmt");
+        declStmt.detach();
+        functionJp?.body.firstChild.insertBefore(declStmt);        
+        resetCaches();
+        
+        return new MISRATransformationReport(MISRATransformationType.Removal);
     }
 }

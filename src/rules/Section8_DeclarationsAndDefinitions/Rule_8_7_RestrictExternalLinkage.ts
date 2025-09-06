@@ -4,7 +4,7 @@ import { AnalysisType, MISRATransformationReport, MISRATransformationType } from
 import { getIdentifierName, isExternalLinkageIdentifier } from "../../utils/IdentifierUtils.js";
 import { findExternalVarRefs, hasMultipleExternalLinkDeclarations, isVarUsed } from "../../utils/VarUtils.js";
 import { findExternalFunctionDecl, isFunctionUsed } from "../../utils/FunctionUtils.js";
-import { resetCaches } from "../../utils/ProgramUtils.js";
+import { resetCaches, resetExternalVarRefs } from "../../utils/ProgramUtils.js";
 
 /**
  * MISRA-C Rule 8.7: Functions and objects should not be defined with external linkage if they are referenced in only one translation unit
@@ -71,7 +71,8 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
             return new MISRATransformationReport(MISRATransformationType.NoChange);
         }
         
-        ($jp as Vardecl | FunctionJp).setStorageClass(StorageClass.STATIC);
+        const identifierJp = ($jp as Vardecl | FunctionJp);
+        identifierJp.setStorageClass(StorageClass.STATIC);
         resetCaches();
         return new MISRATransformationReport(MISRATransformationType.DescendantChange);
     }
@@ -80,6 +81,9 @@ export default class Rule_8_7_RestrictExternalLinkage extends MISRARule {
      * Removes unused external declarations (`extern`) of the current identifier found in other source files.
      */
     private removeExternalDeclarations() {
+        if (this.#externalDecls.length > 0 && this.#externalDecls[0] instanceof Vardecl) {
+            resetExternalVarRefs();
+        }
         this.#externalDecls.forEach(decl => decl instanceof FunctionJp ? decl.detach() : decl.parent.detach());
     }
 }

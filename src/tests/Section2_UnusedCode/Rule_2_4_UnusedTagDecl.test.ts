@@ -93,11 +93,15 @@ static enum EnumForCast2 enumAsReturn2() {
     return (enum EnumForCast2) id;
 };
 
-static enum MyEnum2 color_enum = RED4;
+static void use_tags_2_4_1() {
+    enum MyEnum2 color_enum = RED4;
+    enum EnumForPtr *colorPtr;
+    enum EnumForArray colorArray[3];
 
-static enum EnumForPtr *colorPtr;
-
-static enum EnumForArray colorArray[3];
+    (void) color_enum;
+    (void) colorPtr;
+    (void) colorArray;
+}
 `;
 
 const failingCodeEnum2 = `
@@ -106,15 +110,12 @@ typedef enum {
     B1,
     C1
 } ColorEnum2;
-static ColorEnum2 colorEnum2 = A1;
 
 typedef enum MyColors {
     A2,
     B3,
     C4
 } ColorOption;
-static enum MyColors my_color = A2;
-static ColorOption color_option = B3;
 
 // MyColors2 tag should be removed
 typedef enum MyColors2 {
@@ -122,7 +123,18 @@ typedef enum MyColors2 {
     B6,
     C7
 } ColorOption2;
-static ColorOption2 color2 = B6;
+
+static void use_tags_2_4_2() {
+    enum MyColors my_color = A2;
+    ColorOption color_option = B3;
+    ColorEnum2 colorEnum2 = A1;
+    ColorOption2 color2 = B6;
+
+    (void) my_color;
+    (void) color_option;
+    (void) colorEnum2;
+    (void) color2;
+}
 `;
 
 const failingCodeStruct1 = `
@@ -165,9 +177,15 @@ static struct StructForReturn1 structAsReturn() {
     return (struct StructForReturn1){1, 1.5f};
 }
 
-static struct MyStruct2 myStruct = {10, 20.5f};
-static struct StructForPtr *structPtr;
-static struct StructForArray structArray[3];
+static void use_tags_2_4_3() {
+    static struct MyStruct2 myStruct = {10, 20.5f};
+    static struct StructForPtr *structPtr;
+    static struct StructForArray structArray[3];
+
+    (void) myStruct;
+    (void) structPtr;
+    (void) structArray;
+}
 `;
 
 const failingCodeStruct2 = `
@@ -175,21 +193,29 @@ typedef struct {
     int x;
     float y;
 } ColorStruct;
-static ColorStruct colorStruct = {1, 2.5};
 
 typedef struct MyStruct5 {
     int x;
     float y;
 } ColorStruct2;
-static struct MyStruct5 struct5 = {2, 4.5};
-static ColorStruct2 colorStruct2 = {1, 2.5};
 
 // Violation: MyStruct3 tag will be removed
 typedef struct MyStruct3 { 
     int x;
     float y;
 } ColorStruct3;
-static ColorStruct3 colorStruct3 = {10, 5.5};
+
+static void use_tags_2_4_4() {
+    static ColorStruct colorStruct = {1, 2.5};
+    static struct MyStruct5 struct5 = {2, 4.5};
+    static ColorStruct2 colorStruct2 = {1, 2.5};
+    static ColorStruct3 colorStruct3 = {10, 5.5};
+
+    (void) colorStruct;
+    (void) struct5;
+    (void) colorStruct2;
+    (void) colorStruct3;
+}
 `;
 
 const failingCodeUnion1 = `
@@ -232,9 +258,15 @@ static union UnionForReturn1 unionAsReturn() {
     return (union UnionForReturn1){.x = 1};
 }
 
-static union MyUnion2 myUnion = {.y = 20.5f};
-static union UnionForPtr *unionPtr;
-static union UnionForArray unionArray[3];
+static void use_tags_2_4_5() {
+    union MyUnion2 myUnion = {.y = 20.5f};
+    union UnionForPtr *unionPtr;
+    union UnionForArray unionArray[3];
+
+    (void) myUnion;
+    (void) unionPtr;
+    (void) unionArray;
+}
 `;
 
 const files: TestFile[] = [

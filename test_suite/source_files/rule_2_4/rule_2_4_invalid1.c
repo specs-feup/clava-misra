@@ -42,8 +42,12 @@ static enum EnumForCast2 enumAsReturn2() {
     return (enum EnumForCast2) id;
 };
 
-static enum MyEnum2 color_enum = RED4;
+static void use_tags_2_4_1() {
+    enum MyEnum2 color_enum = RED4;
+    enum EnumForPtr *colorPtr;
+    enum EnumForArray colorArray[3];
 
-static enum EnumForPtr *colorPtr;
-
-static enum EnumForArray colorArray[3];
+    (void) color_enum;
+    (void) colorPtr;
+    (void) colorArray;
+}

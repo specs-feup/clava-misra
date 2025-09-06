@@ -1,7 +1,7 @@
 import { FileJp, FunctionJp, Joinpoint, QualType, StorageClass, Vardecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { getIdentifierName, isExternalLinkageIdentifier } from "./IdentifierUtils.js";
-import { getExternalLinkageIdentifiers } from "./ProgramUtils.js";
+import { getExternalLinkageIdentifiers, getExternalLinkageVars, getExternalVarRefs } from "./ProgramUtils.js";
 import { findFilesReferencingHeader } from "./FileUtils.js";
 
 /**
@@ -25,9 +25,7 @@ export function getVolatileVarRefs($jp: Joinpoint): Varref[] {
  * @returns Array of external references with the same name as the given variable.
  */
 export function findExternalVarRefs($varDecl: Vardecl): Vardecl[] {
-    return Query.search(Vardecl, (ref) => {
-            return ref.storageClass === StorageClass.EXTERN && ref.name === $varDecl.name;
-        }).get();
+    return getExternalVarRefs().filter(ref => ref.name === $varDecl.name);
 }
 
 export function findReferencingFunctions($jp: Vardecl): FunctionJp[] {
@@ -41,7 +39,7 @@ export function findReferencingFunctions($jp: Vardecl): FunctionJp[] {
 }
 
 export function findDuplicateVarDefinition($jp: Vardecl): Vardecl[] {
-    return Query.search(Vardecl, (varDeclJp) => varDeclJp.astId !== $jp.astId && isSameVarDecl(varDeclJp, $jp)).get();   
+    return getExternalLinkageVars().filter((varDeclJp) => varDeclJp.astId !== $jp.astId && isSameVarDecl(varDeclJp, $jp));   
 }
 
 export function isSameVarDecl($jp1: Joinpoint, $jp2: Joinpoint): boolean {

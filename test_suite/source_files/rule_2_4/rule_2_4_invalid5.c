@@ -36,6 +36,12 @@ static union UnionForReturn1 unionAsReturn() {
     return (union UnionForReturn1){.x = 1};
 }
 
-static union MyUnion2 myUnion = {.y = 20.5f};
-static union UnionForPtr *unionPtr;
-static union UnionForArray unionArray[3];
+static void use_tags_2_4_5() {
+    union MyUnion2 myUnion = {.y = 20.5f};
+    union UnionForPtr *unionPtr;
+    union UnionForArray unionArray[3];
+
+    (void) myUnion;
+    (void) unionPtr;
+    (void) unionArray;
+}

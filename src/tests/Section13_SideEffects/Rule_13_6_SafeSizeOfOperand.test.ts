@@ -16,9 +16,9 @@ static void test_13_6_1(void) {
     s = sizeof(i);               
     s = sizeof(int32_t);         
 }
-static volatile uint32_t v; 
 
 static void f(int32_t n) { 
+    static volatile uint32_t v; 
     size_t s;
     s = sizeof(int32_t[n]);                            /* Compliant */
     s = sizeof(int32_t[n++]);                          /* Non-compliant (rule 13.6) */
