@@ -18,7 +18,7 @@ npm install @specs-feup/clava-misra
 You can use the tool to detect violations by executing the following statements in your script:
 
 ```ts
-import MISRATool from "@specs-feup/clava-misra/dist/MISRATool.js";
+import MISRATool from "@specs-feup/clava-misra/MISRATool";
 
 MISRATool.checkCompliance();
 ```
@@ -28,7 +28,7 @@ After analysis, each identified violation will be displayed, including its locat
 Besides analysis, the tool can also correct the provided source code to comply with the coding guidelines, using the following statements:
 
 ```ts
-import MISRATool from "@specs-feup/clava-misra/dist/MISRATool.js";
+import MISRATool from "@specs-feup/clava-misra/MISRATool";
 
 MISRATool.correctViolations();
 ```
