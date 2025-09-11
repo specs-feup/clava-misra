@@ -136,7 +136,7 @@ export default class MISRATool {
         if (errorCount > 0) {
           console.log(isDetection
             ? `[Clava-MISRATool] Detected ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"}:\n`
-            : `[Clava-MISRATool] ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"} remain${errorCount === 1 ? "" : "s"} after transformation:\n`
+            : `[Clava-MISRATool] ${errorCount} MISRA-C violation${errorCount === 1 ? "" : "s"} remain${errorCount === 1 ? "s" : ""} after transformation:\n`
           );
           isDetection ? this.context.outputAllErrors() : this.context.outputActiveErrors();
         } 

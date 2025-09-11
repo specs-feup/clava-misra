@@ -68,7 +68,7 @@ The config file should follow this structure:
   }
 }
 ```
-**Note:** Not all fields (`defaultValues`, `implicitCalls`, `disallowedFunctions`) are required and if the config file is not provided or lacks the necessary information to fix a violation, the violation will remain and be displayed as unresolved. 
+**Note:** Not all fields (`defaultValues`, `implicitCalls`, `disallowedFunctions`) are mandatory. If the config file is not provided or lacks the necessary information to fix a violation, the violation will remain and be displayed as unresolved. 
 
 
 ## Execution
@@ -82,11 +82,13 @@ To execute a project that uses this tool, provide the following information:
 - *(Optional)* The **analysis type**:
   - `system`: For rules whose violation detection requires analyzing multiple files together
   - `single`: For rules whose violation detection is identified within individual translation units independently
-  - `all`: For both system and single translation rules
+  - `all`: For both system and single translation rules (default)
 
 ```bash
 npx clava classic <scriptFile.js> -pi -std <c90 | c99 | c11> -p <path/to/source/code> [-av "<options>"]
 ```
+
+**Note:** Some guidelines are tied to a specific C language standard (e.g., c90, c99, c11). Therefore, they will not be detected when running under other standards. For instance, the rule 17.3 (*"A function shall not be declared implicitly"*) only applies to c90 and is not reported when analyzing c99.
 
 ### Examples:
 

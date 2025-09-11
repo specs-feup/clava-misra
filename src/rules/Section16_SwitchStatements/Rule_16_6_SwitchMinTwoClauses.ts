@@ -10,7 +10,7 @@ export default class Rule_16_6_SwitchMinTwoClauses extends MISRARule {
     /**
      * A positive integer starting from 1 that indicates the rule's priority, determining the order in which rules are applied.
      */
-    readonly priority = 4;
+    readonly priority = 5;
 
     /**
      * Scope of analysis
