@@ -1,4 +1,4 @@
-import { Joinpoint, TypedefDecl, DeclStmt, TypedefType, ElaboratedType, TagType, FileJp } from "@specs-feup/clava/api/Joinpoints.js";
+import { Joinpoint, TypedefDecl, DeclStmt, TypedefType, ElaboratedType, TagType, FileJp, EnumDecl, EnumeratorDecl, Varref } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { getBaseType } from "./JoinpointUtils.js";
 import { isTagDecl, TagDecl } from "./JoinpointUtils.js";
@@ -52,6 +52,14 @@ export function jpUsesTypedef(jp: Joinpoint, typeDecl: TypedefDecl): boolean {
  * @returns Returns true if the joinpoint uses the given tag, false otherwise
  */
 export function jpUsesTag($jp: Joinpoint, tag: TagDecl): boolean {
+    if (tag instanceof EnumDecl && $jp instanceof Varref && getTypeDefDecl(tag) === undefined) {
+        const enumeratorsIDs = tag.enumerators.map(enumerator => enumerator.astId);
+        const decl = $jp.getValue("decl");
+        if (decl instanceof EnumeratorDecl && enumeratorsIDs.includes(decl.astId)) {
+            return true;
+        }
+    }
+
     const jpType = getBaseType($jp);
     return jpType instanceof ElaboratedType && 
         jpType.namedType instanceof TagType && 
