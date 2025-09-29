@@ -1,6 +1,6 @@
 {
   "name": "@specs-feup/clava-misra",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Milena Gouveia",
   "description": "Clava library to automatically detect and correct violations of the MISRA-C:2012 standard in C code",
   "type": "module",
