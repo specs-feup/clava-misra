@@ -34,7 +34,7 @@ import Rule_8_9_BlockScopeDefinition from "./Section8_DeclarationsAndDefinitions
 
 /**
  * Selects MISRA-C rules based on the provided analysis type.
- * Returns rules sorted by priority (lower value = higher priority).
+ * Returns rules sorted by priority (lower value has higher priority).
  *
  * @param context - The shared analysis context
  * @param analysisType - Rule type to include ("all" for all rules).

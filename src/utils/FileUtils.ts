@@ -12,20 +12,62 @@ import path from "path";
  * @param fileJp - The file to validate.
  */
 export function isValidFile(fileJp: FileJp, jpType?: typeof Joinpoint, index?: number) : boolean | Joinpoint | undefined {
-    const programJp = fileJp.parent as Program;
-    let copyFile = ClavaJoinPoints.fileWithSource(`temp_misra_${fileJp.name}`, fileJp.code, fileJp.relativeFolderpath);
     let result: boolean | Joinpoint = true;
 
+    // Create a temporary copy of the file for validation
+    const programJp = fileJp.parent as Program;
+    let copyFile = ClavaJoinPoints.fileWithSource(`temp_misra_${fileJp.name}`, fileJp.code, fileJp.relativeFolderpath);
     copyFile = programJp.addFile(copyFile) as FileJp;
+
     try {
         const rebuiltFile = copyFile.rebuild();
-        const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first();
-        if (jpType && index) {
+        if (jpType && index) { // If requested, return a specific join point inside the rebuilt file
             result = Query.searchFrom(rebuiltFile, jpType).get()[index];
         }
+        
+        // Remove the temporary file
+        const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first();
         fileToRemove?.detach();
         return result;
     } catch(error) {
+        // On rebuild failure, delete copy file and return false
+        copyFile.detach();
+        return false;
+    }
+}
+
+/**
+ * Checks if the rebuilt version of the file compiles and if the provided call is no longer implicit.
+ * 
+ * @param fileJp The file to analyze
+ * @param funcName The function name to search the call
+ * @param callIndex The index of the call 
+ */
+export function isValidFileWithExplicitCall(fileJp: FileJp, funcName: string, callIndex: number, checkNumParams: boolean = false): boolean {
+    const programJp = fileJp.parent as Program;
+
+    // Create a temporary copy of the file for validation
+    let copyFile = ClavaJoinPoints.fileWithSource(`temp_misra_${fileJp.name}`, fileJp.code, fileJp.relativeFolderpath);
+    copyFile = programJp.addFile(copyFile) as FileJp;
+
+    try {
+        // Rebuild the file to check validity
+        const rebuiltFile = copyFile.rebuild();
+        const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first() as FileJp;
+
+        // Locate the function call and check if it is implicit
+        const callJp = Query.searchFrom(fileToRemove, Call, {name: funcName}).get().at(callIndex);
+        let isExplicitCall = callJp !== undefined && !isCallToImplicitFunction(callJp);
+        
+        if (checkNumParams && isExplicitCall) {
+            isExplicitCall = isExplicitCall && callJp!.args.length === callJp!.directCallee.params.length;
+        }
+
+        // Remove the temporary file
+        fileToRemove?.detach();
+        return isExplicitCall;
+
+    } catch(error) { // On rebuild failure, delete copy file and return false
         copyFile.detach();
         return false;
     }
@@ -56,7 +98,7 @@ export function removeIncludeFromFile(includeName: string, fileJp: FileJp) {
  * Returns all files in the program that include a given header file using the `#include` directive
  *
  * @param headerName - The name of the header file to search for
- * @returns A array of files that include the specified header
+ * @returns An array of files that include the specified header
  */
 export function findFilesReferencingHeader(headerName: string): FileJp[] {
     return Query.search(FileJp, (jp) =>{ return getIncludesOfFile(jp).has(headerName)}).get();
@@ -79,37 +121,11 @@ export function getFilesWithCallToImplicitFunction(programJp: Program): FileJp[]
 } 
 
 /**
- * Checks if the rebuilt version of the file compiles and if the provided call is no longer implicit.
+ * Inserts an extern declaration of the given function into the file.
  * 
- * @param fileJp The file to analyze
- * @param funcName The function name to search the call
- * @param callIndex The index of the call 
- */
-export function isValidFileWithExplicitCall(fileJp: FileJp, funcName: string, callIndex: number, checkNumParams: boolean = false): boolean {
-    const programJp = fileJp.parent as Program;
-    let copyFile = ClavaJoinPoints.fileWithSource(`temp_misra_${fileJp.name}`, fileJp.code, fileJp.relativeFolderpath);
-
-    copyFile = programJp.addFile(copyFile) as FileJp;
-    try {
-        const rebuiltFile = copyFile.rebuild();
-        const fileToRemove = Query.searchFrom(programJp, FileJp, {filepath: rebuiltFile.filepath}).first() as FileJp;
-        const callJp = Query.searchFrom(fileToRemove, Call, {name: funcName}).get().at(callIndex);
-        let isExplicitCall = callJp !== undefined && !isCallToImplicitFunction(callJp);
-        
-        if (checkNumParams && isExplicitCall) {
-            isExplicitCall = isExplicitCall && callJp!.args.length === callJp!.directCallee.params.length;
-        }
-        fileToRemove?.detach();
-        return isExplicitCall;
-
-    } catch(error) {
-        copyFile.detach();
-        return false;
-    }
-}
-
-/**
- * 
+ * @param fileJp The file to modify.
+ * @param functionJp The function to declare as extern.
+ * @returns The inserted join point, or undefined if the function has no external linkage.
  */
 export function addExternFunctionDecl(fileJp: FileJp, functionJp: FunctionJp): Joinpoint | undefined {
     if (!isExternalLinkageIdentifier(functionJp)) {
@@ -128,14 +144,26 @@ export function addExternFunctionDecl(fileJp: FileJp, functionJp: FunctionJp): J
     return newExternStmt;
 }
 
-export function getExternFunctionDecls(fileJp: FileJp) {
+/**
+ * Returns all extern function declarations in the given file
+ * @param fileJp The file join point
+ * @returns An array of functions declared with 'extern'
+ */
+export function getExternFunctionDecls(fileJp: FileJp): FunctionJp[] {
     return Query.searchFrom(fileJp, FunctionJp, {storageClass: StorageClass.EXTERN}).get();
 }
 
-export function getCallsToLibrary(fileJp: FileJp, libraryFile: string, functionNames: Set<string> = new Set()): Call[] {
+/**
+ * Returns function calls from a file that are defined in the provided library header. Optionally filters by function names.
+ * 
+ * @param fileJp The file join point
+ * @param libraryName Header filename
+ * @param functionNames Optional list of function names to filter
+ */
+export function getCallsToLibrary(fileJp: FileJp, libraryName: string, functionNames: Set<string> = new Set()): Call[] {
     return Query.searchFrom(fileJp, Call, (callJp) =>
         callJp.function?.isInSystemHeader &&
-        callJp.function?.filepath.endsWith(libraryFile) &&
+        callJp.function?.filepath.endsWith(libraryName) &&
         (functionNames.size === 0 || functionNames.has(callJp.name))
     ).get();
 }

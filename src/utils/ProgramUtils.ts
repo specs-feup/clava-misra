@@ -1,7 +1,6 @@
-import { Vardecl, FunctionJp, Program, LabelStmt, NamedDecl, StorageClass } from "@specs-feup/clava/api/Joinpoints.js";
+import { Vardecl, FunctionJp, LabelStmt, NamedDecl, StorageClass } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { isExternalLinkageIdentifier, isIdentifierDecl, isInternalLinkageIdentifier } from "./IdentifierUtils.js";
-
 
 let cachedInternalLinkageIdentifiers: (FunctionJp | Vardecl)[] | null = null;
 let cachedExternalLinkageIdentifiers: (FunctionJp | Vardecl)[] | null = null;
@@ -9,6 +8,9 @@ let cachedExternalLinkageVars: (Vardecl)[] | null = null;
 let cachedExternalVarRefs: (Vardecl)[] | null = null;
 let cachedIdentifierDecls: any[] | null = null;
 
+/**
+ * Clears all cached identifiers and variable references
+ */
 export function resetCaches() {
     cachedInternalLinkageIdentifiers = null;
     cachedExternalLinkageIdentifiers = null;
@@ -17,6 +19,9 @@ export function resetCaches() {
     cachedIdentifierDecls = null;
 }
 
+/**
+ * Clears the cache of external variable references
+ */
 export function resetExternalVarRefs() {
     cachedExternalVarRefs = null;
 }
@@ -24,7 +29,8 @@ export function resetExternalVarRefs() {
 /**
  * Retrieves all variables and functions that are eligible for `extern` linkage, i.e., 
  * elements with storage classes that are not `STATIC` or `EXTERN`
- * @returns Array of functions and variables that can be declared as external
+ *
+ *  @returns Array of functions and variables that can be declared as external
  */
 export function getExternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
     if (cachedExternalLinkageIdentifiers !== null) {
@@ -41,6 +47,11 @@ export function getExternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
     return cachedExternalLinkageIdentifiers;
 }
 
+/**
+ * Gets identifiers with internal linkage
+ * 
+ * @returns List of functions and variable declarations with internal linkage
+ */
 export function getInternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
     if (cachedInternalLinkageIdentifiers !== null) {
         return cachedInternalLinkageIdentifiers;
@@ -55,6 +66,11 @@ export function getInternalLinkageIdentifiers(): (FunctionJp | Vardecl)[] {
     return cachedInternalLinkageIdentifiers;
 }
 
+/**
+ * Gets identifiers with external linkage
+ * 
+ * @returns List of functions and variable declarations with external linkage
+ */
 export function getExternalLinkageVars(): Vardecl[] {
     if (cachedExternalLinkageVars != null) {
         return cachedExternalLinkageVars;
@@ -63,6 +79,11 @@ export function getExternalLinkageVars(): Vardecl[] {
     return cachedExternalLinkageVars;
 }
 
+/**
+ * Gets all variable declared with 'extern'
+ * 
+ * @returns List of variable declarations with extern storage class
+ */
 export function getExternalVarRefs(): Vardecl[] {
     if (cachedExternalVarRefs !== null) {
         return cachedExternalVarRefs;
@@ -71,6 +92,9 @@ export function getExternalVarRefs(): Vardecl[] {
     return cachedExternalVarRefs;
 }
 
+/**
+ * Gets all named declarations and labels
+ */
 export function getIdentifierDecls(): any[] {
     if (cachedIdentifierDecls !== null) {
         return cachedIdentifierDecls;

@@ -30,10 +30,20 @@ export function getBaseType($jp: Joinpoint): Type | undefined {
     return jpType;
 }
 
-export function getFilepath($jp: Joinpoint) {
+/**
+ * Gets the file path of the given join point.
+ * @param $jp The join point
+ * @returns The file path string
+ */
+export function getFilepath($jp: Joinpoint): string {
     return $jp instanceof Include ? $jp.parent.filepath : $jp.filepath;
 }
 
+/**
+ * Returns the exact location of a given join point
+ * @param $jp The joinpoint to evaluate
+ * @returns A location string containing the filepath, line and column in the format "filepath@line:column"
+ */
 export function getFileLocation($jp: Joinpoint) {
     if ($jp instanceof Include && $jp.line === undefined) {
         return `${$jp.parent?.filepath}`;
@@ -41,6 +51,13 @@ export function getFileLocation($jp: Joinpoint) {
     return `${$jp.filepath}@${$jp.line}:${$jp.column}`
 }
 
+/**
+ * Orders two join points by their source location: filepath, line, and column
+ *
+ * @param $jp1 The first join point
+ * @param $jp2 The second join point
+ * @returns  A negative value if $jp1 comes before $jp2, positive if after, or 0 if equal.
+ */
 export function compareLocation($jp1: Joinpoint, $jp2: Joinpoint): number {
     const filepath1 = getFilepath($jp1), filepath2 = getFilepath($jp2);
     

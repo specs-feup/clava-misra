@@ -29,7 +29,6 @@ export function hasTypeDefDecl($jp: Joinpoint): boolean {
     return getTypeDefDecl($jp) !== undefined;
 }
 
-
 /**
  * Checks if a given joinpoint uses the specified typedef declaration.
  * @param jp - The joinpoint to check

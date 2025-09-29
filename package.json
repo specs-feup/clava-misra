@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "@specs-feup/clava": "3.0.26",
-    "@specs-feup/clava-visualization": "^1.0.5",
     "@specs-feup/lara": "^3.0.11",
     "@specs-feup/clava-flow": "^1.0.1",
     "@specs-feup/flow": "^1.0.3"

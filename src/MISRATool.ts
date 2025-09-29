@@ -1,11 +1,12 @@
 import Query from "@specs-feup/lara/api/weaver/Query.js";
-import { FileJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
+import { FileJp, FunctionJp, Joinpoint, Program } from "@specs-feup/clava/api/Joinpoints.js";
 import MISRARule from "./MISRARule.js";
 import MISRAContext from "./MISRAContext.js";
 import { MISRATransformationType } from "./MISRA.js";
 import Clava from "@specs-feup/clava/api/clava/Clava.js";
 import { resetCaches } from "./utils/ProgramUtils.js";
 import { selectRules } from "./rules/index.js";
+import ClavaJoinPoints from "@specs-feup/clava/api/clava/ClavaJoinPoints.js";
 
 enum ExecutionMode {
     CORRECTION,
@@ -18,6 +19,10 @@ export default class MISRATool {
     static readonly #standards = new Set(["c90", "c99", "c11"]);
     static readonly #ruleTypes = new Set(["all", "single", "system"]);
 
+    /**
+     * Checks whether the source code complies with MISRA C coding guidelines and reports all violations identified during the analysis
+     * @param startingPoint The AST node from which to start the analysis
+     */
     public static checkCompliance(startingPoint: Program | FileJp = Query.root() as Program) {
         this.init();
 
@@ -43,12 +48,22 @@ export default class MISRATool {
             this.context.config = configFilePath;
         }
 
+        // Correct violations
         let iteration = 0;
         let modified = true;
         while (modified) {
             console.log(`[Clava-MISRATool] Iteration #${++iteration}: Applying MISRA-C transformations...`);
             modified = this.transformAST(Query.root() as Program);
         }
+
+        // Additional transformation: insert explicit 'void' in the argument list of functions with no parameters
+        const functionJps = Query.search(FunctionJp).get();
+        functionJps.forEach(functionJp => {
+            if (functionJp.params.length === 0) {
+                functionJp.addParam("", ClavaJoinPoints.builtinType("void"));
+            }
+        })
+
         this.outputReport(ExecutionMode.CORRECTION);
     }
 
@@ -56,7 +71,7 @@ export default class MISRATool {
      * Recursively transforms the AST using a pre-order traversal
      * 
      * @param $jp  AST node from which to start the visit.
-     * @returns Return true if any modifications were made (removal, replacement, or changes in descendants). Otherwise, returns false.
+     * @returns Return true if any modification was made (removal, replacement or changes in descendants). Otherwise, returns false.
      */
     private static transformAST($jp: Joinpoint): boolean {
         let modified = false;
@@ -80,6 +95,9 @@ export default class MISRATool {
         return modified;
     }
 
+    /**
+     * Validates the C standard, creates a MISRA context, and initializes rules. 
+     */
     private static init() {
         this.validateStdVersion();
         this.context = new MISRAContext();

@@ -1,4 +1,4 @@
-import { Param, Joinpoint, Varref, FunctionJp, StorageClass, GotoStmt, LabelStmt, FileJp, Call, VariableArrayType } from "@specs-feup/clava/api/Joinpoints.js";
+import { Param, Varref, FunctionJp, StorageClass, GotoStmt, LabelStmt, FileJp, Call, VariableArrayType } from "@specs-feup/clava/api/Joinpoints.js";
 import Query from "@specs-feup/lara/api/weaver/Query.js";
 import { findFilesReferencingHeader } from "./FileUtils.js";
 import { hasDefinedType } from "./JoinpointUtils.js";
@@ -38,11 +38,24 @@ export function getParamReferences($param: Param, functionJp: FunctionJp): Varre
     return Array.from(new Map([...directRefs, ...refsInVLAFields as Varref[]].map(ref => [ref.ast, ref])).values());
 }
 
+/**
+ * Gets all label statements in the given function that are never referenced
+ * @param func The function to analyze
+ * @returns An array of unused labels statements
+ */
 export function getUnusedLabels(func: FunctionJp): LabelStmt[] {
     return Query.searchFrom(func, LabelStmt).get().filter(label => 
         Query.searchFrom(func, GotoStmt, { label: jp => jp.astId === label.decl.astId }).get().length === 0
     );
 }
+
+/**
+ * Returns the first function definition matching the given name and file path suffix
+ *
+ * @param functionName Name of the function
+ * @param pathSuffix File path suffix
+ * @returns The function definition, or undefined if not found
+ */
 
 export function findFunctionDef(functionName: string, pathSuffix: string) {
     const funcDefs = Query.search(FunctionJp, (func) => {
@@ -55,11 +68,21 @@ export function findFunctionDef(functionName: string, pathSuffix: string) {
     return funcDefs.length > 0 ? funcDefs[0] : undefined;
 }
 
+/**
+ * Finds extern declarations for the given function
+ * @param functionJp The function join point
+ * @returns List of extern function declarations
+ */
 export function findExternalFunctionDecl(functionJp: FunctionJp): FunctionJp[] {
     return functionJp.declarationJps
             .filter((declJp) => declJp.storageClass === StorageClass.EXTERN);
 }
 
+/**
+ * Checks if the given function is called anywhere in the project
+ * @param functionJp The function to evaluate
+ * @returns True if the function is used, false otherwise
+ */
 export function isFunctionUsed(functionJp: FunctionJp): boolean {
     const fileJp = functionJp.getAncestor("file") as FileJp;
     let referencingFiles: FileJp[];
@@ -72,4 +95,3 @@ export function isFunctionUsed(functionJp: FunctionJp): boolean {
     }
     return referencingFiles.some(fileJp => Query.searchFrom(fileJp, Call, {name: functionJp.name, directCallee: (jp) => jp?.ast === functionJp.ast}).get().length > 0)
 }
-
