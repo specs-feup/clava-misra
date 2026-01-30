@@ -3,6 +3,7 @@
   "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "src/misra-old"],
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "src",
     "target": "ES2022",
     "module": "NodeNext",
     "declaration": true,
